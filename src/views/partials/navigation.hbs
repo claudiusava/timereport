@@ -1,0 +1,39 @@
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand mx-auto" href="/profile">TimeReportSimasport</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          {{#if user}}
+          <li class="nav-item">
+            <a class="nav-link" href="/imputaciones/add">Registrar horas</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/imputaciones">Horas registradas</a>
+          </li>
+          {{else}}
+          <li class="nav-item">
+            <a href="/signin" class="nav-link">Iniciar sesión</a>
+          </li>
+          {{/if}}
+          {{#if user.permisoDeAdministracion}}
+          <li class="nav-item">
+            <a href="/signup" class="nav-link">Administrar usuarios</a>
+          </li>
+          <li class="nav-item">
+            <a href="/imputaciones/registrosDeUsuarios" class="nav-link">Ver los registros de usuarios</a>
+          </li>
+          {{/if}}
+          {{#if user}}
+          <li class="nav-item">
+            <a href="/logout" class="nav-link">Cerrar sesión</a>
+          {{/if}}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</body>

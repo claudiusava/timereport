@@ -1,0 +1,29 @@
+<div class="container p-4">
+    <div class="row">
+        {{#each results}}
+            <div class="list-group">
+                <div class="list-group-item list-group-item-action flex-column align-items-start" style="background-color: rgb(202, 202, 202); border-color: black;" >
+                    <div>
+                        <div>
+                            <p class="mb-1">Fecha: {{fechaFormateada}}</p>
+                            <p class="mb-1">Comunidad: {{comunidad}}</p>
+                            <p>Horas trabajadas: {{horas}}:{{minutos}}</p>
+                        </div>    
+                        <div class="w-100 text-center">
+                            <a class="btn btn-danger m-1" href="/imputaciones/delete/{{id}}">Borrar</a>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        {{else}}
+            <div class="col-md-4 mx-auto">
+                <div class="card card-body text center">
+                    <p>No hay registros guardados.</p>
+                    <a href="/imputaciones/add">Añadir uno!</a>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+</div>
+
+
