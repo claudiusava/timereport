@@ -65,8 +65,8 @@
     var initSelector = jQuery.noConflict();
   initSelector('#tabla').DataTable({
       lengthMenu: [
-        [ -1, 10, 25, 50, 100],
-        [ 'todos', '10', '25', '50', '100' ]
+        [ 10, 25, 50, 100, -1],
+        [ '10', '25', '50', '100' , 'todos']
     ],
       dom: "Bflrtip",
         buttons:{
