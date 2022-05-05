@@ -10,9 +10,11 @@ const flash = require('connect-flash');
 const {database} = require('./keys');
 const bodyParser = require('body-parser');
 
+
 //Inicializaciones
 const app = express();
 require('./lib/passport');
+
 
 //Settings 
 app.set('port', process.env.PORT || 4002);
@@ -32,6 +34,7 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
+
 app.use(session({
     secret: 'mysqlnodesession',
     resave: false,
@@ -41,6 +44,7 @@ app.use(session({
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 //Global Varibles
 app.use((req, res, next)=>{
@@ -55,8 +59,7 @@ app.use((req, res, next)=>{
 app.use(require('./routes'));
 app.use(require('./routes/authentication'));
 app.use('/imputaciones',require('./routes/imputaciones'),require('./routes/registrosDeUsuarios'));
-
-app.use('/signup',require('./routes/signup'));
+app.use('/imputaciones',require('./routes/imputaciones'),require('./routes/administrarComunidades'));
 
 
 //Public

@@ -21,16 +21,9 @@
                             <div class="form-group">
                                 <select name="comunidad" class="form-control" id="selector" required>
                                     <option></option>
-                                    <option value="Calle del pino canario, 1, Navalcarnero (Madrid)">Calle del pino canario, 1, Navalcarnero (Madrid)</option>
-                                    <option value="Calle del rio Ebro, 6, Navalcarnero (Madrid)">Calle del rio Ebro, 6, Navalcarnero (Madrid)</option>
-                                    <option value="Avenida Mariana de Austria, 10, Navalcarnero (Madrid)">Avenida Mariana de Austria, 10, Navalcarnero (Madrid)</option>
-                                    <option value="Calle de la Cuesta del menor, 5, Navalcarnero (Madrid)">Calle de la Cuesta del menor, 5, Navalcarnero (Madrid)</option>
-                                    <option value="Calle de la Constitucion, 2, Navalcarnero (Madrid)">Calle de la Constitucion, 2, Navalcarnero (Madrid)</option>
-                                    <option value="Avenida Alemania, 22, Navalcarnero (Madrid)">Avenida Alemania, 22, Navalcarnero (Madrid)</option>
-                                    <option value="Calle Rubens, 13, Móstoles (Madrid)">Calle Rubens, 13, Móstoles (Madrid)</option>
-                                    <option value="Calle Oslo, 51, Alcorcon (Madrid)">Calle Oslo, 51, Alcorcon (Madrid)</option>
-                                    <option value="Avenida de Guadarrama, 1, Sevilla la Nueva (Madrid)">Avenida de Guadarrama, 1, Sevilla la Nueva (Madrid)</option>
-
+                                    {{#each resultados}}
+                                        <option value="{{nombre}}">{{nombre}}</option>
+                                    {{/each}}
                                 </select>
                             </div>
                             <div class="form-group row justify-content-center">

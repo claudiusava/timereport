@@ -3,10 +3,25 @@ const router = express.Router();
 const passport = require('passport');
 const{isLoggedIn} = require('../lib/auth');
 const{isNotLoggedIn} = require('../lib/auth');
+const pool = require('../database');
 
 router.get('/signup', isLoggedIn, (req, res) => {
-   res.render('auth/signup'); 
+    const comunidades = pool.query('SELECT id, fullname, username FROM users', function(error, results){
+        if (error) throw error;
+
+        res.render('auth/signup', {results});
+    });
 });
+
+router.get('/auth/signup/delete/:id', (req, res)=>{
+    const id = req.params.id;
+    pool.query('DELETE FROM users WHERE id = ?',[id], (error, results)=>{
+        if (error) throw error;
+
+        req.flash('success', 'Comunidad eliminada correctamente!');
+        res.redirect('/signup');
+    })
+})
 
 router.post('/signup', passport.authenticate('local.signup', {
     successRedirect: '/signup',

@@ -8,16 +8,17 @@ const {isLoggedIn} = require('../lib/auth');
 
 
 router.get('/add', isLoggedIn, (req,res) =>{
-    res.render('imputaciones/add');
+    const comunidades = pool.query('SELECT nombre FROM comunidades', function (error, resultados){
+        if(error) throw error;
+        res.render('imputaciones/add', {resultados});
+    })
 });
 
 router.post('/add', isLoggedIn, async (req, res)=>{
     const {fecha, comunidad, horas, minutos} = req.body;
     let minutosFormateados = 0;
 
-
         minutosFormateados = (minutos/60)*100;
-    
 
     const newImputacion = {
         fecha,
@@ -36,7 +37,7 @@ router.post('/add', isLoggedIn, async (req, res)=>{
 
 router.get('/', isLoggedIn, (req, res) => {
 
-    const imputaciones = pool.query('SELECT DATE_FORMAT(fecha,"%d/%m/%Y") as fechaFormateada, comunidad, horas, LPAD(minutos, 2, "0") as minutos, id FROM imputaciones WHERE user_id = ? ORDER BY fecha', [req.user.id], function(error, results, fields){
+    const imputaciones = pool.query('SELECT DATE_FORMAT(fecha,"%d/%m/%Y") as fechaFormateada, comunidad, horas, LPAD(minutos, 2, "0") as minutos, id FROM imputaciones WHERE user_id = ? ORDER BY fecha DESC', [req.user.id], function(error, results, fields){
         if (error) throw error;
 
         res.render('imputaciones/list', {results});
@@ -47,6 +48,7 @@ router.get('/delete/:id', isLoggedIn, async (req, res) => {
     const {id} = req.params;
 
     pool.query('DELETE FROM imputaciones WHERE id = ?', [id]);
+    req.flash('success', 'Registro eliminado correctamente!');
     res.redirect('/imputaciones');
 
 });
