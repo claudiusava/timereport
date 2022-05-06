@@ -6,7 +6,12 @@ const{isNotLoggedIn} = require('../lib/auth');
 const pool = require('../database');
 
 router.get('/signup', isLoggedIn, (req, res) => {
-    const comunidades = pool.query('SELECT id, fullname, username FROM users', function(error, results){
+    const comunidades = pool.query(`SELECT id, fullname, username, 
+    CASE permisoDeAdministracion
+      WHEN 1 THEN 'Si'
+      WHEN 0 THEN 'No'
+    END AS permisoDeAdministracion
+  from users;`, function(error, results){
         if (error) throw error;
 
         res.render('auth/signup', {results});

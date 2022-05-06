@@ -38,7 +38,7 @@ passport.use('local.signup', new LocalStrategy({
     let { permisoDeAdministracion } = req.body;
 
     if(permisoDeAdministracion == "on"){
-      permisoDeAdministracion =1;
+      permisoDeAdministracion = 1;
     }else{
       permisoDeAdministracion = 0;
     }
