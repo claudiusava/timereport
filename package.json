@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "node": "src/index.js",
     "dev": "nodemon src"
   },
   "keywords": [],
@@ -17,8 +17,8 @@
     "connect-flash": "^0.1.1",
     "datatables-buttons-excel-styles": "^1.2.0",
     "error-callsites": "^2.0.4",
-    "excel4node": "^1.7.2",
-    "express": "^4.17.3",
+    "excel4node": "^1.2.1",
+    "express": "^4.18.1",
     "express-handlebars": "^6.0.3",
     "express-mysql-session": "^2.1.7",
     "express-session": "^1.17.2",
@@ -29,12 +29,13 @@
     "mysql": "^2.18.1",
     "passport": "^0.5.2",
     "passport-local": "^1.0.0",
+    "pg": "^8.7.3",
     "select2": "^4.1.0-rc.0",
     "sweetalert2": "^11.4.9",
     "timeago.js": "^4.0.2"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.16"
   },
   "description": ""
 }
