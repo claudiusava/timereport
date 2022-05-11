@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "node": "npm start src/index.js",
+    "start": "src/index.js",
     "dev": "nodemon src"
   },
   "keywords": [],
