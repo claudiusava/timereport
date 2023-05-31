@@ -10,14 +10,18 @@ router.get('/signup', isLoggedIn, (req, res) => {
     CASE permisoDeAdministracion
       WHEN 1 THEN 'Si'
       WHEN 0 THEN 'No'
-    END AS permisoDeAdministracion,
-    CASE maquinista
+    END AS permisoDeAdministracion, 
+    CASE COALESCE(maquinista, 0)
       WHEN 1 THEN 'Si'
-      WHEN 0 THEN 'No'
-    END AS maquinista
-  from users;`, function(error, results){
+      ELSE 'No'
+    END AS maquinista, 
+    CASE COALESCE(socorrista, 0)
+      WHEN 1 THEN 'Si'
+      ELSE 'No'
+    END AS socorrista
+    FROM users`, function(error, results){
         if (error) throw error;
-
+        console.log(results);
         res.render('auth/signup', {results});
     });
 });

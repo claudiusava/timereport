@@ -14,9 +14,6 @@
           <li class="nav-item">
             <a class="nav-link" href="/imputaciones">Horas registradas</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link">Registrar kilómetros</a>
-          </li>
           {{/if}}
           {{#if user.permisoDeAdministracion}}
           <li class="nav-item">
@@ -27,6 +24,15 @@
           </li>
           <li class="nav-item">
             <a href="/imputaciones/registrosDeUsuarios" class="nav-link">Registros de todos los usuarios</a>
+          </li>
+          {{/if}}
+          {{#if user.maquinista}}
+          <li class="nav-item">
+            <a class="nav-link">Registrar kilómetros</a>
+          </li>
+          {{else if user.permisoDeAdministracion}}
+          <li class="nav-item">
+            <a class="nav-link">Registrar kilómetros</a>
           </li>
           {{/if}}
           {{#if user}}
