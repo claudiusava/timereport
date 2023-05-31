@@ -36,6 +36,8 @@ passport.use('local.signup', new LocalStrategy({
 
     const  { fullname }  = req.body;
     let { permisoDeAdministracion } = req.body;
+    let { maquinista } = req.body;
+    let { socorrista } = req.body;
 
     if(permisoDeAdministracion == "on"){
       permisoDeAdministracion = 1;
@@ -43,11 +45,25 @@ passport.use('local.signup', new LocalStrategy({
       permisoDeAdministracion = 0;
     }
 
+    if(maquinista == "on"){
+      maquinista = 1;
+    }else{
+      maquinista = 0;
+    }
+
+    if(socorrista == "on"){
+      socorrista = 1;
+    }else{
+      socorrista = 0;
+    }
+
     let newUser = {
         fullname,
         username, 
         password,
-        permisoDeAdministracion
+        permisoDeAdministracion,
+        maquinista,
+        socorrista
     };
 
     newUser.password = helpers.encryptPassword(password);

@@ -10,7 +10,11 @@ router.get('/signup', isLoggedIn, (req, res) => {
     CASE permisoDeAdministracion
       WHEN 1 THEN 'Si'
       WHEN 0 THEN 'No'
-    END AS permisoDeAdministracion
+    END AS permisoDeAdministracion,
+    CASE maquinista
+      WHEN 1 THEN 'Si'
+      WHEN 0 THEN 'No'
+    END AS maquinista
   from users;`, function(error, results){
         if (error) throw error;
 
