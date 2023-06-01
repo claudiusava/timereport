@@ -21,7 +21,7 @@
                             <div class="form-group">
                                 <select name="comunidad" class="form-control" id="selector" required>
                                     <option></option>
-                                    {{#each resultados}}
+                                    {{#each comunidades}}
                                         <option value="{{nombre}}">{{nombre}}</option>
                                     {{/each}}
                                 </select>
@@ -48,6 +48,33 @@
     </div>
 </div>
 
+<div class="container p-3">
+        <div class="row">
+            {{#each imputaciones}}
+                <div class="list-group">
+                    <div class="list-group-item list-group-item-action flex-column align-items-start" style="background-color: rgb(202, 202, 202); border-color: black;" >
+                        <div>
+                            <div>
+                                <p class="mb-1"><b>Fecha: </b> {{fechaFormateada}}</p>
+                                <p class="mb-1"><b>Comunidad: </b> {{comunidad}}</p>
+                                <p><b>Horas trabajadas:</b> {{horas}}:{{minutos}}</p>
+                            </div>    
+                            <div class="w-100 text-right">
+                                <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;" onclick="confirmar({{id}})"></a>
+                            </div> 
+                        </div>
+                    </div>
+                </div>
+            {{else}}
+                <div class="col-md-4 mx-auto">
+                    <div class="card card-body text center">
+                        <p>!Todavía no tienes ningún registro guardado!</p>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+
 <script>
     var initSelector = jQuery.noConflict();
     initSelector(document).ready(function() {
@@ -68,6 +95,24 @@
         console.log("No existe selector");
     }
 });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.all.min.js"></script>
+
+<script>
+    function confirmar (id){
+        Swal.fire({
+            title: '¿Seguro que quieres eliminar este registro?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar',
+            confirmButtonColor: '#d63030',
+            focusConfirm: 'true'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location = 'imputaciones/delete/'+id;
+            }
+        })
+    }
 </script>
 </body>
 </html>

@@ -7,12 +7,30 @@ const pool = require('../database');
 const {isLoggedIn} = require('../lib/auth');
 
 
-router.get('/add', isLoggedIn, (req,res) =>{
-    const comunidades = pool.query('SELECT nombre FROM comunidades', function (error, resultados){
-        if(error) throw error;
-        res.render('imputaciones/add', {resultados});
-    })
+router.get('/add', isLoggedIn, async (req, res) => {
+    try {
+        const comunidadesPromise = new Promise((resolve, reject) => {
+            pool.query('SELECT nombre FROM comunidades', (error, resultados) => {
+                if (error) reject(error);
+                resolve(resultados);
+            });
+        });
+
+        const imputacionesPromise = new Promise((resolve, reject) => {
+            pool.query('SELECT DATE_FORMAT(fecha,"%d/%m/%Y") as fechaFormateada, comunidad, horas, LPAD(minutos, 2, "0") as minutos, id FROM imputaciones WHERE user_id = ? ORDER BY fecha DESC', [req.user.id], (error, results) => {
+                if (error) reject(error);
+                resolve(results);
+            });
+        });
+
+        const [comunidades, imputaciones] = await Promise.all([comunidadesPromise, imputacionesPromise]);
+
+        res.render('imputaciones/add', { comunidades, imputaciones });
+    } catch (error) {
+        throw error;
+    }
 });
+
 
 router.post('/add', isLoggedIn, async (req, res)=>{
     const {fecha, comunidad, horas, minutos} = req.body;
@@ -33,15 +51,6 @@ router.post('/add', isLoggedIn, async (req, res)=>{
     req.flash('success', 'Registro guardado!');
     res.redirect('/imputaciones');
     
-});
-
-router.get('/', isLoggedIn, (req, res) => {
-
-    const imputaciones = pool.query('SELECT DATE_FORMAT(fecha,"%d/%m/%Y") as fechaFormateada, comunidad, horas, LPAD(minutos, 2, "0") as minutos, id FROM imputaciones WHERE user_id = ? ORDER BY fecha DESC', [req.user.id], function(error, results, fields){
-        if (error) throw error;
-
-        res.render('imputaciones/list', {results});
-    });
 });
 
 router.get('/delete/:id', isLoggedIn, async (req, res) => {   
