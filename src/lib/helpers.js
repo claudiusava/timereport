@@ -1,5 +1,4 @@
 const bcrypt = require('bcryptjs');
-const { param } = require('../routes/authentication');
 
 const helpers = {};
 

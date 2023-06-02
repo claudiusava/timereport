@@ -28,7 +28,7 @@ router.get('/signup', isLoggedIn, (req, res) => {
 
 router.get('/auth/signup/delete/:id', (req, res)=>{
     const id = req.params.id;
-    pool.query('DELETE FROM users WHERE id = ?',[id], (error, results)=>{
+    pool.query('DELETE FROM users WHERE id = ?',[id], (error)=>{
         if (error) throw error;
 
         req.flash('success', 'Comunidad eliminada correctamente!');
