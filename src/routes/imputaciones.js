@@ -5,7 +5,6 @@ const pool = require('../database');
 
 router.get("/add", isLoggedIn, async (req, res) => {
     try {
-        throw new Error('Error simulado');
       let comunidades = [];
       let imputaciones = [];
   

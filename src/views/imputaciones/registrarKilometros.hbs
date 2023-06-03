@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        
+        .label-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container p-4">
+        <div class="row">
+            <div class="col-md-4 mx-auto">
+                <div class="card text-center">
+                    <div class="card-header">
+                        <strong>
+                            Registra los kilómetros de tu furgoneta.
+                        </strong>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="form-group">
+                                <div class="label-container">
+                                    <span id="labelVehiculoNuevo">Furgoneta Nueva</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="checkboxVehiculoNuevo">
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <span id="labelVehiculoExistente">Furgoneta Existente</span>
+                                </div>
+                            </div>
+                            <div id="camposVehiculoExistente" style="display: none;">
+                                <div class="form-group">
+                                    <input readonly type="datetime-local" class="form-control" name="fecha" placeholder="Fecha" aria-label="Default select example" required>
+                                </div>
+                                <div class="form-group">
+                                    <select name="comunidad" class="form-control" id="selector" required>
+                                        <option></option>
+                                        <option></option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <input class="form-control" type="number" placeholder="Kilómetros" min="0" name="kilometros" required>
+                                </div>
+                            </div>
+                            <div id="camposVehiculoNuevo">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="matricula" placeholder="Matrícula" required>
+                                </div>
+                                <div class="form-group">
+                                    <input class="form-control" type="number" placeholder="Kilómetros" min="0" name="kilometros" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-success">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var fechaInput = document.querySelector('input[name="fecha"]');
+        var fechaActual = new Date();
+        var horas = fechaActual.getHours().toString().padStart(2, '0');
+        var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
+        var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
+        fechaInput.value = fechaHoraActual;
+
+        var checkboxVehiculoNuevo = document.getElementById('checkboxVehiculoNuevo');
+        var camposVehiculoExistente = document.getElementById('camposVehiculoExistente');
+        var camposVehiculoNuevo = document.getElementById('camposVehiculoNuevo');
+        var labelVehiculoNuevo = document.getElementById('labelVehiculoNuevo');
+        var labelVehiculoExistente = document.getElementById('labelVehiculoExistente');
+
+        checkboxVehiculoNuevo.addEventListener('change', function () {
+            if (this.checked) {
+                camposVehiculoExistente.style.display = 'block';
+                camposVehiculoNuevo.style.display = 'none';
+            } else {
+                camposVehiculoExistente.style.display = 'none';
+                camposVehiculoNuevo.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

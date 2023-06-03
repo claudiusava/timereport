@@ -9,27 +9,27 @@
         <ul class="navbar-nav">
           {{#if user}}
           <li class="nav-item">
-            <a class="nav-link" href="/imputaciones/add">Registrar horas</a>
-          </li>
-          {{/if}}
-          {{#if user.permisoDeAdministracion}}
-          <li class="nav-item">
-            <a href="/signup" class="nav-link">Administrar usuarios</a>
-          </li>
-          <li class="nav-item">
-            <a href="/imputaciones/administrarComunidades" class="nav-link">Administrar comunidades</a>
-          </li>
-          <li class="nav-item">
-            <a href="/imputaciones/registrosDeUsuarios" class="nav-link">Registros de todos los usuarios</a>
+            <a class="nav-link" href="/imputaciones/add">Horas trabajadas</a>
           </li>
           {{/if}}
           {{#if user.maquinista}}
           <li class="nav-item">
-            <a class="nav-link">Registrar kilómetros</a>
+            <a href="/imputaciones/registrarKilometros" class="nav-link">Furgonetas</a>
           </li>
           {{else if user.permisoDeAdministracion}}
           <li class="nav-item">
-            <a class="nav-link">Registrar kilómetros</a>
+            <a href="/imputaciones/registrarKilometros" class="nav-link">Furgonetas</a>
+          </li>
+          {{/if}}
+          {{#if user.permisoDeAdministracion}}
+          <li class="nav-item">
+            <a href="/signup" class="nav-link">Usuarios</a>
+          </li>
+          <li class="nav-item">
+            <a href="/imputaciones/administrarComunidades" class="nav-link">Comunidades</a>
+          </li>
+          <li class="nav-item">
+            <a href="/imputaciones/registrosDeUsuarios" class="nav-link">Registros de todos los usuarios</a>
           </li>
           {{/if}}
           {{#if user}}

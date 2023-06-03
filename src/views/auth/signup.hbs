@@ -6,15 +6,17 @@
   </head>
   <body>
     <div class="container p-4">
-      <div class="row">
-        <div class="col-md-4 mx-auto">
-          <div class="card text-center">
-            <div class="card-header">
-              <div class="card-body">
-                <h1>Registrar usuario</h1>
-                <br/>
-                <form action="/signup" method="POST">
-                  <div class="form-group">
+    <div class="row">
+      <div class="col-md-4 mx-auto">
+        <div class="card text-center">
+          <div class="card-header">
+            <strong>
+              Añade un nuevo usuario.
+            </strong>
+          </div>
+          <div class="card-body">
+            <form action="/signup" method="POST">
+              <div class="form-group">
                     <input
                       type="text"
                       name="fullname"
@@ -69,13 +71,12 @@
                   <div class="form-group">
                     <button class="btn btn-success">Guardar</button>
                   </div>
-                </form>
-              </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
     <div class="container p-4">
       <div class="row">

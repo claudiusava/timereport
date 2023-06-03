@@ -12,7 +12,6 @@ router.get('/administrarComunidades', isLoggedIn, (req,res) =>{
 
         res.render('imputaciones/administrarComunidades', {results});
     })
-    
 });
 
 router.post('/administrarComunidades', isLoggedIn, async (req, res)=>{
