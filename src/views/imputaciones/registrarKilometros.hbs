@@ -45,13 +45,14 @@
                         </form>
                         <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoNuevo">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="matricula" placeholder="Matrícula" required>
+                                <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula" required>
+                                <span id="matriculaError" style="color: red;"></span>
                             </div>
                             <div class="form-group">
                                 <input class="form-control" type="number" placeholder="Kilómetros" min="0" name="kilometros" required>
                             </div>
                             <div class="form-group">
-                                <button class="btn btn-success">Guardar</button>
+                                <button class="btn btn-success" id="guardarVehiculoNuevo">Guardar</button>
                             </div>
                         </form>
                     </div>
@@ -118,6 +119,34 @@
             if (valorActual < valorInicial) {
                 inputKilometros.value = valorInicial;
             }
+        });
+
+        document.getElementById('guardarVehiculoNuevo').addEventListener('click', function(e) {
+            e.preventDefault();
+            const matriculaInput = document.getElementById('matriculaInput');
+            const matricula = matriculaInput.value.trim();
+            const matriculaError = document.getElementById('matriculaError');
+
+            if (matricula === '') {
+                matriculaError.textContent = 'Debe ingresar una matrícula.';
+                return;
+            }
+
+            matriculaError.textContent = '';
+
+            // Verificar si la matrícula ya existe en la base de datos
+            const select = document.getElementById('selector');
+            const options = select.options;
+
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === matricula) {
+                    matriculaError.textContent = 'Ya existe un vehículo con esa matrícula.';
+                    return;
+                }
+            }
+
+            // Si la matrícula no existe, enviar el formulario
+            formVehiculoNuevo.submit();
         });
     </script>
 </body>
