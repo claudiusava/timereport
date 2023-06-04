@@ -70,7 +70,7 @@ passport.use('local.signup', new LocalStrategy({
     pool.query('SELECT * FROM users WHERE username=?', username, function (error, rows){
       if(error) throw "Error en la consulta al buscar usuario: "+error;
       if(rows.length > 0){
-        done(null, false,  req.flash('danger', 'Ese nombre de usaurio ya existe.'));
+        done(null, false,  req.flash('danger', 'Ese nombre de usuario ya existe.'));
       }else{
         pool.query('INSERT INTO users SET ? ', [newUser], function(error, results){
           if(error) {

@@ -39,7 +39,7 @@ router.get("/add", isLoggedIn, async (req, res) => {
       req.flash("danger", "Error general.");
       res.redirect("/imputaciones/add");
     }
-  });
+});
   
   
 
