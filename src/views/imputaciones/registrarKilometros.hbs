@@ -25,25 +25,30 @@
                             </div>
                         </div>
                         <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoExistente">
-                            <div class="form-group">
+                          <div class="form-group">
+                            <input readonly type="datetime-local" class="form-control" name="fecha" placeholder="Fecha" aria-label="Default select example" required>
+                          </div>
+                          <div class="form-group">
+                            <select name="vehiculo" class="form-control" id="selector" required>
+                              <option value="" disabled selected>Seleccione una furgoneta</option>
+                              {{#each vehiculos}}
+                                <option value="{{matricula}}" data-kilometros="{{kilometros}}">{{matricula}}</option>
+                              {{/each}}
+                            </select>
+                          </div>
+                          <div class="form-group">
+                            <input class="form-control" type="number" placeholder="Kilómetros" min="{{vehiculo.kilometros}}" name="kilometros" required>
+                          </div>
+                          <input type="hidden" name="matricula" id="matriculaInputExistente">
+                          <div class="form-group">
+                            <button class="btn btn-success">Guardar</button>
+                          </div>
+                        </form>
+
+                        <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoNuevo">
+                        <div class="form-group">
                                 <input readonly type="datetime-local" class="form-control" name="fecha" placeholder="Fecha" aria-label="Default select example" required>
                             </div>
-                            <div class="form-group">
-                                <select name="vehiculo" class="form-control" id="selector" required>
-                                    <option value="" disabled selected>Seleccione una furgoneta</option>
-                                    {{#each vehiculos}}
-                                        <option value="{{matricula}}" data-kilometros="{{kilometros}}">{{matricula}}</option>
-                                    {{/each}}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <input class="form-control" type="number" placeholder="Kilómetros" min="{{vehiculo.kilometros}}" name="kilometros" required>
-                            </div>
-                            <div class="form-group">
-                                <button class="btn btn-success">Guardar</button>
-                            </div>
-                        </form>
-                        <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoNuevo">
                             <div class="form-group">
                                 <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula" required>
                                 <span id="matriculaError" style="color: red;"></span>
@@ -80,6 +85,8 @@
         var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
         var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
         fechaInput.value = fechaHoraActual;
+        var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fecha"]');
+            fechaInputNuevo.value = fechaHoraActual;
 
         var checkboxVehiculoNuevo = document.getElementById('checkboxVehiculoNuevo');
         var formVehiculoExistente = document.getElementById('formVehiculoExistente');
@@ -148,6 +155,14 @@
             // Si la matrícula no existe, enviar el formulario
             formVehiculoNuevo.submit();
         });
+
+        document.getElementById('selector').addEventListener('change', function() {
+        const select = document.getElementById('selector');
+        const selectedOption = select.options[select.selectedIndex];
+        const matricula = selectedOption.value;
+        document.getElementById('matriculaInputExistente').value = matricula;
+});
+
     </script>
 </body>
 </html>
