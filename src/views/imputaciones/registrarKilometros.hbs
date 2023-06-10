@@ -26,7 +26,7 @@
                         </div>
                         <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoExistente">
                           <div class="form-group">
-                            <input readonly type="datetime-local" class="form-control" name="fecha" placeholder="Fecha" aria-label="Default select example" required>
+                            <input readonly type="datetime-local" class="form-control" name="fechaActualizacion" placeholder="fechaActualizacion" aria-label="Default select example" required>
                           </div>
                           <div class="form-group">
                             <select name="vehiculo" class="form-control" id="selector" required>
@@ -47,7 +47,7 @@
 
                         <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoNuevo">
                         <div class="form-group">
-                                <input readonly type="datetime-local" class="form-control" name="fecha" placeholder="Fecha" aria-label="Default select example" required>
+                                <input readonly type="datetime-local" class="form-control" name="fechaActualizacion" placeholder="fechaActualizacion" aria-label="Default select example" required>
                             </div>
                             <div class="form-group">
                                 <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula" required>
@@ -79,13 +79,13 @@
             }
         });
 
-        var fechaInput = document.querySelector('input[name="fecha"]');
+        var fechaInput = document.querySelector('input[name="fechaActualizacion"]');
         var fechaActual = new Date();
         var horas = fechaActual.getHours().toString().padStart(2, '0');
         var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
         var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
         fechaInput.value = fechaHoraActual;
-        var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fecha"]');
+        var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fechaActualizacion"]');
             fechaInputNuevo.value = fechaHoraActual;
 
         var checkboxVehiculoNuevo = document.getElementById('checkboxVehiculoNuevo');
@@ -162,7 +162,6 @@
         const matricula = selectedOption.value;
         document.getElementById('matriculaInputExistente').value = matricula;
 });
-
     </script>
 </body>
 </html>

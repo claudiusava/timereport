@@ -24,7 +24,7 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
 
 router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
   try {
-    const { matricula, kilometros } = req.body;
+    const { matricula, kilometros, fechaActualizacion } = req.body;
 
     // Verificar si ya existe un vehículo con la matrícula ingresada
     const vehiculoExistente = await new Promise((resolve, reject) => {
@@ -36,13 +36,14 @@ router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
 
     if (vehiculoExistente) {
       // Si el vehículo ya existe, actualizar los datos de kilometraje
-      await pool.query('UPDATE vehiculos SET kilometros = ? WHERE id = ?', [kilometros, vehiculoExistente.id]);
+      await pool.query('UPDATE vehiculos SET kilometros = ?, fechaActualizacion = ? WHERE id = ?', [kilometros, fechaActualizacion, vehiculoExistente.id]);
       req.flash('success', 'Kilometraje actualizado correctamente');
     } else {
       // Si el vehículo no existe, crear uno nuevo
       const newFurgoneta = {
         matricula,
-        kilometros
+        kilometros,
+        fechaActualizacion
       };
   
       await pool.query('INSERT INTO vehiculos SET ?', [newFurgoneta]);
