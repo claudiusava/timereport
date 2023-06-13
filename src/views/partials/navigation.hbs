@@ -21,6 +21,15 @@
             <a href="/imputaciones/registrarKilometros" class="nav-link">Furgonetas</a>
           </li>
           {{/if}}
+          {{#if user.socorrista}}
+          <li class="nav-item">
+            <a href="/imputaciones/calidadAgua" class="nav-link">PH y Cloro</a>
+          </li>
+          {{else if user.permisoDeAdministracion}}
+          <li class="nav-item">
+            <a href="/imputaciones/calidadAgua" class="nav-link">PH y Cloro</a>
+          </li>
+          {{/if}}
           {{#if user.permisoDeAdministracion}}
           <li class="nav-item">
             <a href="/signup" class="nav-link">Usuarios</a>
