@@ -9,7 +9,8 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
   try {
     let vehiculos = [];
     vehiculos = await new Promise((resolve, reject) => {
-      pool.query("SELECT matricula, kilometros FROM vehiculos", (error, resultados) => {
+      pool.query("SELECT id, matricula, kilometros, DATE_FORMAT(fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada FROM vehiculos", 
+      (error, resultados) => {
         if (error) reject(error);
         resolve(resultados);
       });
@@ -57,4 +58,19 @@ router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
     res.redirect('/imputaciones/registrarKilometros');
   }
 });
+
+router.get('/registrarKilometros/delete/:id', (req, res) => {
+  const id = req.params.id;
+  pool.query('DELETE FROM vehiculos WHERE id = ?', [id], (error) => {
+    if (error) {
+      console.error('Error al eliminar la furgoneta:', error);
+      req.flash('error', 'Ocurrió un error al eliminar la furgoneta.');
+    } else {
+      req.flash('success', 'Furgoneta eliminada correctamente!');
+    }
+    res.redirect('/imputaciones/registrarKilometros');
+  });
+});
+
+
 module.exports = router;
