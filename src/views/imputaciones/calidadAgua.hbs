@@ -26,10 +26,26 @@
                   <input type="text" name="nombre" placeholder="comunidad" class="form-control" autofocus required />
                 </div>
                 <div class="form-group">
-                  <input type="number" name="codigo" placeholder="PH" class="form-control" min="0" required />
+                  <select class="form-control" id="nivelPH">
+                    <option value="" disabled selected>Nivel de PH</option>
+                    <option style="background-color: #FFB366;">6.8</option>
+                    <option style="background-color: #FFA74D;">7.0</option>
+                    <option style="background-color: #FF9933;">7.2</option>
+                    <option style="background-color: #FF8C1A;">7.4</option>
+                    <option style="background-color: #FF8000;">7.6</option>
+                    <option style="background-color: #FF7300;">8.0</option>
+                  </select>
                 </div>
                 <div class="form-group">
-                  <input type="number" name="codigo" placeholder="Cloro" class="form-control" min="0" required />
+                  <select class="form-control" id="nivelCloro">
+                    <option value="" disabled selected>Nivel de Cloro</option>
+                    <option style="background-color: #FDEFF3;">0.5</option>
+                    <option style="background-color: #FBC8D9;">1.0</option>
+                    <option style="background-color: #F89CBF;">1.5</option>
+                    <option style="background-color: #F570A5;">2.0</option>
+                    <option style="background-color: #F3448B;">3.0</option>
+                    <option style="background-color: #F11971;">5.0</option>
+                  </select>
                 </div>
                 <div class="form-group">
                   <button class="btn btn-success">Guardar</button>
@@ -81,6 +97,32 @@
       </div>
     </div>
   </div>
+  <script>
+    const selectElementPH = document.getElementById('nivelPH');
+    selectElementPH.addEventListener('change', function() {
+    const selectedOptionPH = this.options[this.selectedIndex];
+    const colorPH = selectedOptionPH.style.backgroundColor;
+    this.style.backgroundColor = colorPH;
+    });
+
+    const selectElementCloro = document.getElementById('nivelCloro');
+    selectElementCloro.addEventListener('change', function() {
+    const selectedOptionCloro = this.options[this.selectedIndex];
+    const colorCloro = selectedOptionCloro.style.backgroundColor;
+    this.style.backgroundColor = colorCloro;
+    });
+
+    var fechaInput = document.querySelector('input[name="fechaActualizacion"]');
+      var fechaActual = new Date();
+      var horas = fechaActual.getHours().toString().padStart(2, '0');
+      var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
+      var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
+        fechaInput.value = fechaHoraActual;
+      var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fechaActualizacion"]');
+        fechaInputNuevo.value = fechaHoraActual;
+  </script>
+
+
   <!--JQuery y Bootstrap-->
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
