@@ -8,15 +8,32 @@ const { isLoggedIn } = require('../lib/auth');
 router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
   try {
     let vehiculos = [];
-    vehiculos = await new Promise((resolve, reject) => {
-      pool.query("SELECT id, matricula, kilometros, DATE_FORMAT(fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada FROM vehiculos", 
-      (error, resultados) => {
-        if (error) reject(error);
-        resolve(resultados);
-      });
-    });
+vehiculos = await new Promise((resolve, reject) => {
+  pool.query(`
+    SELECT id, matricula, kilometros, DATE_FORMAT(fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada
+    FROM vehiculos
+    ORDER BY fechaActualizacion DESC
+  `, (error, resultados) => {
+    if (error) reject(error);
+    resolve(resultados);
+  });
+});
 
-    res.render("imputaciones/registrarKilometros", { vehiculos });
+    let vehiculosSelect = [];
+    vehiculosSelect = await new Promise((resolve, reject) => {
+  pool.query(`
+    SELECT v1.id, v1.matricula, v1.kilometros, DATE_FORMAT(v1.fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada
+    FROM vehiculos v1
+    LEFT JOIN vehiculos v2 ON v1.matricula = v2.matricula AND v1.fechaActualizacion < v2.fechaActualizacion
+    WHERE v2.id IS NULL
+  `, (error, resultados) => {
+    if (error) reject(error);
+    resolve(resultados);
+  });
+});
+
+
+    res.render("imputaciones/registrarKilometros", { vehiculos, vehiculosSelect });
   } catch (error) {
     req.flash("danger", "Error al obtener las vehiculos.");
     res.redirect("/imputaciones/registrarKilometros");
@@ -29,27 +46,27 @@ router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
 
     // Verificar si ya existe un vehículo con la matrícula ingresada
     const vehiculoExistente = await new Promise((resolve, reject) => {
-      pool.query('SELECT * FROM vehiculos WHERE matricula = ?', [matricula], (error, resultados) => {
+      pool.query('SELECT * FROM vehiculos WHERE matricula = ? ORDER BY fechaActualizacion DESC LIMIT 1', [matricula], (error, resultados) => {
         if (error) reject(error);
         resolve(resultados[0]);
       });
     });
 
-    if (vehiculoExistente) {
-      // Si el vehículo ya existe, actualizar los datos de kilometraje
-      await pool.query('UPDATE vehiculos SET kilometros = ?, fechaActualizacion = ? WHERE id = ?', [kilometros, fechaActualizacion, vehiculoExistente.id]);
-      req.flash('success', 'Kilometraje actualizado correctamente');
-    } else {
-      // Si el vehículo no existe, crear uno nuevo
-      const newFurgoneta = {
-        matricula,
-        kilometros,
-        fechaActualizacion
-      };
-  
-      await pool.query('INSERT INTO vehiculos SET ?', [newFurgoneta]);
-      req.flash('success', 'Furgoneta guardada correctamente!');
+    if (vehiculoExistente && kilometros <= vehiculoExistente.kilometros) {
+      req.flash('error', 'El kilometraje ingresado debe ser mayor al último registrado');
+      res.redirect('/imputaciones/registrarKilometros');
+      return;
     }
+
+    // Crear un nuevo registro de vehículo
+    const newVehiculo = {
+      matricula,
+      kilometros,
+      fechaActualizacion
+    };
+
+    await pool.query('INSERT INTO vehiculos SET ?', [newVehiculo]);
+    req.flash('success', 'Vehículo registrado correctamente');
 
     res.redirect('/imputaciones/registrarKilometros');
   } catch (error) {
@@ -58,6 +75,7 @@ router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
     res.redirect('/imputaciones/registrarKilometros');
   }
 });
+
 
 router.get('/registrarKilometros/delete/:id', (req, res) => {
   const id = req.params.id;
