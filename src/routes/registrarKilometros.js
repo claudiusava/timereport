@@ -12,7 +12,7 @@ vehiculos = await new Promise((resolve, reject) => {
   pool.query(`
     SELECT id, matricula, kilometros, DATE_FORMAT(fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada
     FROM vehiculos
-    ORDER BY fechaActualizacion DESC
+    ORDER BY fechaActualizacionFormateada DESC
   `, (error, resultados) => {
     if (error) reject(error);
     resolve(resultados);
@@ -24,7 +24,7 @@ vehiculos = await new Promise((resolve, reject) => {
   pool.query(`
     SELECT v1.id, v1.matricula, v1.kilometros, DATE_FORMAT(v1.fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada
     FROM vehiculos v1
-    LEFT JOIN vehiculos v2 ON v1.matricula = v2.matricula AND v1.fechaActualizacion < v2.fechaActualizacion
+    LEFT JOIN vehiculos v2 ON v1.matricula = v2.matricula AND v1.kilometros < v2.kilometros
     WHERE v2.id IS NULL
   `, (error, resultados) => {
     if (error) reject(error);

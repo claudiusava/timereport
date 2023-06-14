@@ -177,14 +177,14 @@
           const select = document.getElementById('selector');
           const selectedOption = select.options[select.selectedIndex];
           const kilometros = parseInt(selectedOption.getAttribute('data-kilometros')) || 0;
-          document.getElementsByName('kilometros')[0].min = kilometros;
+          document.getElementsByName('kilometros')[0].min = kilometros + 1;
           document.getElementsByName('kilometros')[0].value = kilometros;
         });
         const inputKilometros = document.getElementsByName('kilometros')[0];
         const valorInicial = parseInt(inputKilometros.getAttribute('min')) || 0;
         inputKilometros.addEventListener('input', function() {
           const valorActual = parseInt(inputKilometros.value) || 0;
-          if (valorActual < valorInicial) {
+          if (valorActual <= valorInicial) {
             inputKilometros.value = valorInicial;
           }
         });
@@ -243,6 +243,7 @@
           [ '10', '25', '50', '100' , 'todos']
         ],
         dom: "Bflrtip",
+        order: [[3, 'des']],
         buttons:{
           dom: {
             button:{
