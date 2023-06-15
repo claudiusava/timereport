@@ -16,6 +16,7 @@
               <strong>Registra los kilómetros de tu furgoneta.</strong>
             </div>
             <div class="card-body">
+              {{#if user.permisoDeAdministracion}}
               <div class="form-group">
                 <div class="label-container">
                   <span id="labelVehiculoNuevo">Furgoneta nueva.</span>
@@ -26,6 +27,7 @@
                   <span id="labelVehiculoExistente">Furgoneta existente.</span>
                 </div>
               </div>
+              {{/if}}
               <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoExistente">
                 <div class="form-group">
                   <input readonly type="datetime-local" class="form-control" name="fechaActualizacion" placeholder="fechaActualizacion" aria-label="Default select example" required>
@@ -46,6 +48,7 @@
                   <button class="btn btn-success">Guardar</button>
                 </div>
               </form>
+              {{#if user.permisoDeAdministracion}}
               <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoNuevo">
                 <div class="form-group">
                   <input readonly type="datetime-local" class="form-control" name="fechaActualizacion" placeholder="fechaActualizacion" aria-label="Default select example" required>
@@ -61,6 +64,7 @@
                   <button class="btn btn-success" id="guardarVehiculoNuevo">Guardar</button>
                 </div>
               </form>
+              {{/if}}
             </div>
           </div>
         </div>
@@ -135,92 +139,93 @@
       }
     </script>
     <script>
-      var selectElement = document.getElementById('selector');
-      var defaultOption = selectElement.querySelector('option[value=""]');
-      selectElement.addEventListener('change', function() {
-        // Verificar si se ha seleccionado una opción distinta a la opción por defecto
-        if (selectElement.value !== '') {
-        // Eliminar la opción por defecto
-        defaultOption.disabled = true;
-        defaultOption.remove();
-        }
-      });
-      var fechaInput = document.querySelector('input[name="fechaActualizacion"]');
-      var fechaActual = new Date();
-      var horas = fechaActual.getHours().toString().padStart(2, '0');
-      var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
-      var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
-        fechaInput.value = fechaHoraActual;
-      var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fechaActualizacion"]');
-        fechaInputNuevo.value = fechaHoraActual;
-      var checkboxVehiculoNuevo = document.getElementById('checkboxVehiculoNuevo');
-      var formVehiculoExistente = document.getElementById('formVehiculoExistente');
-      var formVehiculoNuevo = document.getElementById('formVehiculoNuevo');
-      var labelVehiculoNuevo = document.getElementById('labelVehiculoNuevo');
-      var labelVehiculoExistente = document.getElementById('labelVehiculoExistente');
-        checkboxVehiculoNuevo.addEventListener('change', function() {
-          if (this.checked) {
-            formVehiculoExistente.style.display = 'block';
-            formVehiculoNuevo.style.display = 'none';
-            labelVehiculoNuevo.style.fontWeight = 'normal';
-            labelVehiculoExistente.style.fontWeight = 'bold';
-          } else {
-            formVehiculoExistente.style.display = 'none';
-            formVehiculoNuevo.style.display = 'block';
-            labelVehiculoNuevo.style.fontWeight = 'bold';
-            labelVehiculoExistente.style.fontWeight = 'normal';
-          }
-        });
-        formVehiculoExistente.style.display = 'none';
-        labelVehiculoNuevo.style.fontWeight = 'bold';
-        document.getElementById('selector').addEventListener('change', function() {
-          const select = document.getElementById('selector');
-          const selectedOption = select.options[select.selectedIndex];
-          const kilometros = parseInt(selectedOption.getAttribute('data-kilometros')) || 0;
-          document.getElementsByName('kilometros')[0].min = kilometros + 1;
-          document.getElementsByName('kilometros')[0].value = kilometros;
-        });
-        const inputKilometros = document.getElementsByName('kilometros')[0];
-        const valorInicial = parseInt(inputKilometros.getAttribute('min')) || 0;
-        inputKilometros.addEventListener('input', function() {
-          const valorActual = parseInt(inputKilometros.value) || 0;
-          if (valorActual <= valorInicial) {
-            inputKilometros.value = valorInicial;
-          }
-        });
-        document.getElementById('guardarVehiculoNuevo').addEventListener('click', function(e) {
-          e.preventDefault();
-          const matriculaInput = document.getElementById('matriculaInput');
-          const matricula = matriculaInput.value.trim();
-          const matriculaError = document.getElementById('matriculaError');
-          if (matricula === '') {
-              matriculaError.textContent = 'Debe ingresar una matrícula.';
-              return;
-          }
-          matriculaError.textContent = '';
-          // Verificar si la matrícula ya existe en la base de datos
-          const select = document.getElementById('selector');
-          const options = select.options;
-          for (let i = 0; i < options.length; i++) {
-              if (options[i].value === matricula) {
-                  matriculaError.textContent = 'Ya existe una furgoneta con esa matrícula.';
-                  return;
-              }
-          }
-          // Si la matrícula no existe, enviar el formulario
-          formVehiculoNuevo.submit();
-        });
-        document.getElementById('selector').addEventListener('change', function() {
-          const select = document.getElementById('selector');
-          const selectedOption = select.options[select.selectedIndex];
-          const matricula = selectedOption.value;
-          document.getElementById('matriculaInputExistente').value = matricula;
-        });
-    </script>
-
-    <!--JQuery y Bootstrap-->
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+  var selectElement = document.getElementById('selector');
+  var defaultOption = selectElement.querySelector('option[value=""]');
+  selectElement.addEventListener('change', function() {
+    if (selectElement.value !== '') {
+      defaultOption.disabled = true;
+      defaultOption.remove();
+    }
+    
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const matricula = selectedOption.value;
+    document.getElementById('matriculaInputExistente').value = matricula;
+    
+    const kilometros = parseInt(selectedOption.getAttribute('data-kilometros')) || 0;
+    document.getElementsByName('kilometros')[0].min = kilometros + 1;
+    document.getElementsByName('kilometros')[0].value = kilometros;
+  });
+  
+  var fechaInput = document.querySelector('input[name="fechaActualizacion"]');
+  var fechaActual = new Date();
+  var horas = fechaActual.getHours().toString().padStart(2, '0');
+  var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
+  var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
+  fechaInput.value = fechaHoraActual;
+  
+  var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fechaActualizacion"]');
+  fechaInputNuevo.value = fechaHoraActual;
+  
+  var checkboxVehiculoNuevo = document.getElementById('checkboxVehiculoNuevo');
+  var formVehiculoExistente = document.getElementById('formVehiculoExistente');
+  var formVehiculoNuevo = document.getElementById('formVehiculoNuevo');
+  var labelVehiculoNuevo = document.getElementById('labelVehiculoNuevo');
+  var labelVehiculoExistente = document.getElementById('labelVehiculoExistente');
+  
+  checkboxVehiculoNuevo.addEventListener('change', function() {
+    if (this.checked) {
+      formVehiculoExistente.style.display = 'block';
+      formVehiculoNuevo.style.display = 'none';
+      labelVehiculoNuevo.style.fontWeight = 'normal';
+      labelVehiculoExistente.style.fontWeight = 'bold';
+    } else {
+      formVehiculoExistente.style.display = 'none';
+      formVehiculoNuevo.style.display = 'block';
+      labelVehiculoNuevo.style.fontWeight = 'bold';
+      labelVehiculoExistente.style.fontWeight = 'normal';
+    }
+  });
+  
+  formVehiculoExistente.style.display = 'none';
+  labelVehiculoNuevo.style.fontWeight = 'bold';
+  
+  var inputKilometros = document.getElementsByName('kilometros')[0];
+  var valorInicial = parseInt(inputKilometros.getAttribute('min')) || 0;
+  
+  inputKilometros.addEventListener('input', function() {
+    var valorActual = parseInt(inputKilometros.value) || 0;
+    if (valorActual <= valorInicial) {
+      inputKilometros.value = valorInicial;
+    }
+  });
+  
+  document.getElementById('guardarVehiculoNuevo').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    var matriculaInput = document.getElementById('matriculaInput');
+    var matricula = matriculaInput.value.trim();
+    var matriculaError = document.getElementById('matriculaError');
+    
+    if (matricula === '') {
+      matriculaError.textContent = 'Debe ingresar una matrícula.';
+      return;
+    }
+    
+    matriculaError.textContent = '';
+    
+    var select = document.getElementById('selector');
+    var options = select.options;
+    
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].value === matricula) {
+        matriculaError.textContent = 'Ya existe una furgoneta con esa matrícula.';
+        return;
+      }
+    }
+    
+    formVehiculoNuevo.submit();
+  });
+</script>
 
     <!--Datatables con Bootstrap-->
     <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
