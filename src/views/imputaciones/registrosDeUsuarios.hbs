@@ -6,10 +6,16 @@
 
 </head>
 <body>               
-      <div class="container"> 
-              <div class="container p-4">  
-                <div class="table-responsive">
-      <table id="tabla" class="table table-bordered table-striped text-center mt-4">
+    <div class="container"> 
+        <div class="container p-4">  
+            <div class="table-responsive">
+                <select class="form-control">
+                    <option id="option">Horas de trabajo</option>
+                    <option id="option1">Kilometraje de furgonetas</option>
+                    <option id="option2">Controles de calidad de agua</option>
+                </select>
+                <br>
+                <table id="tabla" class="table table-bordered table-striped text-center mt-4">
         <thead>
           <tr class="text-white" style="background-color:#6200ee;">
             <th scope="col">USUARIO</th>
@@ -40,10 +46,73 @@
                     </tr>
                     {{/each}}
                 </tbody>
-      </table>
-      </div>
-
-      </div>
+                </table>
+                <table id="tabla1" class="table table-bordered table-striped text-center mt-4">
+        <thead>
+          <tr class="text-white" style="background-color:#6200ee;">
+            <th scope="col">USUARIO</th>
+            <th scope="col">FECHA</th>
+            <th scope="col">COMUNIDAD</th>
+            <th scope="col">HORAS TRABAJADAS</th> 
+            <th scope="col">HORAS TRABAJADAS (formato numérico)</th>           
+          </tr>
+        </thead>
+        <tbody >
+                    {{#each results}}
+                    <tr>
+                        <td>
+                            <p class="mb-1">{{fullname}}</p>
+                        </td>
+                        <td>
+                            <p class="mb-1">{{fechaFormateada}}</p>
+                        </td>
+                        <td>
+                            <p class="mb-1">{{comunidad}}</p>
+                        </td>
+                        <td>
+                            <p class="mb-1">{{horas}}:{{minutos}}</p>
+                        </td>
+                        <td>
+                            <p class="mb-1">{{horas}}.{{minutosFormateados}}</p>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+                </table>
+                <table id="tabla2" class="table table-bordered table-striped text-center mt-4">
+        <thead>
+          <tr class="text-white" style="background-color:#6200ee;">
+            <th scope="col">USUARIO</th>
+            <th scope="col">FECHA</th>
+            <th scope="col">COMUNIDAD</th>
+            <th scope="col">HORAS TRABAJADAS</th> 
+            <th scope="col">HORAS TRABAJADAS (formato numérico)</th>           
+          </tr>
+        </thead>
+        <tbody >
+                    {{#each results}}
+                    <tr>
+                        <td>
+                            <p class="mb-1">{{fullname}}</p>
+                        </td>
+                        <td>
+                            <p class="mb-1">{{fechaFormateada}}</p>
+                        </td>
+                        <td>
+                            <p class="mb-1">{{comunidad}}</p>
+                        </td>
+                        <td>
+                            <p class="mb-1">{{horas}}:{{minutos}}</p>
+                        </td>
+                        <td>
+                            <p class="mb-1">{{horas}}.{{minutosFormateados}}</p>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+                </table>
+            </div>
+        </div>
 
 <!--JQuery y Bootstrap-->
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
