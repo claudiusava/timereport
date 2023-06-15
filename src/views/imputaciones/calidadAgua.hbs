@@ -2,9 +2,10 @@
 
 <head>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
-  <link rel="stylesheet" type="text/css"
-    href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css" />
-
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 
 <body>
@@ -18,15 +19,20 @@
             </strong>
           </div>
           <div class="card-body">
-            <form action="/imputaciones/calidadAgua" method="POST">
+            <form action="/imputaciones/calidadAgua/add" method="POST">
                 <div class="form-group">
-                    <input readonly type="datetime-local" class="form-control" name="fechaActualizacion" placeholder="fechaActualizacion" aria-label="Default select example" required>
+                    <input readonly type="datetime-local" class="form-control" name="fecha" placeholder="fechaActualizacion" aria-label="Default select example" required>
                 </div>
                 <div class="form-group">
-                  <input type="text" name="nombre" placeholder="comunidad" class="form-control" autofocus required />
+                  <select name="piscina" class="form-control" id="selector" required>
+                    <option></option>
+                    {{#each comunidades}}
+                    <option value="{{nombre}}">{{nombre}}</option>
+                    {{/each}}
+                  </select>
                 </div>
                 <div class="form-group">
-                  <select class="form-control" id="nivelPH">
+                  <select class="form-control" id="nivelPH" name="nivelPh">
                     <option value="" disabled selected>Nivel de PH</option>
                     <option style="background-color: #FFB366;">6.8</option>
                     <option style="background-color: #FFA74D;">7.0</option>
@@ -37,7 +43,7 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <select class="form-control" id="nivelCloro">
+                  <select class="form-control" id="nivelCloro" name="nivelCloro">
                     <option value="" disabled selected>Nivel de Cloro</option>
                     <option style="background-color: #FDEFF3;">0.5</option>
                     <option style="background-color: #FBC8D9;">1.0</option>
@@ -68,19 +74,27 @@
               <table id="tabla" class="table table-bordered table-striped text-center mt-4">
                 <thead>
                   <tr class="text-white" style="background-color:#6200ee;">
-                    <th scope="col">COMUNIDAD</th>
-                    <th scope="col">CÓDIGO</th>
+                    <th scope="col">FECHA Y HORA</th>
+                    <th scope="col">PISCINA</th>
+                    <th scope="col">NIVEL DE PH</th>
+                    <th scope="col">NIVEL DE CLORO</th>
                     <th scope="col">Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {{#each results}}
+                  {{#each controlagua}}
                   <tr>
                     <td>
-                      <p class="mb-1">{{nombre}}</p>
+                      <p class="mb-1">{{fecha}}</p>
                     </td>
                     <td>
-                      <p class="mb-1">{{codigo}}</p>
+                      <p class="mb-1">{{piscina}}</p>
+                    </td>
+                    <td>
+                      <p class="mb-1">{{nivelPh}}</p>
+                    </td>
+                    <td>
+                      <p class="mb-1">{{nivelCloro}}</p>
                     </td>
                     <td>
                       <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
@@ -112,29 +126,43 @@
     this.style.backgroundColor = colorCloro;
     });
 
-    var fechaInput = document.querySelector('input[name="fechaActualizacion"]');
+    var fechaInput = document.querySelector('input[name="fecha"]');
       var fechaActual = new Date();
       var horas = fechaActual.getHours().toString().padStart(2, '0');
       var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
       var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
         fechaInput.value = fechaHoraActual;
-      var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fechaActualizacion"]');
+      var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fecha"]');
         fechaInputNuevo.value = fechaHoraActual;
   </script>
 
 
-  <!--JQuery y Bootstrap-->
-  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-    crossorigin="anonymous"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.all.min.js"></script>
 
   <script>
+    var initSelector = jQuery.noConflict();
+        initSelector(document).ready(function() {
+            if(initSelector("#selector").length > 0){
+                initSelector('#selector').select2({
+                    placeholder: 'Selecciona una comunidad',
+                    allowClear: true,
+                    language: {
+                        noResults: function(){
+                            return "No hay resultados";
+                        },
+                        searching: function(){
+                            return "Buscando...";
+                        }
+                    }
+                });
+                }else{
+                    console.log("No existe selector");
+                }
+            });
+
     function confirmar(id) {
       Swal.fire({
-        title: '¿Seguro que quieres eliminar esta comunidad?',
+        title: '¿Seguro que quieres eliminar este registro?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Eliminar',
@@ -142,17 +170,11 @@
         focusConfirm: 'true'
       }).then((result) => {
         if (result.isConfirmed) {
-          window.location = '/imputaciones/administrarComunidades/delete/' + id;
+          window.location = '/imputaciones/calidadAgua/delete/' + id;
         }
       })
     }
   </script>
-
-  <!--JQuery y Bootstrap-->
-  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-    crossorigin="anonymous"></script>
 
   <!--Datatables con Bootstrap-->
   <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
@@ -170,11 +192,108 @@
     src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.templates.min.js"></script>
 
 
-  <script>
-    var initSelector = jQuery.noConflict();
-    initSelector('#tabla').DataTable({
-      dom: "frti",
-      'language': {
+  <script> 
+      var initSelector = jQuery.noConflict();
+      initSelector('#tabla').DataTable({
+        lengthMenu: [
+          [ 10, 25, 50, 100, -1],
+          [ '10', '25', '50', '100' , 'todos']
+        ],
+        dom: "Bflrtip",
+        order: [[3, 'des']],
+        buttons:{
+          dom: {
+            button:{
+              className: 'btn'
+            }
+          },
+          buttons:[
+            {
+              extend: "excel",
+              text: 'Exportar a excel',
+              className: 'btn btn-success',
+              init: function(api, node, config) {
+                initSelector(node).css('float', 'left');
+              },
+              margin: '100px',
+              excelStyles: [
+                {
+                  cells: "sh",
+                  style: {
+                    font: {
+                      name: "Arial",
+                      size: "12",
+                      color: "FFFFFF",
+                      b: true
+                    },
+                    fill: {
+                      pattern: {
+                        color: "6200ee",
+                      }
+                    },
+                    border: {            
+                      top: "thin",
+                      bottom: "thin",
+                      left: "thin",
+                      right: "thin"
+                    },
+                    alignment:{
+                      vertical: "center",
+                      horizontal: "center"
+                    }
+                  },
+                },
+                {
+                  cells: "s",
+                  style:{
+                    fill:{
+                      pattern:{
+                        color:"CACACA"
+                      }
+                    },
+                    border: {            
+                      top: "thin",
+                      bottom: "thin",
+                      left: "thin",
+                      right: "thin"
+                    }
+                  }
+                },
+                {
+                  cells: "sB",
+                  style:{
+                    alignment:{
+                      vertical: "center",
+                      horizontal: "center"
+                    }
+                  }
+                },
+                {
+                  cells: "sD",
+                  style:{
+                    alignment:{
+                      vertical: "center",
+                      horizontal: "center",    
+                    },
+                    fill:{
+                      width: "50"
+                    }
+                  }
+                },
+                {
+                  cells: "sE",
+                  style:{
+                    alignment:{
+                      vertical: "center",
+                      horizontal: "center"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        'language': {
         "processing": "Procesando...",
         "lengthMenu": "Mostrar _MENU_ registros",
         "zeroRecords": "No se encontraron resultados",
@@ -185,240 +304,239 @@
         "infoThousands": ",",
         "loadingRecords": "Cargando...",
         "paginate": {
-          "first": "Primero",
-          "last": "Último",
-          "next": "Siguiente",
-          "previous": "Anterior"
+            "first": "Primero",
+            "last": "Último",
+            "next": "Siguiente",
+            "previous": "Anterior"
         },
         "aria": {
-          "sortAscending": ": Activar para ordenar la columna de manera ascendente",
-          "sortDescending": ": Activar para ordenar la columna de manera descendente"
+            "sortAscending": ": Activar para ordenar la columna de manera ascendente",
+            "sortDescending": ": Activar para ordenar la columna de manera descendente"
         },
         "buttons": {
-          "copy": "Copiar",
-          "colvis": "Visibilidad",
-          "collection": "Colección",
-          "colvisRestore": "Restaurar visibilidad",
-          "copyKeys": "Presione ctrl o u2318 + C para copiar los datos de la tabla al portapapeles del sistema. <br \/> <br \/> Para cancelar, haga clic en este mensaje o presione escape.",
-          "copySuccess": {
-            "1": "Copiada 1 fila al portapapeles",
-            "_": "Copiadas %ds fila al portapapeles"
-          },
-          "copyTitle": "Copiar al portapapeles",
-          "csv": "CSV",
-          "excel": "Excel",
-          "pageLength": {
-            "-1": "Mostrar todas las filas",
-            "_": "Mostrar %d filas"
-          },
-          "pdf": "PDF",
-          "print": "Imprimir",
-          "renameState": "Cambiar nombre",
-          "updateState": "Actualizar",
-          "createState": "Crear Estado",
-          "removeAllStates": "Remover Estados",
-          "removeState": "Remover",
-          "savedStates": "Estados Guardados",
-          "stateRestore": "Estado %d"
+            "copy": "Copiar",
+            "colvis": "Visibilidad",
+            "collection": "Colección",
+            "colvisRestore": "Restaurar visibilidad",
+            "copyKeys": "Presione ctrl o u2318 + C para copiar los datos de la tabla al portapapeles del sistema. <br \/> <br \/> Para cancelar, haga clic en este mensaje o presione escape.",
+            "copySuccess": {
+                "1": "Copiada 1 fila al portapapeles",
+                "_": "Copiadas %ds fila al portapapeles"
+            },
+            "copyTitle": "Copiar al portapapeles",
+            "csv": "CSV",
+            "excel": "Excel",
+            "pageLength": {
+                "-1": "Mostrar todas las filas",
+                "_": "Mostrar %d filas"
+            },
+            "pdf": "PDF",
+            "print": "Imprimir",
+            "renameState": "Cambiar nombre",
+            "updateState": "Actualizar",
+            "createState": "Crear Estado",
+            "removeAllStates": "Remover Estados",
+            "removeState": "Remover",
+            "savedStates": "Estados Guardados",
+            "stateRestore": "Estado %d"
         },
         "autoFill": {
-          "cancel": "Cancelar",
-          "fill": "Rellene todas las celdas con <i>%d<\/i>",
-          "fillHorizontal": "Rellenar celdas horizontalmente",
-          "fillVertical": "Rellenar celdas verticalmentemente"
+            "cancel": "Cancelar",
+            "fill": "Rellene todas las celdas con <i>%d<\/i>",
+            "fillHorizontal": "Rellenar celdas horizontalmente",
+            "fillVertical": "Rellenar celdas verticalmentemente"
         },
         "decimal": ",",
         "searchBuilder": {
-          "add": "Añadir condición",
-          "button": {
-            "0": "Constructor de búsqueda",
-            "_": "Constructor de búsqueda (%d)"
-          },
-          "clearAll": "Borrar todo",
-          "condition": "Condición",
-          "conditions": {
-            "date": {
-              "after": "Despues",
-              "before": "Antes",
-              "between": "Entre",
-              "empty": "Vacío",
-              "equals": "Igual a",
-              "notBetween": "No entre",
-              "notEmpty": "No Vacio",
-              "not": "Diferente de"
+            "add": "Añadir condición",
+            "button": {
+                "0": "Constructor de búsqueda",
+                "_": "Constructor de búsqueda (%d)"
             },
-            "number": {
-              "between": "Entre",
-              "empty": "Vacio",
-              "equals": "Igual a",
-              "gt": "Mayor a",
-              "gte": "Mayor o igual a",
-              "lt": "Menor que",
-              "lte": "Menor o igual que",
-              "notBetween": "No entre",
-              "notEmpty": "No vacío",
-              "not": "Diferente de"
+            "clearAll": "Borrar todo",
+            "condition": "Condición",
+            "conditions": {
+                "date": {
+                    "after": "Despues",
+                    "before": "Antes",
+                    "between": "Entre",
+                    "empty": "Vacío",
+                    "equals": "Igual a",
+                    "notBetween": "No entre",
+                    "notEmpty": "No Vacio",
+                    "not": "Diferente de"
+                },
+                "number": {
+                    "between": "Entre",
+                    "empty": "Vacio",
+                    "equals": "Igual a",
+                    "gt": "Mayor a",
+                    "gte": "Mayor o igual a",
+                    "lt": "Menor que",
+                    "lte": "Menor o igual que",
+                    "notBetween": "No entre",
+                    "notEmpty": "No vacío",
+                    "not": "Diferente de"
+                },
+                "string": {
+                    "contains": "Contiene",
+                    "empty": "Vacío",
+                    "endsWith": "Termina en",
+                    "equals": "Igual a",
+                    "notEmpty": "No Vacio",
+                    "startsWith": "Empieza con",
+                    "not": "Diferente de",
+                    "notContains": "No Contiene",
+                    "notStarts": "No empieza con",
+                    "notEnds": "No termina con"
+                },
+                "array": {
+                    "not": "Diferente de",
+                    "equals": "Igual",
+                    "empty": "Vacío",
+                    "contains": "Contiene",
+                    "notEmpty": "No Vacío",
+                    "without": "Sin"
+                }
             },
-            "string": {
-              "contains": "Contiene",
-              "empty": "Vacío",
-              "endsWith": "Termina en",
-              "equals": "Igual a",
-              "notEmpty": "No Vacio",
-              "startsWith": "Empieza con",
-              "not": "Diferente de",
-              "notContains": "No Contiene",
-              "notStarts": "No empieza con",
-              "notEnds": "No termina con"
+            "data": "Data",
+            "deleteTitle": "Eliminar regla de filtrado",
+            "leftTitle": "Criterios anulados",
+            "logicAnd": "Y",
+            "logicOr": "O",
+            "rightTitle": "Criterios de sangría",
+            "title": {
+                "0": "Constructor de búsqueda",
+                "_": "Constructor de búsqueda (%d)"
             },
-            "array": {
-              "not": "Diferente de",
-              "equals": "Igual",
-              "empty": "Vacío",
-              "contains": "Contiene",
-              "notEmpty": "No Vacío",
-              "without": "Sin"
-            }
-          },
-          "data": "Data",
-          "deleteTitle": "Eliminar regla de filtrado",
-          "leftTitle": "Criterios anulados",
-          "logicAnd": "Y",
-          "logicOr": "O",
-          "rightTitle": "Criterios de sangría",
-          "title": {
-            "0": "Constructor de búsqueda",
-            "_": "Constructor de búsqueda (%d)"
-          },
-          "value": "Valor"
+            "value": "Valor"
         },
         "searchPanes": {
-          "clearMessage": "Borrar todo",
-          "collapse": {
-            "0": "Paneles de búsqueda",
-            "_": "Paneles de búsqueda (%d)"
-          },
-          "count": "{total}",
-          "countFiltered": "{shown} ({total})",
-          "emptyPanes": "Sin paneles de búsqueda",
-          "loadMessage": "Cargando paneles de búsqueda",
-          "title": "Filtros Activos - %d",
-          "showMessage": "Mostrar Todo",
-          "collapseMessage": "Colapsar Todo"
+            "clearMessage": "Borrar todo",
+            "collapse": {
+                "0": "Paneles de búsqueda",
+                "_": "Paneles de búsqueda (%d)"
+            },
+            "count": "{total}",
+            "countFiltered": "{shown} ({total})",
+            "emptyPanes": "Sin paneles de búsqueda",
+            "loadMessage": "Cargando paneles de búsqueda",
+            "title": "Filtros Activos - %d",
+            "showMessage": "Mostrar Todo",
+            "collapseMessage": "Colapsar Todo"
         },
         "select": {
-          "cells": {
-            "1": "1 celda seleccionada",
-            "_": "%d celdas seleccionadas"
-          },
-          "columns": {
-            "1": "1 columna seleccionada",
-            "_": "%d columnas seleccionadas"
-          },
-          "rows": {
-            "1": "1 fila seleccionada",
-            "_": "%d filas seleccionadas"
-          }
+            "cells": {
+                "1": "1 celda seleccionada",
+                "_": "%d celdas seleccionadas"
+            },
+            "columns": {
+                "1": "1 columna seleccionada",
+                "_": "%d columnas seleccionadas"
+            },
+            "rows": {
+                "1": "1 fila seleccionada",
+                "_": "%d filas seleccionadas"
+            }
         },
         "thousands": ".",
         "datetime": {
-          "previous": "Anterior",
-          "next": "Proximo",
-          "hours": "Horas",
-          "minutes": "Minutos",
-          "seconds": "Segundos",
-          "unknown": "-",
-          "amPm": [
-            "AM",
-            "PM"
-          ],
-          "months": {
-            "0": "Enero",
-            "1": "Febrero",
-            "10": "Noviembre",
-            "11": "Diciembre",
-            "2": "Marzo",
-            "3": "Abril",
-            "4": "Mayo",
-            "5": "Junio",
-            "6": "Julio",
-            "7": "Agosto",
-            "8": "Septiembre",
-            "9": "Octubre"
-          },
-          "weekdays": [
-            "Dom",
-            "Lun",
-            "Mar",
-            "Mie",
-            "Jue",
-            "Vie",
-            "Sab"
-          ]
+            "previous": "Anterior",
+            "next": "Proximo",
+            "hours": "Horas",
+            "minutes": "Minutos",
+            "seconds": "Segundos",
+            "unknown": "-",
+            "amPm": [
+                "AM",
+                "PM"
+            ],
+            "months": {
+                "0": "Enero",
+                "1": "Febrero",
+                "10": "Noviembre",
+                "11": "Diciembre",
+                "2": "Marzo",
+                "3": "Abril",
+                "4": "Mayo",
+                "5": "Junio",
+                "6": "Julio",
+                "7": "Agosto",
+                "8": "Septiembre",
+                "9": "Octubre"
+            },
+            "weekdays": [
+                "Dom",
+                "Lun",
+                "Mar",
+                "Mie",
+                "Jue",
+                "Vie",
+                "Sab"
+            ]
         },
         "editor": {
-          "close": "Cerrar",
-          "create": {
-            "button": "Nuevo",
-            "title": "Crear Nuevo Registro",
-            "submit": "Crear"
-          },
-          "edit": {
-            "button": "Editar",
-            "title": "Editar Registro",
-            "submit": "Actualizar"
-          },
-          "remove": {
-            "button": "Eliminar",
-            "title": "Eliminar Registro",
-            "submit": "Eliminar",
-            "confirm": {
-              "_": "¿Está seguro que desea eliminar %d filas?",
-              "1": "¿Está seguro que desea eliminar 1 fila?"
+            "close": "Cerrar",
+            "create": {
+                "button": "Nuevo",
+                "title": "Crear Nuevo Registro",
+                "submit": "Crear"
+            },
+            "edit": {
+                "button": "Editar",
+                "title": "Editar Registro",
+                "submit": "Actualizar"
+            },
+            "remove": {
+                "button": "Eliminar",
+                "title": "Eliminar Registro",
+                "submit": "Eliminar",
+                "confirm": {
+                    "_": "¿Está seguro que desea eliminar %d filas?",
+                    "1": "¿Está seguro que desea eliminar 1 fila?"
+                }
+            },
+            "error": {
+                "system": "Ha ocurrido un error en el sistema (<a target=\"\\\" rel=\"\\ nofollow\" href=\"\\\">Más información&lt;\\\/a&gt;).<\/a>"
+            },
+            "multi": {
+                "title": "Múltiples Valores",
+                "info": "Los elementos seleccionados contienen diferentes valores para este registro. Para editar y establecer todos los elementos de este registro con el mismo valor, hacer click o tap aquí, de lo contrario conservarán sus valores individuales.",
+                "restore": "Deshacer Cambios",
+                "noMulti": "Este registro puede ser editado individualmente, pero no como parte de un grupo."
             }
-          },
-          "error": {
-            "system": "Ha ocurrido un error en el sistema (<a target=\"\\\" rel=\"\\ nofollow\" href=\"\\\">Más información&lt;\\\/a&gt;).<\/a>"
-          },
-          "multi": {
-            "title": "Múltiples Valores",
-            "info": "Los elementos seleccionados contienen diferentes valores para este registro. Para editar y establecer todos los elementos de este registro con el mismo valor, hacer click o tap aquí, de lo contrario conservarán sus valores individuales.",
-            "restore": "Deshacer Cambios",
-            "noMulti": "Este registro puede ser editado individualmente, pero no como parte de un grupo."
-          }
         },
         "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
         "stateRestore": {
-          "creationModal": {
-            "button": "Crear",
-            "name": "Nombre:",
-            "order": "Clasificación",
-            "paging": "Paginación",
-            "search": "Busqueda",
-            "select": "Seleccionar",
-            "columns": {
-              "search": "Búsqueda de Columna",
-              "visible": "Visibilidad de Columna"
+            "creationModal": {
+                "button": "Crear",
+                "name": "Nombre:",
+                "order": "Clasificación",
+                "paging": "Paginación",
+                "search": "Busqueda",
+                "select": "Seleccionar",
+                "columns": {
+                    "search": "Búsqueda de Columna",
+                    "visible": "Visibilidad de Columna"
+                },
+                "title": "Crear Nuevo Estado",
+                "toggleLabel": "Incluir:"
             },
-            "title": "Crear Nuevo Estado",
-            "toggleLabel": "Incluir:"
-          },
-          "emptyError": "El nombre no puede estar vacio",
-          "removeConfirm": "¿Seguro que quiere eliminar este %s?",
-          "removeError": "Error al eliminar el registro",
-          "removeJoiner": "y",
-          "removeSubmit": "Eliminar",
-          "renameButton": "Cambiar Nombre",
-          "renameLabel": "Nuevo nombre para %s",
-          "duplicateError": "Ya existe un Estado con este nombre.",
-          "emptyStates": "No hay Estados guardados",
-          "removeTitle": "Remover Estado",
-          "renameTitle": "Cambiar Nombre Estado"
+            "emptyError": "El nombre no puede estar vacio",
+            "removeConfirm": "¿Seguro que quiere eliminar este %s?",
+            "removeError": "Error al eliminar el registro",
+            "removeJoiner": "y",
+            "removeSubmit": "Eliminar",
+            "renameButton": "Cambiar Nombre",
+            "renameLabel": "Nuevo nombre para %s",
+            "duplicateError": "Ya existe un Estado con este nombre.",
+            "emptyStates": "No hay Estados guardados",
+            "removeTitle": "Remover Estado",
+            "renameTitle": "Cambiar Nombre Estado"
         }
-      }
-    });
-
-  </script>
+        } 
+      });
+    </script>
 
 </body>
 
