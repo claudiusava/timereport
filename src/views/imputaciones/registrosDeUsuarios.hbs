@@ -242,37 +242,60 @@
                 }
             };
 
-            var initSelector = jQuery.noConflict();
-            
-            document.addEventListener("DOMContentLoaded", function () {
-                // Oculta todas las tablas excepto la primera
-                var tablas = document.getElementsByTagName("table");
-                for (var i = 1; i < tablas.length; i++) {
-                    tablas[i].style.display = "none";
+            var tableConfigurations = {
+                tabla1: {
+                  configId: 'tabla',
+                  display: true
+                },
+                tabla2: {
+                  configId: 'tabla1',
+                  display: false
+                },
+                tabla3: {
+                  configId: 'tabla2',
+                  display: false
                 }
-                $(document).ready(function() {
-                    initSelector('#tabla').DataTable(configTables);
+            };
+             var currentTable;
+
+            document.addEventListener("DOMContentLoaded", function () {
+                // Inicializa DataTables en todas las tablas
+                var tablas = document.getElementsByTagName("table");
+                for (var i = 0; i < tablas.length; i++) {
+                    initSelector(tablas[i]).DataTable(configTables);
+                }
+            
+                for (var tableName in tableConfigurations) {
+                    var config = tableConfigurations[tableName];
+                    var configElement = document.getElementById(config.configId);
+                    if (config.display) {
+                        configElement.style.display = "block";
+                        currentTable = '#' + tableName;
+                    } else {
+                        configElement.style.display = "none";
+                    }
+                    }
                 });
-            });
-
+            
             function mostrarTabla() {
-                initSelector('#tabla,#tabla1,#tabla2').DataTable().destroy();
-
                 var selector = document.getElementById("tablaSelector");
                 var tablaSeleccionada = selector.value;
-
+            
                 // Oculta todas las tablas
                 var tablas = document.getElementsByTagName("table");
                 for (var i = 0; i < tablas.length; i++) {
                     tablas[i].style.display = "none";
                 }
-
+            
                 // Muestra la tabla seleccionada
                 var tablaMostrar = document.getElementById(tablaSeleccionada);
                 tablaMostrar.style.display = "block";
-                
-                initSelector('#' + tablaSeleccionada).DataTable(configTables);
+            
+                currentTable = '#' + tablaSeleccionada;
             }
+
+            var initSelector = jQuery.noConflict();
+
         </script>
 </body>
 
