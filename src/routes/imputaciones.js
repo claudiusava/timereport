@@ -40,8 +40,6 @@ router.get("/add", isLoggedIn, async (req, res) => {
       res.redirect("/imputaciones/add");
     }
 });
-  
-  
 
 router.post("/add", isLoggedIn, async (req, res) => {
     const { fecha, comunidad, horas, minutos } = req.body;
