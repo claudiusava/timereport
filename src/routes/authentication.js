@@ -5,33 +5,57 @@ const{isLoggedIn} = require('../lib/auth');
 const{isNotLoggedIn} = require('../lib/auth');
 const pool = require('../database');
 
-router.get('/signup', isLoggedIn, (req, res) => {
-    const comunidades = pool.query(`SELECT id, fullname, username, 
-    CASE permisoDeAdministracion
-      WHEN 1 THEN 'Si'
-      WHEN 0 THEN 'No'
-    END AS permisoDeAdministracion, 
-    CASE COALESCE(maquinista, 0)
-      WHEN 1 THEN 'Si'
-      ELSE 'No'
-    END AS maquinista, 
-    CASE COALESCE(socorrista, 0)
-      WHEN 1 THEN 'Si'
-      ELSE 'No'
-    END AS socorrista
-    FROM users`, function(error, results){
-        if (error) throw error;
-        console.log(results);
-        res.render('auth/signup', {results});
-    });
-});
+// SELECT
+router.get('/signup', isLoggedIn, async (req, res) => {
+    try {
+      const usuarios = await new Promise((resolve, reject) => {
+        pool.query(`SELECT id, fullname, username, 
+          CASE permisoDeAdministracion
+            WHEN 1 THEN 'Si'
+            WHEN 0 THEN 'No'
+          END AS permisoDeAdministracion, 
+          CASE COALESCE(maquinista, 0)
+            WHEN 1 THEN 'Si'
+            ELSE 'No'
+          END AS maquinista, 
+          CASE COALESCE(socorrista, 0)
+            WHEN 1 THEN 'Si'
+            ELSE 'No'
+          END AS socorrista
+          FROM users`, (error, results) => {
+          if (error) reject(error);
+          resolve(results);
+        });
+      });
+  
+      const vehiculosSelect = await new Promise((resolve, reject) => {
+        pool.query(`
+          SELECT v1.id, v1.matricula, v1.kilometros, DATE_FORMAT(v1.fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada
+          FROM vehiculos v1
+          LEFT JOIN vehiculos v2 ON v1.matricula = v2.matricula AND v1.kilometros < v2.kilometros
+          WHERE v2.id IS NULL
+        `, (error, resultados) => {
+          if (error) reject(error);
+          resolve(resultados);
+        });
+      });
+  
+      res.render('auth/signup', { usuarios, vehiculosSelect });
+    } catch (error) {
+      console.error(error);
+      // Manejar el error de alguna manera adecuada para tu aplicación
+      res.status(500).send('Error en la consulta');
+    }
+  });
+  
 
+// DELETE
 router.get('/auth/signup/delete/:id', (req, res)=>{
     const id = req.params.id;
     pool.query('DELETE FROM users WHERE id = ?',[id], (error)=>{
         if (error) throw error;
 
-        req.flash('success', 'Comunidad eliminada correctamente!');
+        req.flash('success', 'Usuario eliminado correctamente!');
         res.redirect('/signup');
     })
 })

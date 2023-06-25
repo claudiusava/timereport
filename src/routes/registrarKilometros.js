@@ -5,6 +5,7 @@ const pool = require('../database');
 
 const { isLoggedIn } = require('../lib/auth');
 
+// SELECT
 router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
   try {
     let vehiculos = [];
@@ -42,6 +43,7 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
   }
 });
 
+// INSERT
 router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
   try {
     const { matricula, kilometros, fechaActualizacion } = req.body;
@@ -79,7 +81,7 @@ router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
   }
 });
 
-
+// DELETE
 router.get('/registrarKilometros/delete/:id', (req, res) => {
   const id = req.params.id;
   pool.query('DELETE FROM vehiculos WHERE id = ?', [id], (error) => {
