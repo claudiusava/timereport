@@ -5,13 +5,14 @@ const pool = require('../database');
 
 const { isLoggedIn } = require('../lib/auth');
 
+// SELECT
 router.get('/calidadAgua', isLoggedIn, (req, res) => {
     // Consulta para recuperar los registros de la tabla 'comunidades'
     pool.query('SELECT nombre FROM comunidades', function(error, comunidadesResults) {
       if (error) throw error;
   
       // Consulta para recuperar los registros de la tabla 'controlagua' con todos los campos
-      pool.query('SELECT * FROM controlagua', function(error, controlaguaResults) {
+      pool.query('SELECT * FROM controlagua WHERE user_id = ? ORDER BY fecha DESC', [req.user.id], function(error, controlaguaResults) {
         if (error) throw error;
   
         res.render('imputaciones/calidadAgua', { 
@@ -22,15 +23,17 @@ router.get('/calidadAgua', isLoggedIn, (req, res) => {
     });
   });
   
-
+// INSERT
 router.post("/calidadAgua/add", isLoggedIn, async (req, res) => {
-    const { fecha, piscina, nivelPh, nivelCloro } = req.body;
+    const { fecha, piscina, nivelPh, nivelCloro, numeroBanistas } = req.body;
 
     const newWaterControl = {
         fecha,
         piscina,
         nivelPh,
-        nivelCloro
+        nivelCloro,
+        numeroBanistas,
+        user_id: req.user.id,
     };
 
     try {
@@ -43,6 +46,7 @@ router.post("/calidadAgua/add", isLoggedIn, async (req, res) => {
     }
 });
 
+// DELETE
 router.get('/calidadAgua/delete/:id', (req, res) => {
     const id = req.params.id;
     pool.query('DELETE FROM controlagua WHERE id = ?', [id], (error) => {
