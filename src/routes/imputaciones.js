@@ -3,6 +3,7 @@ const router = express.Router();
 const { isLoggedIn } = require('../lib/auth');
 const pool = require('../database');
 
+// SELECT
 router.get("/add", isLoggedIn, async (req, res) => {
     try {
       let comunidades = [];
@@ -41,6 +42,7 @@ router.get("/add", isLoggedIn, async (req, res) => {
     }
 });
 
+// INSERT
 router.post("/add", isLoggedIn, async (req, res) => {
     const { fecha, comunidad, horas, minutos } = req.body;
   
@@ -63,6 +65,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
     }
   });  
 
+// DELETE
 router.get('/delete/:id', isLoggedIn, async (req, res) => {
     const { id } = req.params;
     try {
