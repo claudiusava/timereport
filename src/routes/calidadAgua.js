@@ -12,7 +12,14 @@ router.get('/calidadAgua', isLoggedIn, (req, res) => {
       if (error) throw error;
   
       // Consulta para recuperar los registros de la tabla 'controlagua' con todos los campos
-      pool.query('SELECT * FROM controlagua WHERE user_id = ? ORDER BY fecha DESC', [req.user.id], function(error, controlaguaResults) {
+      pool.query(`SELECT DATE_FORMAT(fecha, '%d/%m/%Y %H:%i') AS fechaFormateada,
+      piscina, 
+      nivelPh,
+      nivelCloro,
+      numeroBanistas,
+      id
+      FROM controlagua 
+      ORDER BY fechaFormateada DESC`, [req.user.id], function(error, controlaguaResults) {
         if (error) throw error;
   
         res.render('imputaciones/calidadAgua', { 

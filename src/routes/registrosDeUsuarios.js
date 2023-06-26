@@ -17,11 +17,12 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
                 minutosFormateados,
                 id,
                 user_id,
-                DATE_FORMAT(createad_at, "%d/%m/%Y %H:%i:%s") AS fechaCreacionFormateada
+                DATE_FORMAT(createad_at, "%d/%m/%Y %H:%i") AS fechaCreacionFormateada,
+                createad_at
             FROM
                 imputaciones
             ORDER BY
-                fechaCreacionFormateada DESC
+                createad_at DESC
             `,
                 (error, imputaciones) => {
                     if (error) reject(error);
@@ -37,11 +38,12 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
                 matricula,
                 kilometros,
                 DATE_FORMAT(fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada,
-                user_id
+                user_id,
+                createad_at
             FROM
                 vehiculos
             ORDER BY
-                fechaActualizacionFormateada DESC
+                createad_at DESC
             `,
                 (error, vehiculos) => {
                     if (error) reject(error);
@@ -52,7 +54,14 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
         let controlagua = [];
         controlagua = await new Promise((resolve, reject) => {
             pool.query(
-                `SELECT * FROM controlagua ORDER BY fecha DESC`,
+                `SELECT DATE_FORMAT(fecha, '%d/%m/%Y %H:%i') AS fechaFormateada,
+                piscina, 
+                nivelPh,
+                nivelCloro,
+                numeroBanistas,
+                id
+                FROM controlagua 
+                ORDER BY fechaFormateada DESC`,
                 (error, controlagua) => {
                     if (error) reject(error);
                     resolve(controlagua);
@@ -66,17 +75,46 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     }
 });
 
-// DELETE
-router.get('/delete/:id', isLoggedIn, async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query('DELETE FROM imputaciones WHERE id = ?', [id]);
-        req.flash('success', 'Registro eliminado correctamente!');
-        res.redirect("imputaciones/registrosDeUsuarios");
-    } catch (error) {
-        req.flash('danger', 'Error al eliminar el registro');
-        res.redirect("imputaciones/registrosDeUsuarios");
-    }
-});
+// DELETE horas
+router.get('/registrosDeUsuarios/deleteHoras/:id', (req, res) => {
+    const id = req.params.id;
+    pool.query('DELETE FROM imputaciones WHERE id = ?', [id], (error) => {
+      if (error) {
+        console.error('Error al eliminar la furgoneta:', error);
+        req.flash('error', 'Ocurrió un error al eliminar la furgoneta.');
+      } else {
+        req.flash('success', 'Furgoneta eliminada correctamente!');
+      }
+      res.redirect('/imputaciones/registrosDeUsuarios');
+    });
+  });
+  
+// DELETE kilometros
+router.get('/registrosDeUsuarios/deleteKm/:id', (req, res) => {
+    const id = req.params.id;
+    pool.query('DELETE FROM vehiculos WHERE id = ?', [id], (error) => {
+      if (error) {
+        console.error('Error al eliminar la furgoneta:', error);
+        req.flash('error', 'Ocurrió un error al eliminar la furgoneta.');
+      } else {
+        req.flash('success', 'Furgoneta eliminada correctamente!');
+      }
+      res.redirect('/imputaciones/registrosDeUsuarios');
+    });
+  });
+
+// DELETE controlAgua
+router.get('/registrosDeUsuarios/deleteControlAgua/:id', (req, res) => {
+    const id = req.params.id;
+    pool.query('DELETE FROM controlagua WHERE id = ?', [id], (error) => {
+      if (error) {
+        console.error('Error al eliminar la furgoneta:', error);
+        req.flash('error', 'Ocurrió un error al eliminar la furgoneta.');
+      } else {
+        req.flash('success', 'Control de calidad de agua eliminado correctamente!');
+      }
+      res.redirect('/imputaciones/registrosDeUsuarios');
+    });
+  });
 
 module.exports = router;

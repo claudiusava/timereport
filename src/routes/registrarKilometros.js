@@ -9,10 +9,10 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
     let vehiculos = [];
     vehiculos = await new Promise((resolve, reject) => {
       pool.query(`
-    SELECT id, matricula, kilometros, DATE_FORMAT(fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada
+    SELECT id, matricula, kilometros, DATE_FORMAT(fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada, createad_at
     FROM vehiculos
     WHERE user_id = ?
-    ORDER BY fechaActualizacionFormateada DESC
+    ORDER BY createad_at DESC
   `, 
   [req.user.id],
   (error, resultados) => {

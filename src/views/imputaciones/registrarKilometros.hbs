@@ -36,7 +36,7 @@
             <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoExistente">
               <div class="form-group">
                 <input readonly type="datetime-local" class="form-control" name="fechaActualizacion"
-                  placeholder="fechaActualizacion" aria-label="Default select example" required>
+                  aria-label="Default select example" required>
               </div>
               <div class="form-group">
                 <select name="vehiculo" class="form-control" id="selector" required>
@@ -59,7 +59,7 @@
             <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoNuevo">
               <div class="form-group">
                 <input readonly type="datetime-local" class="form-control" name="fechaActualizacion"
-                  placeholder="fechaActualizacion" aria-label="Default select example" required>
+                  aria-label="Default select example" required>
               </div>
               <div class="form-group">
                 <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula"
@@ -89,9 +89,9 @@
           style="background-color: rgb(202, 202, 202); border-color: black;">
           <div>
             <div>
+              <p class="mb-1"><b>Fecha: </b>{{fechaActualizacionFormateada}}</p>
               <p class="mb-1"><b>Matricula: </b>{{matricula}}</p>
               <p class="mb-1"><b>Kilometros: </b>{{kilometros}}</p>
-              <p class="mb-1"><b>Fecha: </b>{{fechaActualizacionFormateada}}</p>
             </div>
           </div>
           <div class="w-100 text-right">
@@ -170,7 +170,6 @@
   var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
   var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
   fechaInput.value = fechaHoraActual;
-
   var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fechaActualizacion"]');
   fechaInputNuevo.value = fechaHoraActual;
 

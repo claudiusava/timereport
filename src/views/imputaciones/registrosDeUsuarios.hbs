@@ -63,9 +63,9 @@
                 <table id="tabla1" class="table table-bordered table-striped text-center mt-4">
                     <thead>
                         <tr class="text-white" style="background-color:#6200ee;">
+                            <th scope="col">FECHA</th>
                             <th scope="col">MATRÍCULA</th>
                             <th scope="col">KILÓMETROS</th>
-                            <th scope="col">FECHA</th>
                             <th scope="col">Eliminar</th>
                         </tr>
                     </thead>
@@ -73,17 +73,17 @@
                         {{#each vehiculos}}
                         <tr>
                             <td>
+                                <p class="mb-1">{{fechaActualizacionFormateada}}</p>
+                            </td>
+                            <td>
                                 <p class="mb-1">{{matricula}}</p>
                             </td>
                             <td>
                                 <p class="mb-1">{{kilometros}}</p>
                             </td>
                             <td>
-                                <p class="mb-1">{{fechaActualizacionFormateada}}</p>
-                            </td>
-                            <td>
                                 <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
-                                    onclick="confirmar({{id}})"></a>
+                                    onclick="confirmarBorrarKm({{id}})"></a>
                             </td>
                         </tr>
                         {{/each}}
@@ -93,7 +93,7 @@
                 <table id="tabla2" class="table table-bordered table-striped text-center mt-4">
                     <thead>
                         <tr class="text-white" style="background-color:#6200ee;">
-                            <th scope="col">FECHA Y HORA</th>
+                            <th scope="col">FECHA</th>
                             <th scope="col">PISCINA</th>
                             <th scope="col">NIVEL DE PH</th>
                             <th scope="col">NIVEL DE CLORO</th>
@@ -105,7 +105,7 @@
                         {{#each controlagua}}
                         <tr>
                             <td>
-                                <p class="mb-1">{{fecha}}</p>
+                                <p class="mb-1">{{fechaFormateada}}</p>
                             </td>
                             <td>
                                 <p class="mb-1">{{piscina}}</p>
@@ -121,7 +121,7 @@
                             </td>
                             <td>
                                 <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
-                                    onclick="confirmar({{id}})"></a>
+                                    onclick="confirmarBorrarControlAgua({{id}})"></a>
                             </td>
                         </tr>
                         {{/each}}
@@ -161,7 +161,37 @@
                     focusConfirm: 'true'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location = '/registrosDeUsuarios/delete/' + id;
+                        window.location = '/imputaciones/registrosDeUsuarios/deleteHoras/' + id;
+                    }
+                })
+            }
+
+            function confirmarBorrarKm(id) {
+                Swal.fire({
+                    title: '¿Seguro que quieres eliminar este registro?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Eliminar',
+                    confirmButtonColor: '#d63030',
+                    focusConfirm: 'true'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location = '/imputaciones/registrosDeUsuarios/deleteKm/' + id;
+                    }
+                })
+            }
+
+            function confirmarBorrarControlAgua(id) {
+                Swal.fire({
+                    title: '¿Seguro que quieres eliminar este registro?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Eliminar',
+                    confirmButtonColor: '#d63030',
+                    focusConfirm: 'true'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location = '/imputaciones/registrosDeUsuarios/deleteControlAgua/' + id;
                     }
                 })
             }
@@ -172,6 +202,7 @@
                     ['10', '25', '50', '100', 'todos']
                 ],
                 dom: "Bflrtip",
+                order: [],
                 buttons: {
                     dom: {
                         button: {

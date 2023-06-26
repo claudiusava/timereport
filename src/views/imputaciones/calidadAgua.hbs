@@ -22,7 +22,7 @@
             </strong>
           </div>
           <div class="card-body">
-            <form action="/imputaciones/calidadAgua/add" method="POST">
+            <form action="/imputaciones/calidadAgua/add" method="POST" id="formNuevoControlAgua">
               <div class="form-group">
                 <input readonly type="datetime-local" class="form-control" name="fecha" placeholder="fechaActualizacion"
                   aria-label="Default select example" required>
@@ -79,7 +79,7 @@
           style="background-color: rgb(202, 202, 202); border-color: black;">
           <div>
             <div>
-              <p class="mb-1"><b>Fecha: </b>{{fecha}}</p>
+              <p class="mb-1"><b>Fecha: </b>{{fechaFormateada}}</p>
               <p class="mb-1"><b>Piscina: </b>{{piscina}}</p>
               <p class="mb-1"><b>Nivel de PH: </b>{{nivelPh}}</p>
               <p class="mb-1"><b>Nievel de Cloro: </b>{{nivelCloro}}</p>
@@ -123,7 +123,7 @@
     var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
     var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
     fechaInput.value = fechaHoraActual;
-    var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fecha"]');
+    var fechaInputNuevo = document.querySelector('#formNuevoControlAgua input[name="fecha"]');
     fechaInputNuevo.value = fechaHoraActual;
   </script>
 
