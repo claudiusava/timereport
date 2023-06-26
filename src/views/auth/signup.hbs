@@ -177,7 +177,104 @@
 
     var initSelector = jQuery.noConflict();
     initSelector('#tabla').DataTable({
-      dom: "frti",
+      lengthMenu: [
+        [10, 25, 50, 100, -1],
+        ['10', '25', '50', '100', 'todos']
+      ],
+      dom: "Bflrtip",
+      order: [[3, 'des']],
+      buttons: {
+        dom: {
+          button: {
+            className: 'btn'
+          }
+        },
+        buttons: [
+          {
+            extend: "excel",
+            text: 'Exportar a excel',
+            className: 'btn btn-success',
+            init: function (api, node, config) {
+              initSelector(node).css('float', 'left');
+            },
+            margin: '100px',
+            excelStyles: [
+              {
+                cells: "sh",
+                style: {
+                  font: {
+                    name: "Arial",
+                    size: "12",
+                    color: "FFFFFF",
+                    b: true
+                  },
+                  fill: {
+                    pattern: {
+                      color: "6200ee",
+                    }
+                  },
+                  border: {
+                    top: "thin",
+                    bottom: "thin",
+                    left: "thin",
+                    right: "thin"
+                  },
+                  alignment: {
+                    vertical: "center",
+                    horizontal: "center"
+                  }
+                },
+              },
+              {
+                cells: "s",
+                style: {
+                  fill: {
+                    pattern: {
+                      color: "CACACA"
+                    }
+                  },
+                  border: {
+                    top: "thin",
+                    bottom: "thin",
+                    left: "thin",
+                    right: "thin"
+                  }
+                }
+              },
+              {
+                cells: "sB",
+                style: {
+                  alignment: {
+                    vertical: "center",
+                    horizontal: "center"
+                  }
+                }
+              },
+              {
+                cells: "sD",
+                style: {
+                  alignment: {
+                    vertical: "center",
+                    horizontal: "center",
+                  },
+                  fill: {
+                    width: "50"
+                  }
+                }
+              },
+              {
+                cells: "sE",
+                style: {
+                  alignment: {
+                    vertical: "center",
+                    horizontal: "center"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
       'language': {
         "processing": "Procesando...",
         "lengthMenu": "Mostrar _MENU_ registros",
