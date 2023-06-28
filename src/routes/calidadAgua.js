@@ -19,6 +19,7 @@ router.get('/calidadAgua', isLoggedIn, (req, res) => {
       numeroBanistas,
       id
       FROM controlagua 
+      WHERE user_id = ?
       ORDER BY fechaFormateada DESC`, [req.user.id], function(error, controlaguaResults) {
         if (error) throw error;
   
