@@ -221,6 +221,9 @@
                                 initSelector(node).css('float', 'left');
                             },
                             margin: '100px',
+                            exportOptions: {
+                                columns: ":not(:last-child)" // Excluye la última columna
+                            },
                             excelStyles: [
                                 {
                                     cells: "sh",
