@@ -323,6 +323,7 @@
                 var tablas = document.getElementsByTagName("table");
                 for (var i = 0; i < tablas.length; i++) {
                     initSelector(tablas[i]).DataTable(configTables);
+                }
 
                 for (var tableName in tableConfigurations) {
                     var config = tableConfigurations[tableName];
