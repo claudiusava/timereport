@@ -50,15 +50,20 @@ router.get('/signup', isLoggedIn, async (req, res) => {
   
 
 // DELETE
-router.get('/auth/signup/delete/:id', (req, res)=>{
-    const id = req.params.id;
-    pool.query('DELETE FROM users WHERE id = ?',[id], (error)=>{
-        if (error) throw error;
-
-        req.flash('success', 'Usuario eliminado correctamente!');
-        res.redirect('/signup');
-    })
-})
+router.get('/auth/signup/delete/:id', isLoggedIn, async (req, res)=>{
+  const id = req.params.id;
+  const id_logado = req.user.id;
+  if (id === id_logado) {
+      req.flash('danger', '¡No te puedes eliminar a ti mismo!');
+      res.redirect('/signup');
+  } else {
+      await pool.query('DELETE FROM users WHERE id = ?', [id], (error) => {
+          if (error) throw error;
+          req.flash('success', 'Usuario eliminado correctamente!');
+          res.redirect('/signup');
+      });
+  }
+});
 
 router.post('/signup', passport.authenticate('local.signup', {
     successRedirect: '/signup',

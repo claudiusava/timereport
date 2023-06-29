@@ -28,14 +28,13 @@
                             <th scope="col">HORAS TRABAJADAS</th>
                             <th scope="col">HORAS TRABAJADAS (formato numérico)</th>
                             <th scope="col">Eliminar</th>
-                            <th scope="col">Columna fantasma</th>
                         </tr>
                     </thead>
                     <tbody>
                         {{#each imputaciones}}
                         <tr>
                             <td>
-                                <p class="mb-1">{{user_id}}</p>
+                                <p class="mb-1">{{fullname}}</p>
                             </td>
                             <td>
                                 <p class="mb-1">{{fechaCreacionFormateada}}</p>
@@ -55,9 +54,6 @@
                             <td>
                                 <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
                                     onclick="confirmarBorrarHoras({{id}})"></a>
-                            </td>
-                            <td>
-                                <p class="mb-1">Columna H</p>
                             </td>
                         </tr>
                         {{/each}}

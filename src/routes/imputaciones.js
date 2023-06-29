@@ -11,7 +11,7 @@ router.get("/add", isLoggedIn, async (req, res) => {
   
       try {
         comunidades = await new Promise((resolve, reject) => {
-          pool.query("SELECT nombre FROM comunidades", (error, resultados) => {
+          pool.query(`SELECT nombre FROM comunidades`, (error, resultados) => {
             if (error) reject(error);
             resolve(resultados);
           });
@@ -23,7 +23,16 @@ router.get("/add", isLoggedIn, async (req, res) => {
       try {
         imputaciones = await new Promise((resolve, reject) => {
           pool.query(
-            'SELECT DATE_FORMAT(fecha,"%d/%m/%Y") as fechaFormateada, comunidad, horas, LPAD(minutos, 2, "0") as minutos, id FROM imputaciones WHERE user_id = ? ORDER BY fecha DESC',
+            `SELECT 
+              DATE_FORMAT(fecha, "%d/%m/%Y") AS fechaFormateada, 
+              comunidad, 
+              horas, 
+              LPAD(minutos, 2, "0") AS minutos, 
+              id,
+              createad_at
+            FROM imputaciones
+            WHERE user_id = ?
+            ORDER BY createad_at DESC`,
             [req.user.id],
             (error, results) => {
               if (error) reject(error);
@@ -56,7 +65,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
     };
   
     try {
-      await pool.query("INSERT INTO imputaciones SET ?", [newImputacion]);
+      await pool.query(`INSERT INTO imputaciones SET ?`, [newImputacion]);
       req.flash("success", "Registro guardado!");
       res.redirect("/imputaciones/add");
     } catch (error) {
@@ -69,7 +78,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
 router.get('/delete/:id', isLoggedIn, async (req, res) => {
     const { id } = req.params;
     try {
-      await pool.query('DELETE FROM imputaciones WHERE id = ?', [id]);
+      await pool.query(`DELETE FROM imputaciones WHERE id = ?`, [id]);
       req.flash('success', 'Registro eliminado correctamente!');
       res.redirect('/imputaciones/add');
     } catch (error) {
