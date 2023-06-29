@@ -58,7 +58,8 @@
                 </select>
               </div>
               <div class="form-group">
-                <input name="numeroBanistas" class="form-control" placeholder="Número de bañistas" type="number" required min="0" max="500">
+                <input name="numeroBanistas" class="form-control" placeholder="Número de bañistas" type="number"
+                  required min="0" max="500">
               </div>
               <div class="form-group">
                 <button class="btn btn-success">Guardar</button>
@@ -68,11 +69,9 @@
         </div>
       </div>
     </div>
-  </div>
-
+    <br>
     {{!-- REGISTROS DEL PROPIO USUARIO --}}
-  <div class="container p-3">
-    <div class="row">
+    <div>
       {{#each controlagua}}
       <div class="list-group">
         <div class="list-group-item list-group-item-action flex-column align-items-start"

@@ -1,117 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    </head>
-    <body>
-        <div class="container p-4">
-            <div class="row">
-                <div class="col-md-4 mx-auto">
-                    <div class="card text-center">
-                        <div class="card-header">
-                            <strong>
-                            Añade tus horas trabajadas.
-                            </strong>
-                        </div>
-                        <div class="card-body">
-                            <form action="/imputaciones/add" method="POST">
-                                <div class="form-group">
-                                    <input type="date" class="form-control" name="fecha" placeholder="fecha" aria-label="Default select example" autofocus required>
-                                </div>
-                                <div class="form-group">
-                                    <select name="comunidad" class="form-control" id="selector" required>
-                                        <option></option>
-                                        {{#each comunidades}}
-                                        <option value="{{nombre}}">{{nombre}}</option>
-                                        {{/each}}
-                                    </select>
-                                </div>
-                                <div class="form-group row justify-content-center">
-                                    <div class="col-sm-5">
-                                        <input class="form-control float-left" type="number" placeholder="Horas" min="0" max="24" name="horas" required>
-                                    </div>
-                                    <div class="col-1 text-center">
-                                        <span>:</span>
-                                    </div>
-                                    <div class="col-sm-5">
-                                        <input class="form-control float-right" type="number" placeholder="Minutos" min="0" max="59" name="minutos" step="5" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <button class="btn btn-success">Guardar</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    
-        <div class="container p-3">
-            <div class="row">
-                {{#each imputaciones}}
-                <div class="list-group">
-                    <div class="list-group-item list-group-item-action flex-column align-items-start" style="background-color: rgb(202, 202, 202); border-color: black;">
-                        <div>
-                            <div>
-                                <p class="mb-1"><b>Fecha: </b>{{fechaFormateada}}</p>
-                                <p class="mb-1"><b>Comunidad: </b>{{comunidad}}</p>
-                                <p><b>Horas trabajadas: </b>{{horas}}:{{minutos}}</p>
-                            </div>
-                        </div>
-                        <div class="w-100 text-right">
-                            <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;" onclick="confirmar({{id}})"></a>
-                        </div>
-                    </div>
-                </div>
-                {{else}}
-                <div class="col-md-4 mx-auto">
-                    <div class="card card-body text-center">
-                        <p>¡Todavía no tienes ningún registro guardado!</p>
-                    </div>
-                </div>
-                {{/each}}
-            </div>
-        </div>
-    </body>
 
-    <script>
-        var initSelector = jQuery.noConflict();
-        initSelector(document).ready(function() {
-            if(initSelector("#selector").length > 0){
-                initSelector('#selector').select2({
-                    placeholder: 'Selecciona una comunidad',
-                    allowClear: true,
-                    language: {
-                        noResults: function(){
-                            return "No hay resultados";
-                        },
-                        searching: function(){
-                            return "Buscando...";
-                        }
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        .select2-container {
+            min-width: 0 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container p-4">
+        <div class="row">
+            <div class="col-md-4 mx-auto">
+                <div class="card text-center">
+                    <div class="card-header">
+                        <strong>
+                            Añade tus horas trabajadas.
+                        </strong>
+                    </div>
+                    <div class="card-body">
+                        <form action="/imputaciones/add" method="POST">
+                            <div class="form-group">
+                                <input type="date" class="form-control" name="fecha" placeholder="fecha"
+                                    aria-label="Default select example" autofocus required>
+                            </div>
+                            <div class="form-group">
+                                <select name="comunidad" class="form-control" id="selector" required>
+                                    <option></option>
+                                    {{#each comunidades}}
+                                    <option value="{{nombre}}">{{nombre}}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
+                            <div class="form-group row justify-content-center">
+                                <div class="col-sm-5">
+                                    <input class="form-control float-left" type="number" placeholder="Horas" min="0"
+                                        max="24" name="horas" required>
+                                </div>
+                                <div class="col-1 text-center">
+                                    <span>:</span>
+                                </div>
+                                <div class="col-sm-5">
+                                    <input class="form-control float-right" type="number" placeholder="Minutos" min="0"
+                                        max="59" name="minutos" step="5" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-success">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+        {{!-- REGISTROS DEL PROPIO USUARIO --}}
+        <div>
+            {{#each imputaciones}}
+            <div class="list-group">
+                <div class="list-group-item list-group-item-action flex-column align-items-start"
+                    style="background-color: rgb(202, 202, 202); border-color: black;">
+                    <div>
+                        <div>
+                            <p class="mb-1"><b>Fecha: </b>{{fechaFormateada}}</p>
+                            <p class="mb-1"><b>Comunidad: </b>{{comunidad}}</p>
+                            <p><b>Horas trabajadas: </b>{{horas}}:{{minutos}}</p>
+                        </div>
+                    </div>
+                    <div class="w-100 text-right">
+                        <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
+                            onclick="confirmar({{id}})"></a>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+            <div class="col-md-4 mx-auto">
+                <div class="card card-body text-center">
+                    <p>¡Todavía no tienes ningún registro guardado!</p>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</body>
+
+<script>
+    var initSelector = jQuery.noConflict();
+    initSelector(document).ready(function () {
+        if (initSelector("#selector").length > 0) {
+            initSelector('#selector').select2({
+                placeholder: 'Selecciona una comunidad',
+                allowClear: true,
+                language: {
+                    noResults: function () {
+                        return "No hay resultados";
+                    },
+                    searching: function () {
+                        return "Buscando...";
                     }
-                });
-                }else{
-                    console.log("No existe selector");
                 }
             });
-
-        function confirmar (id){
-            Swal.fire({
-                title: '¿Seguro que quieres eliminar este registro?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Eliminar',
-                confirmButtonColor: '#d63030',
-                focusConfirm: 'true'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location = '/imputaciones/delete/' + id;
-                }
-            })
+        } else {
+            console.log("No existe selector");
         }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.all.min.js"></script>
+    });
+
+    function confirmar(id) {
+        Swal.fire({
+            title: '¿Seguro que quieres eliminar este registro?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar',
+            confirmButtonColor: '#d63030',
+            focusConfirm: 'true'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location = '/imputaciones/delete/' + id;
+            }
+        })
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.all.min.js"></script>
+
 </html>
