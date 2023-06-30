@@ -36,7 +36,7 @@
                 </select>
                 <br>
                 {{!-- TABLA HORAS DE TRABAJO --}}
-                <table id="tabla" class="table table-bordered table-striped text-center mt-4">
+                <table id="tabla" class="table table-bordered table-striped text-center mt-4 table-responsive">
                     <thead>
                         <tr class="text-white" style="background-color:#6200ee;">
                             <th scope="col">TRABAJADOR</th>
@@ -78,7 +78,7 @@
                     </tbody>
                 </table>
                 {{!-- TABLA FURGONETAS --}}
-                <table id="tabla1" class="table table-bordered table-striped text-center mt-4">
+                <table id="tabla1" class="table table-bordered table-striped text-center mt-4 table-responsive">
                     <thead>
                         <tr class="text-white" style="background-color:#6200ee;">
                             <th scope="col">FECHA</th>
@@ -108,7 +108,7 @@
                     </tbody>
                 </table>
                 {{!-- TABLA CONTROL DE CALIDAD DEL AGUA --}}
-                <table id="tabla2" class="table table-bordered table-striped text-center mt-4">
+                <table id="tabla2" class="table table-bordered table-striped text-center mt-4 table-responsive">
                     <thead>
                         <tr class="text-white" style="background-color:#6200ee;">
                             <th scope="col">FECHA</th>
@@ -321,9 +321,7 @@
             document.addEventListener("DOMContentLoaded", function () {
                 // Inicializa DataTables en todas las tablas
                 var tablas = document.getElementsByTagName("table");
-                for (var i = 0; i < tablas.length; i++) {
-                    initSelector(tablas[i]).DataTable(configTables);
-                }
+                    initSelector("#tabla").DataTable(configTables);                  
 
                 for (var tableName in tableConfigurations) {
                     var config = tableConfigurations[tableName];
@@ -341,6 +339,14 @@
                 var selector = document.getElementById("tablaSelector");
                 var tablaSeleccionada = selector.value;
 
+                // Desactivar DataTables para todas las tablas
+                var tablas = document.getElementsByTagName("table");
+                for (var i = 0; i < tablas.length; i++) {
+                    if (initSelector.fn.DataTable.isDataTable(tablas[i])) {
+                        initSelector(tablas[i]).DataTable().destroy();
+                    }
+                }
+
                 // Oculta todas las tablas
                 var tablas = document.getElementsByTagName("table");
                 for (var i = 0; i < tablas.length; i++) {
@@ -352,17 +358,15 @@
                 tablaMostrar.style.display = "block";
 
                 // Si ya se ha inicializado la tabla seleccionada, simplemente vuelva a dibujarla
-                if ($.fn.DataTable.isDataTable('#' + tablaSeleccionada)) {
-                    $('#' + tablaSeleccionada).DataTable().draw();
+                if (initSelector.fn.DataTable.isDataTable('#' + tablaSeleccionada)) {
+                    initSelector('#' + tablaSeleccionada).DataTable().draw();
                 } else {
                     // Inicializa la tabla seleccionada
-                    $('#' + tablaSeleccionada).DataTable(configTables);
+                    initSelector('#' + tablaSeleccionada).DataTable(configTables);
                 }
 
                 currentTable = '#' + tablaSeleccionada;
             }
-
-
 
         </script>
 </body>
