@@ -44,19 +44,8 @@
                 </select>
               </div>
               <div class="form-group">
-                <select class="form-control" id="nivelPH" name="nivelPh" required>
-                  <option value="" disabled selected>Nivel de PH</option>
-                  <option style="background-color: #FFB366;">6.8</option>
-                  <option style="background-color: #FFA74D;">7.0</option>
-                  <option style="background-color: #FF9933;">7.2</option>
-                  <option style="background-color: #FF8C1A;">7.4</option>
-                  <option style="background-color: #FF8000;">7.6</option>
-                  <option style="background-color: #FF7300;">8.0</option>
-                </select>
-              </div>
-              <div class="form-group">
                 <select class="form-control" id="nivelCloro" name="nivelCloro" required>
-                  <option value="" disabled selected>Nivel de Cloro</option>
+                  <option value="" disabled selected>Cloro libre</option>
                   <option style="background-color: #FDEFF3;">0.5</option>
                   <option style="background-color: #FBC8D9;">1.0</option>
                   <option style="background-color: #F89CBF;">1.5</option>
@@ -66,8 +55,27 @@
                 </select>
               </div>
               <div class="form-group">
+                <select class="form-control" id="nivelPH" name="nivelPh" required>
+                  <option value="" disabled selected>PH</option>
+                  <option style="background-color: #FFB366;">6.8</option>
+                  <option style="background-color: #FFA74D;">7.0</option>
+                  <option style="background-color: #FF9933;">7.2</option>
+                  <option style="background-color: #FF8C1A;">7.4</option>
+                  <option style="background-color: #FF8000;">7.6</option>
+                  <option style="background-color: #FF7300;">8.0</option>
+                </select>
+              </div>
+              <div class="form-group">
                 <input name="numeroBanistas" class="form-control" placeholder="Número de bañistas" type="number"
                   required min="0" max="500">
+              </div>
+              <div class="form-group">
+                <input name="nivelRebosadero" class="form-control" placeholder="Nivel de rebosadero" type="number"
+                  required min="0" max="1000000">
+              </div>
+              <div class="form-group">
+                <input name="aguaDepurada" class="form-control" placeholder="Agua depurada (m³)" type="number"
+                  required min="0" max="1000000">
               </div>
               <div class="form-group">
                 <button class="btn btn-success">Guardar</button>
@@ -88,9 +96,11 @@
             <div>
               <p class="mb-1"><b>Fecha: </b>{{fechaFormateada}}</p>
               <p class="mb-1"><b>Piscina: </b>{{piscina}}</p>
-              <p class="mb-1"><b>Nivel de PH: </b>{{nivelPh}}</p>
-              <p class="mb-1"><b>Nievel de Cloro: </b>{{nivelCloro}}</p>
+              <p class="mb-1"><b>Cloro libre: </b>{{nivelCloro}}</p>
+              <p class="mb-1"><b>PH: </b>{{nivelPh}}</p>
               <p class="mb-1"><b>Número de bañistas: </b>{{numeroBanistas}}</p>
+              <p class="mb-1"><b>Nivel de rebosadero: </b>{{nivelRebosadero}}</p>
+              <p class="mb-1"><b>Agua depurada (M³): </b>{{aguaDepurada}}</p>
             </div>
           </div>
           <div class="w-100 text-right">
@@ -110,18 +120,18 @@
   </div>
 
   <script>
-    const selectElementPH = document.getElementById('nivelPH');
-    selectElementPH.addEventListener('change', function () {
-      const selectedOptionPH = this.options[this.selectedIndex];
-      const colorPH = selectedOptionPH.style.backgroundColor;
-      this.style.backgroundColor = colorPH;
-    });
-
     const selectElementCloro = document.getElementById('nivelCloro');
     selectElementCloro.addEventListener('change', function () {
       const selectedOptionCloro = this.options[this.selectedIndex];
       const colorCloro = selectedOptionCloro.style.backgroundColor;
       this.style.backgroundColor = colorCloro;
+    });
+
+    const selectElementPH = document.getElementById('nivelPH');
+    selectElementPH.addEventListener('change', function () {
+      const selectedOptionPH = this.options[this.selectedIndex];
+      const colorPH = selectedOptionPH.style.backgroundColor;
+      this.style.backgroundColor = colorPH;
     });
 
     var fechaInput = document.querySelector('input[name="fecha"]');

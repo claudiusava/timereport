@@ -15,6 +15,8 @@ router.get('/calidadAgua', isLoggedIn, (req, res) => {
       nivelPh,
       nivelCloro,
       numeroBanistas,
+      nivelRebosadero,
+      aguaDepurada,
       id
       FROM controlagua 
       WHERE user_id = ?
@@ -31,7 +33,7 @@ router.get('/calidadAgua', isLoggedIn, (req, res) => {
   
 // INSERT
 router.post("/calidadAgua/add", isLoggedIn, async (req, res) => {
-    const { fecha, piscina, nivelPh, nivelCloro, numeroBanistas } = req.body;
+    const { fecha, piscina, nivelPh, nivelCloro, numeroBanistas, nivelRebosadero, aguaDepurada } = req.body;
 
     const newWaterControl = {
         fecha,
@@ -39,6 +41,8 @@ router.post("/calidadAgua/add", isLoggedIn, async (req, res) => {
         nivelPh,
         nivelCloro,
         numeroBanistas,
+        nivelRebosadero,
+        aguaDepurada,
         user_id: req.user.id,
     };
 

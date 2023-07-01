@@ -60,6 +60,8 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
           nivelPh,
           nivelCloro,
           numeroBanistas,
+          nivelRebosadero,
+          aguaDepurada,
           id
         FROM controlagua 
         ORDER BY fechaFormateada DESC`,
@@ -81,11 +83,8 @@ router.get('/registrosDeUsuarios/deleteHoras/:id', (req, res) => {
   const id = req.params.id;
   pool.query(`DELETE FROM imputaciones WHERE id = ?`, [id], (error) => {
     if (error) {
-      console.error('Error al eliminar la furgoneta:', error);
-      req.flash('error', 'Ocurrió un error al eliminar la furgoneta.');
-    } else {
-      req.flash('success', 'Furgoneta eliminada correctamente!');
-    }
+      req.flash('error', 'Ocurrió un error al eliminar el registro.');
+    } 
     res.redirect('/imputaciones/registrosDeUsuarios');
   });
 });
@@ -95,10 +94,9 @@ router.get('/registrosDeUsuarios/deleteKm/:id', (req, res) => {
   const id = req.params.id;
   pool.query(`DELETE FROM vehiculos WHERE id = ?`, [id], (error) => {
     if (error) {
-      console.error('Error al eliminar la furgoneta:', error);
-      req.flash('error', 'Ocurrió un error al eliminar la furgoneta.');
+      req.flash('error', 'Ocurrió un error al eliminar el registro.');
     } else {
-      req.flash('success', 'Furgoneta eliminada correctamente!');
+      req.flash('success', '¡Registro eliminado correctamente!');
     }
     res.redirect('/imputaciones/registrosDeUsuarios');
   });
@@ -109,10 +107,9 @@ router.get('/registrosDeUsuarios/deleteControlAgua/:id', (req, res) => {
   const id = req.params.id;
   pool.query(`DELETE FROM controlagua WHERE id = ?`, [id], (error) => {
     if (error) {
-      console.error('Error al eliminar la furgoneta:', error);
-      req.flash('error', 'Ocurrió un error al eliminar la furgoneta.');
+      req.flash('error', 'Ocurrió un error al eliminar el registro.');
     } else {
-      req.flash('success', 'Control de calidad de agua eliminado correctamente!');
+      req.flash('success', '¡Registro eliminado correctamente!');
     }
     res.redirect('/imputaciones/registrosDeUsuarios');
   });
