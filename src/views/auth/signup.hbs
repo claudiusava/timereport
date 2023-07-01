@@ -29,31 +29,45 @@
               <div class="form-group">
                 <input type="password" name="password" placeholder="contraseña" class="form-control" required />
               </div>
-              <div class="form-group">
-                Permiso de administración:
+              <div class="form-group" style="text-align: left;">
                 <input class="form-check-input" type="checkbox" name="permisoDeAdministracion"
-                  id="permisoDeAdministracion" />
+                  id="permisoDeAdministracion" /> Permiso de administración
               </div>
-              <div class="form-group">
-                Maquinista:
-                <input type="checkbox" name="maquinista" id="maquinista" />
+              <div class="form-group" style="text-align: left;">
+                <input type="checkbox" name="maquinista" id="maquinista" /> Responsable de furgoneta
               </div>
               <div class="form-group" id="maquinistaSelect" style="display: none;">
-                <label for="maquinista">Asociar vehiculos: </label>
+                <label for="maquinista">Asociar vehículos</label>
                 <div class="form-group">
-                  {{#each vehiculosSelect}}
-                  <div class="checkbox">
-                    <label>
-                      <input type="checkbox" name="maquinista" value="{{matricula}}" data-kilometros="{{kilometros}}">
-                      {{matricula}}
-                    </label>
+                  <div class="scrollable-label" style="text-align: left; margin-left: 20px;">
+                    {{#each vehiculosSelect}}
+                    <div class="checkbox">
+                      <label>
+                        <input type="checkbox" name="maquinista" value="{{id}}" data-kilometros="{{kilometros}}">
+                        {{matricula}}
+                      </label>
+                    </div>
+                    {{/each}}
                   </div>
-                  {{/each}}
                 </div>
               </div>
-              <div class="form-group">
-                Socorrista:
-                <input type="checkbox" name="socorrista" id="socorrista" />
+              <div class="form-group" style="text-align: left;">
+                <input type="checkbox" name="socorrista" id="socorrista"/> Socorrista
+              </div>
+              <div class="form-group" id="comunidadesSelect" style="display: none;">
+                <label for="comunidad">Asociar comunidad</label>
+                <div class="form-group">
+                  <div class="scrollable-label" style="text-align: left; margin-left: 20px;">
+                    {{#each comunidadesSelect}}
+                    <div class="checkbox">
+                      <label>
+                        <input type="checkbox" name="comunidad" value="{{nombre}}" data-comunidad="{{nombre}}">
+                        {{nombre}}
+                      </label>
+                    </div>
+                    {{/each}}
+                  </div>
+                </div>
               </div>
               <div class="form-group">
                 <button class="btn btn-success">Guardar</button>
@@ -174,6 +188,18 @@
         maquinistaSelect.style.display = 'none';
       }
     });
+
+    var socorristaCheckbox = document.getElementById('socorrista');
+    var comunidadesSelect = document.getElementById('comunidadesSelect');
+
+    socorristaCheckbox.addEventListener('change', function () {
+      if (socorristaCheckbox.checked) {
+        comunidadesSelect.style.display = 'block';
+      } else {
+        comunidadesSelect.style.display = 'none';
+      }
+    });
+
 
     var initSelector = jQuery.noConflict();
     initSelector('#tabla').DataTable({

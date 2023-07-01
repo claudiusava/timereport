@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const{isLoggedIn} = require('../lib/auth');
-const{isNotLoggedIn} = require('../lib/auth');
+const { isLoggedIn } = require('../lib/auth');
+const { isNotLoggedIn } = require('../lib/auth');
 const pool = require('../database');
 
 // SELECT
 router.get('/signup', isLoggedIn, async (req, res) => {
-    try {
-      const usuarios = await new Promise((resolve, reject) => {
-        pool.query(`SELECT id, fullname, username, 
+  try {
+    const usuarios = await new Promise((resolve, reject) => {
+      pool.query(`SELECT id, fullname, username, 
           CASE permisoDeAdministracion
             WHEN 1 THEN 'Si'
             WHEN 0 THEN 'No'
@@ -23,31 +23,40 @@ router.get('/signup', isLoggedIn, async (req, res) => {
             ELSE 'No'
           END AS socorrista
           FROM users`, (error, results) => {
-          if (error) reject(error);
-          resolve(results);
-        });
+        if (error) reject(error);
+        resolve(results);
       });
-  
-      const vehiculosSelect = await new Promise((resolve, reject) => {
-        pool.query(`
+    });
+
+    const vehiculosSelect = await new Promise((resolve, reject) => {
+      pool.query(`
           SELECT v1.id, v1.matricula, v1.kilometros, DATE_FORMAT(v1.fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada
           FROM vehiculos v1
           LEFT JOIN vehiculos v2 ON v1.matricula = v2.matricula AND v1.kilometros < v2.kilometros
           WHERE v2.id IS NULL
         `, (error, resultados) => {
-          if (error) reject(error);
-          resolve(resultados);
-        });
+        if (error) reject(error);
+        resolve(resultados);
       });
-  
-      res.render('auth/signup', { usuarios, vehiculosSelect });
-    } catch (error) {
-      console.error(error);
-      // Manejar el error de alguna manera adecuada para tu aplicación
-      res.status(500).send('Error en la consulta');
-    }
-  });
-  
+    });
+
+    const comunidadesSelect = await new Promise((resolve, reject) => {
+      pool.query(`
+        SELECT id, nombre FROM comunidades
+        `, (error, resultados) => {
+        if (error) reject(error);
+        resolve(resultados);
+      });
+    });
+
+    res.render('auth/signup', { usuarios, vehiculosSelect, comunidadesSelect });
+  } catch (error) {
+    console.error(error);
+    // Manejar el error de alguna manera adecuada para tu aplicación
+    res.status(500).send('Error en la consulta');
+  }
+});
+
 
 // DELETE
 router.get('/auth/signup/delete/:id', isLoggedIn, async (req, res) => {
@@ -67,29 +76,29 @@ router.get('/auth/signup/delete/:id', isLoggedIn, async (req, res) => {
 
 
 router.post('/signup', passport.authenticate('local.signup', {
-    successRedirect: '/signup',
-    failureRedirect: '/signup',
-    failureFlash: true
+  successRedirect: '/signup',
+  failureRedirect: '/signup',
+  failureFlash: true
 }));
 
 router.get('/signin', isNotLoggedIn, (req, res) => {
-    res.render('auth/signin'); 
- });
-
-router.post('/signin', isNotLoggedIn, (req,res, next)=>{
-    passport.authenticate('local.signin', {
-        successRedirect: '/profile', 
-        failureRedirect: '/signin'
-    })(req,res, next);
+  res.render('auth/signin');
 });
 
-router.get('/profile', isLoggedIn, (req,res) => {
-    res.render('profile');
+router.post('/signin', isNotLoggedIn, (req, res, next) => {
+  passport.authenticate('local.signin', {
+    successRedirect: '/profile',
+    failureRedirect: '/signin'
+  })(req, res, next);
 });
 
-router.get('/logout', (req,res) => {
-    req.logOut();
-    res.redirect('/signin');
+router.get('/profile', isLoggedIn, (req, res) => {
+  res.render('profile');
+});
+
+router.get('/logout', (req, res) => {
+  req.logOut();
+  res.redirect('/signin');
 });
 
 module.exports = router;

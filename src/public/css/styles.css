@@ -11,6 +11,11 @@
     color: #fff !important;
 }
 
+.scrollable-label {
+  max-height: 100px; /* Altura máxima del contenedor */
+  overflow-y: auto; /* Habilitar el scroll vertical */
+}
+
 .switch {
     position: relative;
     display: inline-block;
