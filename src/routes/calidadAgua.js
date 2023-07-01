@@ -17,10 +17,11 @@ router.get('/calidadAgua', isLoggedIn, (req, res) => {
       numeroBanistas,
       nivelRebosadero,
       aguaDepurada,
+      createad_at,
       id
       FROM controlagua 
       WHERE user_id = ?
-      ORDER BY fechaFormateada DESC`, [req.user.id], function(error, controlaguaResults) {
+      ORDER BY createad_at DESC`, [req.user.id], function(error, controlaguaResults) {
         if (error) throw error;
   
         res.render('imputaciones/calidadAgua', { 
