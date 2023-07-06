@@ -30,9 +30,9 @@ router.get('/signup', isLoggedIn, async (req, res) => {
 
     const vehiculosSelect = await new Promise((resolve, reject) => {
       pool.query(`
-          SELECT v1.id, v1.matricula, v1.kilometros, DATE_FORMAT(v1.fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada
+          SELECT v1.id, v1.matricula
           FROM vehiculos v1
-          LEFT JOIN vehiculos v2 ON v1.matricula = v2.matricula AND v1.kilometros < v2.kilometros
+          LEFT JOIN vehiculos v2 ON v1.matricula = v2.matricula
           WHERE v2.id IS NULL
         `, (error, resultados) => {
         if (error) reject(error);

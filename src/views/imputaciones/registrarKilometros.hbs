@@ -30,36 +30,20 @@
       <div class="col-md-4 mx-auto">
         <div class="card text-center">
           <div class="card-header">
-            <strong>Registra los kilómetros de tu furgoneta.</strong>
+            <strong>Parte diario de kilometraje.</strong>
           </div>
           <div class="card-body">
-            {{#if user.permisoDeAdministracion}}
-            <div class="form-group">
-              <div class="label-container">
-                <span id="labelVehiculoNuevo">Furgoneta nueva.</span>
-                <label class="switch">
-                  <input type="checkbox" id="checkboxVehiculoNuevo">
-                  <span class="slider round"></span>
-                </label>
-                <span id="labelVehiculoExistente">Furgoneta existente.</span>
-              </div>
-            </div>
-            {{/if}}
             <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoExistente">
-              <div class="form-group">
-                <input readonly type="datetime-local" class="form-control" name="fechaActualizacion"
-                  aria-label="Default select example" required>
-              </div>
               <div class="form-group">
                 <select name="vehiculo" class="form-control" id="selector" required>
                   <option value="" disabled selected>Seleccione una furgoneta</option>
-                  {{#each vehiculosSelect}}
-                  <option value="{{matricula}}" data-kilometros="{{kilometros}}">{{matricula}}</option>
+                  {{#each registrosKilometrajeSelect}}
+                  <option value="{{matricula}}">{{matricula}}</option>
                   {{/each}}
                 </select>
               </div>
               <div class="form-group">
-                <input class="form-control" type="number" placeholder="Kilómetros" min="{{vehiculo.kilometros}}"
+                <input class="form-control" type="number" placeholder="Kilómetros" min="{{registrosKilometrajeSelect.kilometros}}"
                   name="kilometros" required>
               </div>
               <input type="hidden" name="matricula" id="matriculaInputExistente">
@@ -67,25 +51,6 @@
                 <button class="btn btn-success">Guardar</button>
               </div>
             </form>
-            {{#if user.permisoDeAdministracion}}
-            <form action="/imputaciones/registrarKilometros" method="POST" id="formVehiculoNuevo">
-              <div class="form-group">
-                <input readonly type="datetime-local" class="form-control" name="fechaActualizacion"
-                  aria-label="Default select example" required>
-              </div>
-              <div class="form-group">
-                <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula"
-                  required>
-                <span id="matriculaError" style="color: red;"></span>
-              </div>
-              <div class="form-group">
-                <input class="form-control" type="number" placeholder="Kilómetros" min="0" name="kilometros" required>
-              </div>
-              <div class="form-group">
-                <button class="btn btn-success" id="guardarVehiculoNuevo">Guardar</button>
-              </div>
-            </form>
-            {{/if}}
           </div>
         </div>
       </div>
@@ -93,15 +58,15 @@
     <br>
     {{!-- REGISTROS DEL PROPIO USUARIO --}}
     <div>
-      {{#each vehiculos}}
+      {{#each registroskilometraje}}
       <div class="list-group">
         <div class="list-group-item list-group-item-action flex-column align-items-start"
           style="background-color: rgb(202, 202, 202); border-color: black;">
           <div>
             <div>
               <p class="mb-1"><b>Matricula: </b>{{matricula}}</p>
-              <p class="mb-1"><b>Fecha: </b>{{fechaActualizacionFormateada}}</p>
               <p class="mb-1"><b>Kilometros: </b>{{kilometros}}</p>
+              <p class="mb-1"><b>Fecha del registro: </b>{{formatted_created_at}}</p>
             </div>
           </div>
           <div class="w-100 text-right">
@@ -155,38 +120,6 @@
     document.getElementsByName('kilometros')[0].value = kilometros;
   });
 
-  var fechaInput = document.querySelector('input[name="fechaActualizacion"]');
-  var fechaActual = new Date();
-  var horas = fechaActual.getHours().toString().padStart(2, '0');
-  var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
-  var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
-  fechaInput.value = fechaHoraActual;
-  var fechaInputNuevo = document.querySelector('#formVehiculoNuevo input[name="fechaActualizacion"]');
-  fechaInputNuevo.value = fechaHoraActual;
-
-  var checkboxVehiculoNuevo = document.getElementById('checkboxVehiculoNuevo');
-  var formVehiculoExistente = document.getElementById('formVehiculoExistente');
-  var formVehiculoNuevo = document.getElementById('formVehiculoNuevo');
-  var labelVehiculoNuevo = document.getElementById('labelVehiculoNuevo');
-  var labelVehiculoExistente = document.getElementById('labelVehiculoExistente');
-
-  checkboxVehiculoNuevo.addEventListener('change', function () {
-    if (this.checked) {
-      formVehiculoExistente.style.display = 'block';
-      formVehiculoNuevo.style.display = 'none';
-      labelVehiculoNuevo.style.fontWeight = 'normal';
-      labelVehiculoExistente.style.fontWeight = 'bold';
-    } else {
-      formVehiculoExistente.style.display = 'none';
-      formVehiculoNuevo.style.display = 'block';
-      labelVehiculoNuevo.style.fontWeight = 'bold';
-      labelVehiculoExistente.style.fontWeight = 'normal';
-    }
-  });
-
-  formVehiculoExistente.style.display = 'none';
-  labelVehiculoNuevo.style.fontWeight = 'bold';
-
   var inputKilometros = document.getElementsByName('kilometros')[0];
   var valorInicial = parseInt(inputKilometros.getAttribute('min')) || 0;
 
@@ -216,7 +149,7 @@
 
     for (let i = 0; i < options.length; i++) {
       if (options[i].value === matricula) {
-        matriculaError.textContent = 'Ya existe una furgoneta con esa matrícula.';
+        matriculaError.textContent = 'Ya existen registros de una furgoneta con esa matrícula.';
         return;
       }
     }

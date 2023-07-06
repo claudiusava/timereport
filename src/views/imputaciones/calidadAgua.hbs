@@ -26,15 +26,11 @@
         <div class="card text-center">
           <div class="card-header">
             <strong>
-              Añade un registro de control de calidad del agua.
+              Control de calidad del agua.
             </strong>
           </div>
           <div class="card-body">
             <form action="/imputaciones/calidadAgua/add" method="POST" id="formNuevoControlAgua">
-              <div class="form-group">
-                <input readonly type="datetime-local" class="form-control" name="fecha" placeholder="fechaActualizacion"
-                  aria-label="Default select example" required>
-              </div>
               <div class="form-group">
                 <select name="piscina" class="form-control" id="selector" required>
                   <option></option>
@@ -94,7 +90,7 @@
           style="background-color: rgb(202, 202, 202); border-color: black;">
           <div>
             <div>
-              <p class="mb-1"><b>Fecha: </b>{{fechaFormateada}}</p>
+              <p class="mb-1"><b>Fecha: </b>{{formatted_created_at}}</p>
               <p class="mb-1"><b>Piscina: </b>{{piscina}}</p>
               <p class="mb-1"><b>Cloro libre: </b>{{nivelCloro}}</p>
               <p class="mb-1"><b>PH: </b>{{nivelPh}}</p>
@@ -120,6 +116,21 @@
   </div>
 
   <script>
+    function confirmar(id) {
+      Swal.fire({
+        title: '¿Seguro que quieres eliminar este registro?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Eliminar',
+        confirmButtonColor: '#d63030',
+        focusConfirm: 'true'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location = '/imputaciones/calidadAgua/delete/' + id;
+        }
+      })
+    }
+
     const selectElementCloro = document.getElementById('nivelCloro');
     selectElementCloro.addEventListener('change', function () {
       const selectedOptionCloro = this.options[this.selectedIndex];
@@ -133,15 +144,6 @@
       const colorPH = selectedOptionPH.style.backgroundColor;
       this.style.backgroundColor = colorPH;
     });
-
-    var fechaInput = document.querySelector('input[name="fecha"]');
-    var fechaActual = new Date();
-    var horas = fechaActual.getHours().toString().padStart(2, '0');
-    var minutos = fechaActual.getMinutes().toString().padStart(2, '0');
-    var fechaHoraActual = fechaActual.toISOString().split('T')[0] + 'T' + horas + ':' + minutos;
-    fechaInput.value = fechaHoraActual;
-    var fechaInputNuevo = document.querySelector('#formNuevoControlAgua input[name="fecha"]');
-    fechaInputNuevo.value = fechaHoraActual;
   </script>
 
 
@@ -168,20 +170,6 @@
       }
     });
 
-    function confirmar(id) {
-      Swal.fire({
-        title: '¿Seguro que quieres eliminar este registro?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Eliminar',
-        confirmButtonColor: '#d63030',
-        focusConfirm: 'true'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location = '/imputaciones/calidadAgua/delete/' + id;
-        }
-      })
-    }
   </script>
 </body>
 

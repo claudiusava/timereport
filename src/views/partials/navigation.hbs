@@ -9,16 +9,16 @@
         <ul class="navbar-nav">
           {{#if user}}
           <li class="nav-item">
-            <a class="nav-link" href="/imputaciones/add">Horas trabajadas</a>
+            <a class="nav-link" href="/imputaciones/add">Partes de trabajo</a>
           </li>
           {{/if}}
           {{#if user.maquinista}}
           <li class="nav-item">
-            <a href="/imputaciones/registrarKilometros" class="nav-link">Furgonetas</a>
+            <a href="/imputaciones/registrarKilometros" class="nav-link">Kilometraje</a>
           </li>
           {{else if user.permisoDeAdministracion}}
           <li class="nav-item">
-            <a href="/imputaciones/registrarKilometros" class="nav-link">Furgonetas</a>
+            <a href="/imputaciones/registrarKilometros" class="nav-link">Kilometraje</a>
           </li>
           {{/if}}
           {{#if user.socorrista}}
@@ -36,6 +36,9 @@
           </li>
           <li class="nav-item">
             <a href="/imputaciones/administrarComunidades" class="nav-link">Comunidades</a>
+          </li>
+          <li class="nav-item">
+            <a href="/imputaciones/vehiculos" class="nav-link">Vehículos</a>
           </li>
           <li class="nav-item">
             <a href="/imputaciones/registrosDeUsuarios" class="nav-link">Registros de todos los usuarios</a>

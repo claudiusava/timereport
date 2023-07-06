@@ -9,23 +9,11 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     let imputaciones = [];
     imputaciones = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT
-          DATE_FORMAT(i.fecha, "%d/%m/%Y") AS fechaFormateada,
-          i.comunidad,
-          i.horas,
-          LPAD(i.minutos, 2, "0") AS minutos,
-          i.minutosFormateados,
-          i.id,
-          i.user_id,
-          DATE_FORMAT(i.createad_at, "%d/%m/%Y %H:%i") AS fechaCreacionFormateada,
-          i.createad_at,
-          u.fullname
+        `SELECT *
         FROM
-          imputaciones i
-        JOIN
-          users u ON i.user_id = u.id
+          imputaciones
         ORDER BY
-          i.createad_at DESC`,
+          created_at DESC`,
         (error, imputaciones) => {
           if (error) reject(error);
           resolve(imputaciones);
@@ -35,17 +23,11 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     let vehiculos = [];
     vehiculos = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT
-          id,
-          matricula,
-          kilometros,
-          DATE_FORMAT(fechaActualizacion, '%d/%m/%Y %H:%i') AS fechaActualizacionFormateada,
-          user_id,
-          createad_at
+        `SELECT *
         FROM
           vehiculos
-        ORDER BY
-          createad_at DESC`,
+          ORDER BY
+          created_at DESC`,
         (error, vehiculos) => {
           if (error) reject(error);
           resolve(vehiculos);
@@ -55,16 +37,10 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     let controlagua = [];
     controlagua = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT DATE_FORMAT(fecha, '%d/%m/%Y %H:%i') AS fechaFormateada,
-          piscina, 
-          nivelPh,
-          nivelCloro,
-          numeroBanistas,
-          nivelRebosadero,
-          aguaDepurada,
-          id
-        FROM controlagua 
-        ORDER BY fechaFormateada DESC`,
+        `SELECT *
+        FROM controlagua
+        ORDER BY
+          created_at DESC`,
         (error, controlagua) => {
           if (error) reject(error);
           resolve(controlagua);
@@ -83,7 +59,7 @@ router.get('/registrosDeUsuarios/deleteHoras/:id', (req, res) => {
   const id = req.params.id;
   pool.query(`DELETE FROM imputaciones WHERE id = ?`, [id], (error) => {
     if (error) {
-      req.flash('error', 'Ocurrió un error al eliminar el registro.');
+      req.flash('danger', 'Ocurrió un error al eliminar el registro.');
     } 
     res.redirect('/imputaciones/registrosDeUsuarios');
   });
@@ -94,7 +70,7 @@ router.get('/registrosDeUsuarios/deleteKm/:id', (req, res) => {
   const id = req.params.id;
   pool.query(`DELETE FROM vehiculos WHERE id = ?`, [id], (error) => {
     if (error) {
-      req.flash('error', 'Ocurrió un error al eliminar el registro.');
+      req.flash('danger', 'Ocurrió un error al eliminar el registro.');
     } else {
       req.flash('success', '¡Registro eliminado correctamente!');
     }
@@ -107,7 +83,7 @@ router.get('/registrosDeUsuarios/deleteControlAgua/:id', (req, res) => {
   const id = req.params.id;
   pool.query(`DELETE FROM controlagua WHERE id = ?`, [id], (error) => {
     if (error) {
-      req.flash('error', 'Ocurrió un error al eliminar el registro.');
+      req.flash('danger', 'Ocurrió un error al eliminar el registro.');
     } else {
       req.flash('success', '¡Registro eliminado correctamente!');
     }

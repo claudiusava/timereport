@@ -29,10 +29,10 @@ router.get("/add", isLoggedIn, async (req, res) => {
               horas, 
               LPAD(minutos, 2, "0") AS minutos, 
               id,
-              createad_at
+              created_at
             FROM imputaciones
             WHERE user_id = ?
-            ORDER BY createad_at DESC`,
+            ORDER BY created_at DESC`,
             [req.user.id],
             (error, results) => {
               if (error) reject(error);

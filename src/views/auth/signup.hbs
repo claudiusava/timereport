@@ -5,6 +5,30 @@
   <link rel="stylesheet" type="text/css"
     href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css" />
 
+  <!--JQuery y Bootstrap-->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+    crossorigin="anonymous"></script>
+
+  {{!-- Sweet alert --}}
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.all.min.js"></script>
+
+  <!--Datatables con Bootstrap-->
+  <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+  <!--Para usar los botons-->
+  <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+
+  <!--Para los estilos en excel-->
+  <script
+    src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.templates.min.js"></script>
+
 </head>
 
 <body>
@@ -29,12 +53,15 @@
               <div class="form-group">
                 <input type="password" name="password" placeholder="contraseña" class="form-control" required />
               </div>
+              <p style="font-size: 11px; text-align: left;">* Si no seleccionas ninguna de las siguientes opciones se aplicarán
+                permisos mínimos (Partes de trabajo)</p>
               <div class="form-group" style="text-align: left;">
                 <input class="form-check-input" type="checkbox" name="permisoDeAdministracion"
-                  id="permisoDeAdministracion" /> Permiso de administración
+                  id="permisoDeAdministracion" /> Permiso de administración (control total).
               </div>
               <div class="form-group" style="text-align: left;">
-                <input type="checkbox" name="maquinista" id="maquinista" /> Responsable de furgoneta
+                <input class="form-check-input" type="checkbox" name="maquinista" id="maquinista" /> Responsable de
+                furgoneta.
               </div>
               <div class="form-group" id="maquinistaSelect" style="display: none;">
                 <label for="maquinista">Asociar vehículos</label>
@@ -43,7 +70,8 @@
                     {{#each vehiculosSelect}}
                     <div class="checkbox">
                       <label>
-                        <input type="checkbox" name="maquinista" value="{{id}}" data-kilometros="{{kilometros}}">
+                        <input class="form-check-input" type="checkbox" name="vehiculo" value="{{id}}"
+                          data-kilometros="{{kilometros}}">
                         {{matricula}}
                       </label>
                     </div>
@@ -52,7 +80,7 @@
                 </div>
               </div>
               <div class="form-group" style="text-align: left;">
-                <input type="checkbox" name="socorrista" id="socorrista"/> Socorrista
+                <input type="checkbox" class="form-check-input" name="socorrista" id="socorrista" /> Socorrista.
               </div>
               <div class="form-group" id="comunidadesSelect" style="display: none;">
                 <label for="comunidad">Asociar comunidad</label>
@@ -61,7 +89,8 @@
                     {{#each comunidadesSelect}}
                     <div class="checkbox">
                       <label>
-                        <input type="checkbox" name="comunidad" value="{{nombre}}" data-comunidad="{{nombre}}">
+                        <input type="checkbox" class="form-check-input" name="comunidad" value="{{nombre}}"
+                          data-comunidad="{{nombre}}">
                         {{nombre}}
                       </label>
                     </div>
@@ -133,31 +162,6 @@
       </div>
     </div>
   </div>
-
-  <!--JQuery y Bootstrap-->
-  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-    crossorigin="anonymous"></script>
-
-  {{!-- Sweet alert --}}
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.all.min.js"></script>
-
-  <!--Datatables con Bootstrap-->
-  <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-  <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-
-  <!--Para usar los botons-->
-  <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-  <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
-
-  <!--Para los estilos en excel-->
-  <script
-    src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.min.js"></script>
-  <script
-    src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.templates.min.js"></script>
-
   <script>
     function confirmar(id) {
       Swal.fire({
@@ -174,12 +178,45 @@
       })
     }
 
+    // Declaración de variables
+    const permisoAdminCheckbox = document.getElementById('permisoDeAdministracion');
+    var maquinistaCheckbox = document.getElementById('maquinista');
+    var maquinistaSelect = document.getElementById('maquinistaSelect');
+    var socorristaCheckbox = document.getElementById('socorrista');
+    var comunidadesSelect = document.getElementById('comunidadesSelect');
+
+    // Si permisoDeAdministracion devuelve un 1 de bbdd que el valor sea "si"
     if (permisoDeAdministracion == 1) {
       document.getElementById('permisoDeAdministracion').value = 'si';
     }
 
-    var maquinistaCheckbox = document.getElementById('maquinista');
-    var maquinistaSelect = document.getElementById('maquinistaSelect');
+    // Si "permisoAdminCheckbox" está marcado que "maquinistaCheckbox" y "socorristaCheckbox" se deshabiliten.
+    permisoAdminCheckbox.addEventListener('change', function () {
+      if (this.checked) {
+        maquinistaCheckbox.disabled = true;
+        socorristaCheckbox.disabled = true;
+      } else {
+        maquinistaCheckbox.disabled = false;
+        socorristaCheckbox.disabled = false;
+      }
+    });
+
+    maquinistaCheckbox.addEventListener('change', function () {
+      if (this.checked) {
+        permisoAdminCheckbox.disabled = true;
+      } else {
+        permisoAdminCheckbox.disabled = false;
+      }
+    });
+
+    socorristaCheckbox.addEventListener('change', function () {
+      if (this.checked) {
+        permisoAdminCheckbox.disabled = true;
+      } else {
+        permisoAdminCheckbox.disabled = false;
+      }
+    });
+
 
     maquinistaCheckbox.addEventListener('change', function () {
       if (maquinistaCheckbox.checked) {
@@ -189,8 +226,6 @@
       }
     });
 
-    var socorristaCheckbox = document.getElementById('socorrista');
-    var comunidadesSelect = document.getElementById('comunidadesSelect');
 
     socorristaCheckbox.addEventListener('change', function () {
       if (socorristaCheckbox.checked) {
