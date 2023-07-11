@@ -30,10 +30,8 @@ router.get('/signup', isLoggedIn, async (req, res) => {
 
     const vehiculosSelect = await new Promise((resolve, reject) => {
       pool.query(`
-          SELECT v1.id, v1.matricula
-          FROM vehiculos v1
-          LEFT JOIN vehiculos v2 ON v1.matricula = v2.matricula
-          WHERE v2.id IS NULL
+          SELECT *
+          FROM vehiculos
         `, (error, resultados) => {
         if (error) reject(error);
         resolve(resultados);
