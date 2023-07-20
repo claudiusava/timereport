@@ -60,7 +60,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
       comunidad,
       horas,
       minutos,
-      minutosFormateados: (minutos / 60) * 100,
+      minutos_formateados: (minutos / 60) * 100,
       user_id: req.user.id,
     };
   
