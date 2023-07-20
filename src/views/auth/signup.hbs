@@ -53,7 +53,8 @@
               <div class="form-group">
                 <input type="password" name="password" placeholder="contraseña" class="form-control" required />
               </div>
-              <p style="font-size: 11px; text-align: left;">* Si no seleccionas ninguna de las siguientes opciones se aplicarán
+              <p style="font-size: 11px; text-align: left;">* Si no seleccionas ninguna de las siguientes opciones se
+                aplicarán
                 permisos mínimos (Partes de trabajo)</p>
               <div class="form-group" style="text-align: left;">
                 <input class="form-check-input" type="checkbox" name="permisoDeAdministracion"
@@ -70,8 +71,7 @@
                     {{#each vehiculosSelect}}
                     <div class="checkbox">
                       <label>
-                        <input class="form-check-input" type="checkbox" name="vehiculo" value="{{id}}"
-                          data-kilometros="{{kilometros}}">
+                        <input class="form-check-input" type="checkbox" name="vehiculo" value="{{id}}">
                         {{matricula}}
                       </label>
                     </div>
@@ -89,7 +89,7 @@
                     {{#each comunidadesSelect}}
                     <div class="checkbox">
                       <label>
-                        <input type="checkbox" class="form-check-input" name="comunidad" value="{{nombre}}"
+                        <input type="checkbox" class="form-check-input" name="comunidad" value="{{id}}"
                           data-comunidad="{{nombre}}">
                         {{nombre}}
                       </label>
@@ -98,6 +98,10 @@
                   </div>
                 </div>
               </div>
+              <input type="hidden" name="vehiculosAsociados" id="vehiculosAsociadosInput">
+              <input type="hidden" name="vehiculosAsociadosAll" id="vehiculosAsociadosInputAll">
+              <input type="hidden" name="comunidadesAsociadas" id="comunidadesAsociadasInput">
+              <input type="hidden" name="comunidadesAsociadasAll" id="comunidadesAsociadasInputAll">
               <div class="form-group">
                 <button class="btn btn-success">Guardar</button>
               </div>
@@ -142,10 +146,10 @@
                         <p class="mb-1" id="permisoDeAministracion">{{permisoDeAdministracion}}</p>
                       </td>
                       <td>
-                        <p class="mb-1" id="maquinista">{{maquinista}}</p>
+                        <p class="mb-1" id="maquinistaTable">{{maquinista}}</p>
                       </td>
                       <td>
-                        <p class="mb-1" id="maquinista">{{socorrista}}</p>
+                        <p class="mb-1" id="socorristaTable">{{socorrista}}</p>
                       </td>
                       <td>
                         <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
@@ -235,6 +239,48 @@
       }
     });
 
+    document.querySelector("form").addEventListener("submit", function (event) {
+  event.preventDefault(); // Evita que el formulario se envíe
+
+  var vehiculosAsociados = [];
+  var vehiculosAsociadosAll = [];
+  var comunidadesAsociadas = [];
+  var comunidadesAsociadasAll = [];
+  var checkboxesVehiculos = document.getElementsByName("vehiculo");
+  var checkboxesComunidades = document.getElementsByName("comunidad");
+
+  for (var i = 0; i < checkboxesVehiculos.length; i++) {
+    if (checkboxesVehiculos[i].checked) {
+      vehiculosAsociados.push(checkboxesVehiculos[i].value);
+    }
+  }
+
+  for (var i = 0; i < checkboxesVehiculos.length; i++) {
+    if (checkboxesVehiculos[i]) {
+      vehiculosAsociadosAll.push(checkboxesVehiculos[i].value);
+    }
+  }
+
+  for (var i = 0; i < checkboxesComunidades.length; i++) {
+    if (checkboxesComunidades[i].checked) {
+      comunidadesAsociadas.push(checkboxesComunidades[i].value);
+    }
+  }
+
+  for (var i = 0; i < checkboxesComunidades.length; i++) {
+    if (checkboxesComunidades[i]) {
+      comunidadesAsociadasAll.push(checkboxesComunidades[i].value);
+    }
+  }
+
+  document.getElementById('vehiculosAsociadosInput').value = vehiculosAsociados.join(',');
+  document.getElementById('vehiculosAsociadosInputAll').value = vehiculosAsociadosAll.join(',');
+  document.getElementById('comunidadesAsociadasInput').value = comunidadesAsociadas.join(',');
+  document.getElementById('comunidadesAsociadasInputAll').value = comunidadesAsociadasAll.join(',');
+
+    // Enviar el formulario
+  this.submit();
+});
 
     var initSelector = jQuery.noConflict();
     initSelector('#tabla').DataTable({

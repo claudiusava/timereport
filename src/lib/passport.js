@@ -33,9 +33,21 @@ passport.use('local.signup', new LocalStrategy({
   passwordField: 'password',
   passReqToCallback: true
 }, (req, username, password, done) => {
+  let { permisoDeAdministracion, maquinista, socorrista, fullname } = req.body;
 
-  const { fullname } = req.body;
-  let { permisoDeAdministracion, maquinista, socorrista } = req.body;
+  var vehiculosAsociados = req.body.vehiculosAsociados.split(',');
+  var vehiculosAsociadosAll = req.body.vehiculosAsociadosAll.split(',');
+  var comunidadesAsociadas = req.body.comunidadesAsociadas.split(',');
+  var comunidadesAsociadasAll = req.body.comunidadesAsociadasAll.split(',');
+
+  console.log('vehiculosAsociados: ');
+  console.log(vehiculosAsociados);
+  console.log('vehiculosAsociadosAll: ');
+  console.log(vehiculosAsociadosAll);
+  console.log('comunidadesAsociadas: ');
+  console.log(comunidadesAsociadas);
+  console.log('comunidadesAsociadasAll: ');
+  console.log(comunidadesAsociadasAll);
 
   if (permisoDeAdministracion == "on") {
     permisoDeAdministracion = 1;
@@ -71,16 +83,60 @@ passport.use('local.signup', new LocalStrategy({
     if (rows.length > 0) {
       done(null, false, req.flash('danger', 'Ese nombre de usuario ya existe.'));
     } else {
-      pool.query('INSERT INTO users SET ? ', [newUser], function (error, results) {
+      pool.query('INSERT INTO users SET ?', [newUser], function (error, results) {
         if (error) {
-          throw "Error en la consulta: " + error;
+          throw "Error en la consulta de insertar usuario: " + error;
         }
         newUser.id = results.insertId;
+
+        if (permisoDeAdministracion == 1) {
+          queryInsertAsignVehic(vehiculosAsociadosAll, newUser.id);
+          queryInsertAsignComun(comunidadesAsociadasAll, newUser.id);
+        } else {
+          if (vehiculosAsociados[0] !== '' && comunidadesAsociadas[0] !== '') {
+            queryInsertAsignVehic(vehiculosAsociados, newUser.id);
+            queryInsertAsignComun(comunidadesAsociadas, newUser.id);
+            console.log('Entra por el IF');
+          } else if (vehiculosAsociados[0] != '' && comunidadesAsociadas[0] === '') {
+            queryInsertAsignVehic(vehiculosAsociados, newUser.id);
+            console.log('Entra por el primer Else If');
+          } else if (comunidadesAsociadas[0] != '' && vehiculosAsociados[0] === '') {
+            queryInsertAsignComun(comunidadesAsociadas, newUser.id);
+            console.log('Entra por el segundo ELSE IF');
+          }
+        }
         return done(null, false, req.flash('success', 'Usuario creado correctamente!'));
       });
     }
   });
 }));
+
+function queryInsertAsignVehic(vehiculosAsociados, newUserId) {
+  // Insertar registros en la tabla "asignacionvehiculos"
+  var insertQueryVehiculos = 'INSERT INTO asignacionvehiculos (user_id, vehiculo_id) VALUES ?';
+  var insertValuesVehiculos = vehiculosAsociados.map(function (vehiculoId) {
+    return [newUserId, parseInt(vehiculoId)];
+  });
+
+  pool.query(insertQueryVehiculos, [insertValuesVehiculos], function (error, results) {
+    if (error) {
+      throw "Error en la consulta de insertar las asignaciones de vehiculos: " + error;
+    }
+  });
+}
+
+function queryInsertAsignComun(comunidadesAsociadas, newUserId) {
+  var insertQueryComunidades = 'INSERT INTO asignacioncomunidades (user_id, comunidad_id) VALUES ?';
+  var insertValuesComunidades = comunidadesAsociadas.map(function (comunidadId) {
+    return [newUserId, parseInt(comunidadId)];
+  });
+
+  pool.query(insertQueryComunidades, [insertValuesComunidades], function (error, results) {
+    if (error) {
+      throw "Error en la consulta de insertar las asignaciones de vehiculos: " + error;
+    }
+  });
+};
 
 
 passport.serializeUser((user, done) => {
