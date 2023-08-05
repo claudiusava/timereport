@@ -1,4 +1,5 @@
 <html>
+
 <head>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
   <link rel="stylesheet" type="text/css"
@@ -35,7 +36,7 @@
             </strong>
           </div>
           <div class="card-body">
-            <form id="guardarNuevaComunidad" action="/imputaciones/administrarComunidades" method="POST">
+            <form id="guardarNuevaComunidadForm" action="/imputaciones/administrarComunidades" method="POST">
               <div class="form-group">
                 <input type="text" name="nombre" placeholder="comunidad" class="form-control" autofocus required />
               </div>
@@ -45,7 +46,7 @@
                 <span id="codigoError" style="color: red;"></span>
               </div>
               <div class="form-group">
-                <button class="btn btn-success">Guardar</button>
+                <button type="submit" class="btn btn-success" id="guardarNuevaComunidadButton">Guardar</button>
               </div>
             </form>
           </div>
@@ -110,7 +111,7 @@
       })
     }
 
-    document.getElementById('guardarNuevaComunidad').addEventListener('click', async function (e) {
+    document.getElementById('guardarNuevaComunidadForm').addEventListener('submit', async function (e) {
       e.preventDefault();
 
       var codigoInput = document.getElementById('codigoInput');
@@ -137,7 +138,8 @@
       if (codigoExiste) {
         codigoError.textContent = 'Ya existe una comunidad con ese código.';
       } else {
-        formVehiculoNuevo.submit();
+        // Si pasa la validación, se enviará el formulario
+        this.submit();
       }
     });
   </script>

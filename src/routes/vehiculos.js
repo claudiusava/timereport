@@ -11,6 +11,7 @@ router.get('/vehiculos', isLoggedIn, async (req, res) => {
             pool.query(`
             SELECT *,
             DATE_FORMAT(vehiculos.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at,
+            vehiculos.id AS id_vehiculo,
             users.fullname
             FROM vehiculos
             JOIN users ON vehiculos.user_id = users.id
@@ -33,28 +34,15 @@ router.post('/vehiculos', isLoggedIn, async (req, res) => {
     try {
         const { matricula } = req.body;
 
-        // Verificar si ya existe un vehículo con la misma matrícula
-        const vehiculoExistente = await new Promise((resolve, reject) => {
-            pool.query('SELECT * FROM vehiculos WHERE matricula = ?', [matricula], (error, resultados) => {
-                if (error) reject(error);
-                resolve(resultados);
-            });
-        });
+        const newVehiculo = {
+            matricula,
+            user_id: req.user.id,
+        };
 
-        if (vehiculoExistente.length > 0) {
-            req.flash('danger', 'Ya existe un vehículo con esta matrícula');
-            res.redirect('/imputaciones/vehiculos');
-        } else {
-            // Crear un nuevo registro de vehículo
-            const newVehiculo = {
-                matricula,
-                user_id: req.user.id,
-            };
+        await pool.query('INSERT INTO vehiculos SET ?', [newVehiculo]);
+        req.flash('success', 'Vehículo registrado correctamente');
+        res.redirect('/imputaciones/vehiculos');
 
-            await pool.query('INSERT INTO vehiculos SET ?', [newVehiculo]);
-            req.flash('success', 'Vehículo registrado correctamente');
-            res.redirect('/imputaciones/vehiculos');
-        }
     } catch (error) {
         req.flash('danger', 'Error al guardar los datos del vehículo');
         res.redirect('/imputaciones/vehiculos');
@@ -69,7 +57,7 @@ router.get('/vehiculos/delete/:id', (req, res) => {
             console.error('Error al eliminar la furgoneta:', error);
             req.flash('danger', 'Ocurrió un error al eliminar la furgoneta.');
         } else {
-            req.flash('success', 'Vehiculo eliminado correctamente!');
+            req.flash('success', 'Vehículo eliminado correctamente!');
         }
         res.redirect('/imputaciones/vehiculos');
     });

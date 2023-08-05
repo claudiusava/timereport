@@ -43,12 +43,11 @@
             </div>
             <form action="/imputaciones/vehiculos" method="POST" id="formVehiculoNuevo">
               <div class="form-group">
-                <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula"
-                  required>
+                <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula" required>
                 <span id="matriculaError" style="color: red;"></span>
               </div>
               <div class="form-group">
-                <button class="btn btn-success" id="guardarVehiculoNuevo">Guardar</button>
+                <button type="submit" class="btn btn-success" id="guardarVehiculoNuevo">Guardar</button>
               </div>
             </form>
           </div>
@@ -65,10 +64,10 @@
             <div class="card-body">
               <h1>Vehículos guardadas</h1>
               <div class="table-responsive">
-                <table id="tablaComunidades" class="table table-bordered table-striped text-center mt-4">
+                <table id="tablaVehiculos" class="table table-bordered table-striped text-center mt-4">
                   <thead>
                     <tr class="text-white" style="background-color:#6200ee;">
-                      <th scope="col">CREADO POR</th>
+                      <th scope="col">GUARDADO POR</th>
                       <th scope="col">MATRÍCULA</th>
                       <th scope="col">FECHA CREACIÓN</th>
                       <th scope="col">Eliminar</th>
@@ -76,7 +75,7 @@
                   </thead>
                   <tbody>
                     {{#each vehiculos}}
-                    <tr>
+                    <tr data-matricula="{{matricula}}">
                       <td>
                         <p class="mb-1">{{fullname}}</p>
                       </td>
@@ -88,7 +87,7 @@
                       </td>
                       <td>
                         <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
-                          onclick="confirmar({{id}})"></a>
+                          onclick="confirmar({{id_vehiculo}})"></a>
                       </td>
                     </tr>
                     {{/each}}
@@ -104,7 +103,7 @@
 </body>
 
 <script>
-  function confirmar(id) {
+  function confirmar(id_vehiculo) {
     Swal.fire({
       title: '¿Seguro que quieres eliminar esta furgoneta?',
       icon: 'warning',
@@ -114,37 +113,42 @@
       focusConfirm: 'true'
     }).then((result) => {
       if (result.isConfirmed) {
-        window.location = '/imputaciones/vehiculos/delete/' + id;
+        window.location = '/imputaciones/vehiculos/delete/' + id_vehiculo;
       }
     })
   }
 
 
-  document.getElementById('guardarVehiculoNuevo').addEventListener('click', function (e) {
+  document.getElementById('guardarVehiculoNuevo').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     var matriculaInput = document.getElementById('matriculaInput');
     var matricula = matriculaInput.value.trim();
     var matriculaError = document.getElementById('matriculaError');
 
-    if (matricula === '') {
-      matriculaError.textContent = 'Debe ingresar una matrícula.';
-      return;
-    }
+    // Obtener todas las filas de la tabla
+    var filasTabla = document.querySelectorAll('#tablaVehiculos tbody tr');
 
-    // Validar existencia de la matrícula
-    var matriculasExisten = Array.from(document.querySelectorAll('#tablaComunidades tbody tr')).map(row => row.cells[0].textContent.trim());
-    if (matriculasExisten.includes(matricula)) {
-      matriculaError.textContent = 'Ya hay registrado un vehículo con esa matrícula.';
-      return;
-    }
+    var comunidadesBBDD = [];
+
+    filasTabla.forEach(function (fila) {
+      var codigo = fila.getAttribute('data-matricula');
+      comunidadesBBDD.push(codigo);
+    });
 
     matriculaError.textContent = '';
 
-    formVehiculoNuevo.submit();
+    // Verificar si el código ya existe en el objeto 'comunidadesBBDD'
+    var codigoExiste = comunidadesBBDD.some(function (codigo) {
+      return codigo === matricula;
+    });
+
+    if (codigoExiste) {
+      matriculaError.textContent = 'Ya existe un vehículo con esa matrícula.';
+    } else {
+      this.submit();
+    }
   });
-
-
 
 </script>
 </body>
