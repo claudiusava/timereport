@@ -7,10 +7,10 @@ const pool = require('../database');
 const {isLoggedIn} = require('../lib/auth');
 
 router.get('/administrarComunidades', isLoggedIn, (req,res) =>{
-    const comunidades = pool.query('SELECT id, nombre, codigo FROM comunidades', function(error, results){
+    const comunidades = pool.query('SELECT id, nombre, codigo FROM comunidades', function(error, comunidades){
         if (error) throw error;
 
-        res.render('imputaciones/administrarComunidades', {results});
+        res.render('imputaciones/administrarComunidades', {comunidades});
     })
 });
 

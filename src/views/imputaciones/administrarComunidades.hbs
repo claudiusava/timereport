@@ -5,7 +5,9 @@
     href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css" />
   <!--JQuery y Bootstrap-->
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+    crossorigin="anonymous"></script>
   {{!-- Sweet alert --}}
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.all.min.js"></script>
   <!--Datatables con Bootstrap-->
@@ -16,8 +18,10 @@
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
   <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
   <!--Para los estilos en excel-->
-  <script src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.templates.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.templates.min.js"></script>
 </head>
 
 <body>
@@ -31,12 +35,14 @@
             </strong>
           </div>
           <div class="card-body">
-            <form action="/imputaciones/administrarComunidades" method="POST">
+            <form id="guardarNuevaComunidad" action="/imputaciones/administrarComunidades" method="POST">
               <div class="form-group">
                 <input type="text" name="nombre" placeholder="comunidad" class="form-control" autofocus required />
               </div>
               <div class="form-group">
-                <input type="number" name="codigo" placeholder="código" class="form-control" min="0" required />
+                <input id="codigoInput" type="number" name="codigo" placeholder="código" class="form-control" min="0"
+                  required />
+                <span id="codigoError" style="color: red;"></span>
               </div>
               <div class="form-group">
                 <button class="btn btn-success">Guardar</button>
@@ -65,8 +71,8 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {{#each results}}
-                    <tr>
+                    {{#each comunidades}}
+                    <tr data-codigo="{{codigo}}">
                       <td>
                         <p class="mb-1">{{nombre}}</p>
                       </td>
@@ -103,6 +109,37 @@
         }
       })
     }
+
+    document.getElementById('guardarNuevaComunidad').addEventListener('click', async function (e) {
+      e.preventDefault();
+
+      var codigoInput = document.getElementById('codigoInput');
+      var codigoComunidad = codigoInput.value.trim();
+      var codigoError = document.getElementById('codigoError');
+
+      // Obtener todas las filas de la tabla
+      var filasTabla = document.querySelectorAll('#tablaComunidades tbody tr');
+
+      var comunidadesBBDD = [];
+
+      filasTabla.forEach(function (fila) {
+        var codigo = fila.getAttribute('data-codigo');
+        comunidadesBBDD.push(codigo);
+      });
+
+      codigoError.textContent = '';
+
+      // Verificar si el código ya existe en el objeto 'comunidadesBBDD'
+      var codigoExiste = comunidadesBBDD.some(function (codigo) {
+        return codigo === codigoComunidad;
+      });
+
+      if (codigoExiste) {
+        codigoError.textContent = 'Ya existe una comunidad con ese código.';
+      } else {
+        formVehiculoNuevo.submit();
+      }
+    });
   </script>
 
   <script>
