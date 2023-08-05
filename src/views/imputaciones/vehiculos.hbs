@@ -41,13 +41,13 @@
           <div class="card-body">
             <div class="form-group">
             </div>
-            <form action="/imputaciones/vehiculos" method="POST" id="formVehiculoNuevo">
+            <form id="formVehiculoNuevo" action="/imputaciones/vehiculos" method="POST">
               <div class="form-group">
-                <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula" required>
+                <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula" oninput="this.value = this.value.toUpperCase()" required>
                 <span id="matriculaError" style="color: red;"></span>
               </div>
               <div class="form-group">
-                <button type="submit" class="btn btn-success" id="guardarVehiculoNuevo">Guardar</button>
+                <button id="guardarVehiculoNuevo" type="submit" class="btn btn-success">Guardar</button>
               </div>
             </form>
           </div>
@@ -67,7 +67,7 @@
                 <table id="tablaVehiculos" class="table table-bordered table-striped text-center mt-4">
                   <thead>
                     <tr class="text-white" style="background-color:#6200ee;">
-                      <th scope="col">GUARDADO POR</th>
+                      <th scope="col">CREADO POR</th>
                       <th scope="col">MATRÍCULA</th>
                       <th scope="col">FECHA CREACIÓN</th>
                       <th scope="col">Eliminar</th>
@@ -119,7 +119,7 @@
   }
 
 
-  document.getElementById('guardarVehiculoNuevo').addEventListener('submit', async function (e) {
+  document.getElementById('formVehiculoNuevo').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     var matriculaInput = document.getElementById('matriculaInput');
