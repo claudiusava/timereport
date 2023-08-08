@@ -38,12 +38,9 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
     let registrosKilometrajeSelect = [];
     registrosKilometrajeSelect = await new Promise((resolve, reject) => {
       pool.query(`
-          SELECT *,
-          DATE_FORMAT(registroskilometraje.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at
-          FROM registroskilometraje
-          WHERE user_id = ?
-          ORDER BY registroskilometraje.kilometros DESC
-          LIMIT 1;
+          SELECT id, matricula, MAX(kilometros) AS max_kilometros
+          FROM heroku_b427b1ba4c318bd.registroskilometraje
+          GROUP BY matricula
         `,
         [req.user.id],
         (error, resultados) => {
@@ -60,23 +57,10 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
 
 // INSERT
 router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
+
+  const { matricula, kilometros } = req.body;
+
   try {
-    const { matricula, kilometros } = req.body;
-
-    // Verificar si ya existe un vehículo con la matrícula ingresada
-    const vehiculoExistente = await new Promise((resolve, reject) => {
-      pool.query('SELECT * FROM registroskilometraje WHERE matricula = ? ORDER BY created_at DESC LIMIT 1', [matricula], (error, resultados) => {
-        if (error) reject(error);
-        resolve(resultados[0]);
-      });
-    });
-
-    if (vehiculoExistente && kilometros <= vehiculoExistente.kilometros) {
-      req.flash('danger', 'El kilometraje ingresado debe ser mayor al último registrado');
-      res.redirect('/imputaciones/registrarKilometros');
-      return;
-    }
-
     // Crear un nuevo registro de vehículo
     const newVehiculo = {
       matricula,
@@ -84,6 +68,9 @@ router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
       user_id: req.user.id,
     };
 
+    console.log('EL NUEVO KILOMETRAJE ES: ');
+    console.log(newVehiculo);
+    
     await pool.query('INSERT INTO registroskilometraje SET ?', [newVehiculo]);
     req.flash('success', 'Vehículo registrado correctamente');
     res.redirect('/imputaciones/registrarKilometros');

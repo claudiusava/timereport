@@ -43,8 +43,18 @@
             </div>
             <form id="formVehiculoNuevo" action="/imputaciones/vehiculos" method="POST">
               <div class="form-group">
-                <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula" oninput="this.value = this.value.toUpperCase()" required>
+                <input type="text" class="form-control" name="marca" id="marcaInput" placeholder="Marca" required>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" name="modelo" id="modeloInput" placeholder="Modelo" required>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" name="matricula" id="matriculaInput" placeholder="Matrícula"
+                  oninput="this.value = this.value.toUpperCase()" required>
                 <span id="matriculaError" style="color: red;"></span>
+              </div>
+              <div class="form-group">
+                <input type="number" class="form-control" name="kilometros" id="kilometrosInput" placeholder="Kilometros" min="0" required>
               </div>
               <div class="form-group">
                 <button id="guardarVehiculoNuevo" type="submit" class="btn btn-success">Guardar</button>
@@ -67,8 +77,11 @@
                 <table id="tablaVehiculos" class="table table-bordered table-striped text-center mt-4">
                   <thead>
                     <tr class="text-white" style="background-color:#6200ee;">
-                      <th scope="col">CREADO POR</th>
                       <th scope="col">MATRÍCULA</th>
+                      <th scope="col">MARCA</th>
+                      <th scope="col">MODELO</th>
+                      <th scope="col">KILÓMETROS</th>
+                      <th scope="col">CREADO POR</th>
                       <th scope="col">FECHA CREACIÓN</th>
                       <th scope="col">Eliminar</th>
                     </tr>
@@ -77,10 +90,19 @@
                     {{#each vehiculos}}
                     <tr data-matricula="{{matricula}}">
                       <td>
-                        <p class="mb-1">{{fullname}}</p>
+                        <p class="mb-1">{{matricula}}</p>
                       </td>
                       <td>
-                        <p class="mb-1">{{matricula}}</p>
+                        <p class="mb-1">{{marca}}</p>
+                      </td>
+                      <td>
+                        <p class="mb-1">{{modelo}}</p>
+                      </td>
+                      <td>
+                        <p class="mb-1">{{max_kilometraje}}</p>
+                      </td>
+                      <td>
+                        <p class="mb-1">{{fullname}}</p>
                       </td>
                       <td>
                         <p class="mb-1">{{formatted_created_at}}</p>

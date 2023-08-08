@@ -31,23 +31,37 @@ router.get('/vehiculos', isLoggedIn, async (req, res) => {
 
 // INSERT
 router.post('/vehiculos', isLoggedIn, async (req, res) => {
+    const { marca, modelo, matricula, kilometros } = req.body;
+
+    const newVehiculo = {
+        marca,
+        modelo,
+        matricula,
+        user_id: req.user.id,
+    };
+
+    const newKilometraje = {
+        matricula,
+        kilometros,
+        user_id: req.user.id,
+    };
+    
     try {
-        const { matricula } = req.body;
-
-        const newVehiculo = {
-            matricula,
-            user_id: req.user.id,
-        };
-
+        // Insert newVehiculo into the 'vehiculos' table
         await pool.query('INSERT INTO vehiculos SET ?', [newVehiculo]);
-        req.flash('success', 'Vehículo registrado correctamente');
+
+        // Insert newKilometraje into the 'registroskilometraje' table
+        await pool.query('INSERT INTO registroskilometraje SET ?', [newKilometraje]);
+
+        req.flash('success', 'Vehículo y Kilometraje registrados correctamente');
         res.redirect('/imputaciones/vehiculos');
 
     } catch (error) {
-        req.flash('danger', 'Error al guardar los datos del vehículo');
+        req.flash('danger', 'Error al guardar los datos del vehículo y kilometraje');
         res.redirect('/imputaciones/vehiculos');
     }
 });
+
 
 // DELETE
 router.get('/vehiculos/delete/:id', (req, res) => {
