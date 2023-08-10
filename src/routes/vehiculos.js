@@ -31,36 +31,57 @@ router.get('/vehiculos', isLoggedIn, async (req, res) => {
 
 // INSERT
 router.post('/vehiculos', isLoggedIn, async (req, res) => {
-    const { marca, modelo, matricula, kilometros } = req.body;
-
-    const newVehiculo = {
-        marca,
-        modelo,
-        matricula,
-        user_id: req.user.id,
-    };
-
-    const newKilometraje = {
-        matricula,
-        kilometros,
-        user_id: req.user.id,
-    };
-    
     try {
+        const { marca, modelo, matricula, kilometros } = req.body;
+
+        const newVehiculo = {
+            marca,
+            modelo,
+            matricula,
+            user_id: req.user.id,
+        };
+    
+        const newKilometraje = {
+            matricula,
+            kilometros,
+            user_id: req.user.id,
+        };
+    
+        let usuariosAdmin = await new Promise((resolve, reject) => {
+            pool.query(`
+            SELECT id 
+            FROM users
+            WHERE permisoDeAdministracion = 1
+            `,
+            (error, results) => {
+                if (error) reject("ERROR EN LA PUTA CONSULTA");
+                resolve(results);
+            });
+        });
+
+        for (const admin of usuariosAdmin) {
+            const newAsignacionVehiculo = {
+                user_id: admin.id,
+                matricula
+            }
+            await pool.query('INSERT INTO asignacionvehiculos SET ?', [newAsignacionVehiculo]);
+        }
+    
         // Insert newVehiculo into the 'vehiculos' table
         await pool.query('INSERT INTO vehiculos SET ?', [newVehiculo]);
-
+    
         // Insert newKilometraje into the 'registroskilometraje' table
         await pool.query('INSERT INTO registroskilometraje SET ?', [newKilometraje]);
-
+    
         req.flash('success', 'Vehículo y Kilometraje registrados correctamente');
         res.redirect('/imputaciones/vehiculos');
-
+    
     } catch (error) {
         req.flash('danger', 'Error al guardar los datos del vehículo y kilometraje');
         res.redirect('/imputaciones/vehiculos');
     }
 });
+
 
 
 // DELETE

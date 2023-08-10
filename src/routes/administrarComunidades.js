@@ -24,12 +24,20 @@ router.post('/administrarComunidades', isLoggedIn, async (req, res)=>{
         codigo
     };
 
-    console.log("LA NUEVA COMUNIDAD A INGRESAR ES: ");
-    console.log(newComunidad);
+    const newAsignacionComunidad = {
+        nombre,
+        codigo
+    };
 
-    await pool.query('INSERT INTO comunidades set ?', [newComunidad]);
-    req.flash('success', 'Comunidad guardada correctamente!');
-    res.redirect('/imputaciones/administrarComunidades');
+    try{
+        await pool.query('INSERT INTO comunidades set ?', [newComunidad]);
+
+        req.flash('success', 'Comunidad guardada correctamente!');
+        res.redirect('/imputaciones/administrarComunidades');
+    } catch (error) {
+        req.flash('danger', 'Error al guardar una nueva comunidad');
+        res.redirect('/imputaciones/administrarComunidades');
+    }
 });
 
 // DELETE

@@ -35,11 +35,11 @@
                     <thead>
                         <tr class="text-white" style="background-color:#6200ee;">
                             <th scope="col">TRABAJADOR</th>
-                            <th scope="col">CREACIÓN DEL REGISTRO</th>
-                            <th scope="col">FECHA</th>
                             <th scope="col">COMUNIDAD</th>
+                            <th scope="col">FECHA</th>
                             <th scope="col">HORAS TRABAJADAS</th>
                             <th scope="col">HORAS TRABAJADAS (formato numérico)</th>
+                            <th scope="col">CREACIÓN DEL REGISTRO</th>
                             <th scope="col">Eliminar</th>
                         </tr>
                     </thead>
@@ -50,19 +50,19 @@
                                 <p class="mb-1">{{fullname}}</p>
                             </td>
                             <td>
-                                <p class="mb-1">{{fechaCreacionFormateada}}</p>
-                            </td>
-                            <td>
-                                <p class="mb-1">{{fechaFormateada}}</p>
-                            </td>
-                            <td>
                                 <p class="mb-1">{{comunidad}}</p>
+                            </td>
+                            <td>
+                                <p class="mb-1">{{fecha}}</p>
                             </td>
                             <td>
                                 <p class="mb-1">{{horas}}:{{minutos}}</p>
                             </td>
                             <td>
-                                <p class="mb-1">{{horas}}:{{minutosFormateados}}</p>
+                                <p class="mb-1">{{horas}}:{{minutos_formateados}}</p>
+                            </td>
+                            <td>
+                                <p class="mb-1">{{created_at}}</p>
                             </td>
                             <td>
                                 <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
@@ -80,23 +80,27 @@
                     <h2 style="text-align: center;">REGISTROS DE KILOMETRAJE</h2>
                     <thead>
                         <tr class="text-white" style="background-color:#6200ee;">
-                            <th scope="col">FECHA</th>
+                            <th scope="col">TRABAJADOR</th>
                             <th scope="col">MATRÍCULA</th>
                             <th scope="col">KILÓMETROS</th>
+                            <th scope="col">FECHA</th>
                             <th scope="col">Eliminar</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{#each vehiculos}}
+                        {{#each registrosKilometraje}}
                         <tr>
                             <td>
-                                <p class="mb-1">{{fechaActualizacionFormateada}}</p>
+                                <p class="mb-1">{{fullname}}</p>
                             </td>
                             <td>
                                 <p class="mb-1">{{matricula}}</p>
                             </td>
                             <td>
-                                <p class="mb-1">{{kilometros}}</p>
+                                <p class="mb-1">{{kilometros}} km</p>
+                            </td>
+                            <td>
+                                <p class="mb-1">{{created_at}}</p>
                             </td>
                             <td>
                                 <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
@@ -114,6 +118,7 @@
                     <h2 style="text-align: center;">CONTROLES DE CALIDAD DEL AGUA EN PISCINAS</h2>
                     <thead>
                         <tr class="text-white" style="background-color:#6200ee;">
+                            <th scope="col">TRABAJADOR</th>
                             <th scope="col">FECHA</th>
                             <th scope="col">PISCINA</th>
                             <th scope="col">NIVEL DE PH</th>
@@ -128,7 +133,10 @@
                         {{#each controlagua}}
                         <tr>
                             <td>
-                                <p class="mb-1">{{fechaFormateada}}</p>
+                                <p class="mb-1">{{fullname}}</p>
+                            </td>
+                            <td>
+                                <p class="mb-1">{{created_at}}</p>
                             </td>
                             <td>
                                 <p class="mb-1">{{piscina}}</p>
@@ -211,7 +219,11 @@
 
             // Configuración de las tablas 
             var configTables = {
-                dom: "Bfrtip",
+                lengthMenu: [
+                    [10, 25, 50, 100, -1],
+                    ['10', '25', '50', '100', 'todos']
+                ],
+                dom: "Bflrtip",
                 buttons: {
                     dom: {
                         button: {
@@ -224,9 +236,6 @@
                             text: 'Exportar a excel',
                             className: 'btn btn-success',
                             margin: '100px',
-                            exportOptions: {
-                                columns: ":not(:last-child)"
-                            },
                             excelStyles: [
                                 {
                                     cells: "sh",

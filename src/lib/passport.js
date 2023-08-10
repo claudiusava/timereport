@@ -113,9 +113,9 @@ passport.use('local.signup', new LocalStrategy({
 
 function queryInsertAsignVehic(vehiculosAsociados, newUserId) {
   // Insertar registros en la tabla "asignacionvehiculos"
-  var insertQueryVehiculos = 'INSERT INTO asignacionvehiculos (user_id, vehiculo_id) VALUES ?';
-  var insertValuesVehiculos = vehiculosAsociados.map(function (vehiculoId) {
-    return [newUserId, parseInt(vehiculoId)];
+  var insertQueryVehiculos = 'INSERT INTO asignacionvehiculos (user_id, matricula) VALUES ?';
+  var insertValuesVehiculos = vehiculosAsociados.map(function (matriculaVehiculo) {
+    return [newUserId, matriculaVehiculo];
   });
 
   pool.query(insertQueryVehiculos, [insertValuesVehiculos], function (error, results) {

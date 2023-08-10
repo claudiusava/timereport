@@ -9,25 +9,26 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     let imputaciones = [];
     imputaciones = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT *
-        FROM
-          imputaciones
+        `SELECT i.id, i.fecha, i.comunidad, i.horas, i.minutos, i.minutos_formateados, i.created_at, u.fullname
+        FROM imputaciones AS i
+        INNER JOIN users AS u ON i.user_id = u.id
         ORDER BY
-          created_at DESC`,
+          i.created_at DESC
+        `,
         (error, imputaciones) => {
           if (error) reject(error);
           resolve(imputaciones);
         });
     });
 
-    let vehiculos = [];
-    vehiculos = await new Promise((resolve, reject) => {
+    let registrosKilometraje = [];
+    registrosKilometraje = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT *
-        FROM
-          vehiculos
-          ORDER BY
-          created_at DESC`,
+        `SELECT rk.id, rk.matricula, rk.kilometros, rk.created_at, u.fullname
+        FROM registroskilometraje AS rk
+        INNER JOIN users AS u ON rk.user_id = u.id
+        ORDER BY
+          rk.created_at DESC`,
         (error, vehiculos) => {
           if (error) reject(error);
           resolve(vehiculos);
@@ -37,8 +38,9 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     let controlagua = [];
     controlagua = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT *
-        FROM controlagua
+        `SELECT ca.id, ca.nivelCloro, ca.nivelPh, ca.piscina, ca.numeroBanistas, ca.nivelRebosadero, ca.aguaDepurada, ca.created_at, u.fullname
+        FROM controlagua AS ca
+        INNER JOIN users AS u ON ca.user_id = u.id
         ORDER BY
           created_at DESC`,
         (error, controlagua) => {
@@ -47,7 +49,7 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
         });
     });
 
-    res.render("imputaciones/registrosDeUsuarios", { imputaciones, vehiculos, controlagua });
+    res.render("imputaciones/registrosDeUsuarios", { imputaciones, registrosKilometraje, controlagua });
   } catch (error) {
     req.flash("danger", "Error al obtener las vehiculos.");
     res.redirect("imputaciones/registrosDeUsuarios");

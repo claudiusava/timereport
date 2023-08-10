@@ -35,8 +35,8 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
         });
     });
 
-    let registrosKilometrajeSelect = [];
-    registrosKilometrajeSelect = await new Promise((resolve, reject) => {
+    let registrosKilometrajeList = [];
+    registrosKilometrajeList = await new Promise((resolve, reject) => {
       pool.query(`
           SELECT id, matricula, MAX(kilometros) AS max_kilometros
           FROM heroku_b427b1ba4c318bd.registroskilometraje
@@ -48,6 +48,40 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
           resolve(resultados);
         });
     });
+
+    console.log("CONSULTA DE REGISTROS MATRICULAS DIFERENTES CON EL KILOMETRAJE MÁS ALTO");
+    console.log(registrosKilometrajeList);
+
+    let asignacionVehiculosList = [];
+    asignacionVehiculosList = await new Promise((resolve, reject) => {
+      pool.query(`
+          SELECT matricula
+          FROM asignacionvehiculos
+          WHERE user_id = ?
+        `,
+        [req.user.id],
+        (error, resultados) => {
+          if (error) reject(error);
+          resolve(resultados);
+        });
+    });
+
+    console.log("CONSULTA DE REGISTROS DE ASIGNACIÓN DE VEHICULOS POR USUARIO ACTUAL");
+    console.log(asignacionVehiculosList);
+
+    // Crear una función para verificar si una matrícula existe en asignacionVehiculosList
+    function matriculaExiste(matricula, asignacionVehiculosList) {
+      return asignacionVehiculosList.some(item => item.matricula === matricula);
+    }
+
+    // Filtrar registrosKilometrajeList y mantener solo aquellos con matrículas coincidentes en asignacionVehiculosList
+    const registrosKilometrajeSelect = registrosKilometrajeList.filter(item =>
+      matriculaExiste(item.matricula, asignacionVehiculosList)
+    );
+
+    console.log("REGISTROS KILOMETRAJE DEFINITIVOS PARA EL SELECT");
+    console.log(registrosKilometrajeSelect);
+
     res.render("imputaciones/registrarKilometros", { vehiculos, registroskilometraje, registrosKilometrajeSelect });
   } catch (error) {
     req.flash("danger", "Error al obtener los vehiculos.");
@@ -70,7 +104,7 @@ router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
 
     console.log('EL NUEVO KILOMETRAJE ES: ');
     console.log(newVehiculo);
-    
+
     await pool.query('INSERT INTO registroskilometraje SET ?', [newVehiculo]);
     req.flash('success', 'Vehículo registrado correctamente');
     res.redirect('/imputaciones/registrarKilometros');
