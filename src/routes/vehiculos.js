@@ -7,15 +7,27 @@ const { isLoggedIn } = require('../lib/auth');
 router.get('/vehiculos', isLoggedIn, async (req, res) => {
     try {
         let vehiculos = [];
+        // SELECT *,
+        // DATE_FORMAT(vehiculos.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at,
+        // vehiculos.id AS id_vehiculo,
+        // users.fullname
+        // FROM vehiculos
+        // JOIN users ON vehiculos.user_id = users.id
         vehiculos = await new Promise((resolve, reject) => {
             pool.query(`
-            SELECT *,
-            DATE_FORMAT(vehiculos.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at,
-            vehiculos.id AS id_vehiculo,
-            users.fullname
-            FROM vehiculos
-            JOIN users ON vehiculos.user_id = users.id
-      `,
+            SELECT v.*,
+            DATE_FORMAT(DATE_ADD(v.created_at, INTERVAL 2 HOUR), '%d/%m/%Y %H:%i') AS formatted_created_at,
+            v.id AS id_vehiculo,
+            u.fullname,
+            r.kilometros
+            FROM vehiculos AS v
+            JOIN registroskilometraje AS r ON v.matricula = r.matricula
+            JOIN users AS u ON v.user_id = u.id
+            WHERE r.kilometros = (
+                SELECT MAX(kilometros)
+                FROM registroskilometraje
+                WHERE matricula = v.matricula)
+            `,
                 [req.user.id],
                 (error, resultados) => {
                     if (error) reject(error);
@@ -54,7 +66,7 @@ router.post('/vehiculos', isLoggedIn, async (req, res) => {
             WHERE permisoDeAdministracion = 1
             `,
             (error, results) => {
-                if (error) reject("ERROR EN LA PUTA CONSULTA");
+                if (error) reject(error);
                 resolve(results);
             });
         });

@@ -9,7 +9,9 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     let imputaciones = [];
     imputaciones = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT i.id, i.fecha, i.comunidad, i.horas, i.minutos, i.minutos_formateados, i.created_at, u.fullname
+        `SELECT i.id, i.fecha, i.comunidad, i.horas, i.minutos, i.minutos_formateados,
+        DATE_FORMAT(DATE_ADD(i.created_at, INTERVAL 2 HOUR), '%d/%m/%Y %H:%i') AS formatted_created_at,
+        u.fullname
         FROM imputaciones AS i
         INNER JOIN users AS u ON i.user_id = u.id
         ORDER BY
@@ -24,7 +26,9 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     let registrosKilometraje = [];
     registrosKilometraje = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT rk.id, rk.matricula, rk.kilometros, rk.created_at, u.fullname
+        `SELECT rk.id, rk.matricula, rk.kilometros, 
+        DATE_FORMAT(DATE_ADD(rk.created_at, INTERVAL 2 HOUR), '%d/%m/%Y %H:%i') AS formatted_created_at,
+        u.fullname
         FROM registroskilometraje AS rk
         INNER JOIN users AS u ON rk.user_id = u.id
         ORDER BY
@@ -38,7 +42,9 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     let controlagua = [];
     controlagua = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT ca.id, ca.nivelCloro, ca.nivelPh, ca.piscina, ca.numeroBanistas, ca.nivelRebosadero, ca.aguaDepurada, ca.created_at, u.fullname
+        `SELECT ca.id, ca.nivelCloro, ca.nivelPh, ca.piscina, ca.numeroBanistas, ca.nivelRebosadero, ca.aguaDepurada,
+        DATE_FORMAT(DATE_ADD(ca.created_at, INTERVAL 2 HOUR), '%d/%m/%Y %H:%i') AS formatted_created_at,
+        u.fullname
         FROM controlagua AS ca
         INNER JOIN users AS u ON ca.user_id = u.id
         ORDER BY
@@ -70,7 +76,7 @@ router.get('/registrosDeUsuarios/deleteHoras/:id', (req, res) => {
 // DELETE kilometros
 router.get('/registrosDeUsuarios/deleteKm/:id', (req, res) => {
   const id = req.params.id;
-  pool.query(`DELETE FROM vehiculos WHERE id = ?`, [id], (error) => {
+  pool.query(`DELETE FROM registroskilometraje WHERE id = ?`, [id], (error) => {
     if (error) {
       req.flash('danger', 'Ocurrió un error al eliminar el registro.');
     } else {

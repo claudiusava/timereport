@@ -40,7 +40,7 @@ router.get('/signup', isLoggedIn, async (req, res) => {
 
     const comunidadesSelect = await new Promise((resolve, reject) => {
       pool.query(`
-        SELECT id, nombre FROM comunidades
+        SELECT id, nombre, codigo FROM comunidades
         `, (error, resultados) => {
         if (error) reject(error);
         resolve(resultados);

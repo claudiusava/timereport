@@ -6,7 +6,7 @@ const { isLoggedIn } = require('../lib/auth');
 // SELECT
 router.get('/calidadAgua', isLoggedIn, (req, res) => {
   // Consulta para recuperar los registros de la tabla 'comunidades'
-  pool.query('SELECT c.nombre FROM asignacioncomunidades AS ac JOIN comunidades AS c ON ac.comunidad_id = c.id WHERE ac.user_id = ?', [req.user.id], function (error, comunidadesResults) {
+  pool.query('SELECT c.nombre FROM asignacioncomunidades AS ac JOIN comunidades AS c ON ac.codigo = c.codigo WHERE ac.user_id = ?', [req.user.id], function (error, comunidadesResults) {
     if (error) throw error;
     // Consulta para recuperar los registros de la tabla 'controlagua' con todos los campos
     pool.query(`SELECT *, 

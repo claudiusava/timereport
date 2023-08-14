@@ -126,7 +126,7 @@ function queryInsertAsignVehic(vehiculosAsociados, newUserId) {
 }
 
 function queryInsertAsignComun(comunidadesAsociadas, newUserId) {
-  var insertQueryComunidades = 'INSERT INTO asignacioncomunidades (user_id, comunidad_id) VALUES ?';
+  var insertQueryComunidades = 'INSERT INTO asignacioncomunidades (user_id, codigo) VALUES ?';
   var insertValuesComunidades = comunidadesAsociadas.map(function (comunidadId) {
     return [newUserId, parseInt(comunidadId)];
   });

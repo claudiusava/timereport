@@ -24,12 +24,27 @@ router.post('/administrarComunidades', isLoggedIn, async (req, res)=>{
         codigo
     };
 
-    const newAsignacionComunidad = {
-        nombre,
-        codigo
-    };
-
     try{
+        let usuariosAdmin = await new Promise((resolve, reject) => {
+            pool.query(`
+            SELECT id 
+            FROM users
+            WHERE permisoDeAdministracion = 1
+            `,
+            (error, results) => {
+                if (error) reject(error);
+                resolve(results);
+            });
+        });
+
+        for (const admin of usuariosAdmin) {
+            const newAsignacionComunidad = {
+                user_id: admin.id,
+                codigo
+            }
+            await pool.query('INSERT INTO asignacioncomunidades SET ?', [newAsignacionComunidad]);
+        }
+
         await pool.query('INSERT INTO comunidades set ?', [newComunidad]);
 
         req.flash('success', 'Comunidad guardada correctamente!');
