@@ -9,7 +9,9 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     let imputaciones = [];
     imputaciones = await new Promise((resolve, reject) => {
       pool.query(
-        `SELECT i.id, i.fecha, i.comunidad, i.horas, i.minutos, i.minutos_formateados,
+        `SELECT i.id,
+        DATE_FORMAT(i.fecha, '%d/%m/%Y') AS formatted_fecha,
+        i.comunidad, i.horas, i.minutos, i.minutos_formateados,
         DATE_FORMAT(DATE_ADD(i.created_at, INTERVAL 2 HOUR), '%d/%m/%Y %H:%i') AS formatted_created_at,
         u.fullname
         FROM imputaciones AS i

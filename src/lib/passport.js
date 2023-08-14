@@ -90,8 +90,14 @@ passport.use('local.signup', new LocalStrategy({
         newUser.id = results.insertId;
 
         if (permisoDeAdministracion == 1) {
-          queryInsertAsignVehic(vehiculosAsociadosAll, newUser.id);
-          queryInsertAsignComun(comunidadesAsociadasAll, newUser.id);
+          if(vehiculosAsociadosAll[0] != ''){
+            queryInsertAsignVehic(vehiculosAsociadosAll, newUser.id);
+            console.log("ENTRA POR EL IF DE QUE NO HAY NINGÚN VEHICULO");
+          }
+          if(comunidadesAsociadasAll[0] != ''){
+            queryInsertAsignComun(comunidadesAsociadasAll, newUser.id);
+            console.log("ENTRA POR EL IF DE QUE NO HAY NINGUNA COMUNIDAD");
+          }
         } else {
           if (vehiculosAsociados[0] !== '' && comunidadesAsociadas[0] !== '') {
             queryInsertAsignVehic(vehiculosAsociados, newUser.id);
@@ -133,7 +139,7 @@ function queryInsertAsignComun(comunidadesAsociadas, newUserId) {
 
   pool.query(insertQueryComunidades, [insertValuesComunidades], function (error, results) {
     if (error) {
-      throw "Error en la consulta de insertar las asignaciones de vehiculos: " + error;
+      throw "Error en la consulta de insertar las asignaciones de comunidades: " + error;
     }
   });
 };
