@@ -70,7 +70,7 @@ router.get('/registrosDeUsuarios/deleteHoras/:id', (req, res) => {
   pool.query(`DELETE FROM imputaciones WHERE id = ?`, [id], (error) => {
     if (error) {
       req.flash('danger', 'Ocurrió un error al eliminar el registro.');
-    } 
+    }
     res.redirect('/imputaciones/registrosDeUsuarios');
   });
 });

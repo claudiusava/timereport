@@ -7,12 +7,6 @@ const { isLoggedIn } = require('../lib/auth');
 router.get('/vehiculos', isLoggedIn, async (req, res) => {
     try {
         let vehiculos = [];
-        // SELECT *,
-        // DATE_FORMAT(vehiculos.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at,
-        // vehiculos.id AS id_vehiculo,
-        // users.fullname
-        // FROM vehiculos
-        // JOIN users ON vehiculos.user_id = users.id
         vehiculos = await new Promise((resolve, reject) => {
             pool.query(`
             SELECT v.*,
@@ -52,23 +46,23 @@ router.post('/vehiculos', isLoggedIn, async (req, res) => {
             matricula,
             user_id: req.user.id,
         };
-    
+
         const newKilometraje = {
             matricula,
             kilometros,
             user_id: req.user.id,
         };
-    
+
         let usuariosAdmin = await new Promise((resolve, reject) => {
             pool.query(`
             SELECT id 
             FROM users
             WHERE permisoDeAdministracion = 1
             `,
-            (error, results) => {
-                if (error) reject(error);
-                resolve(results);
-            });
+                (error, results) => {
+                    if (error) reject(error);
+                    resolve(results);
+                });
         });
 
         for (const admin of usuariosAdmin) {
@@ -78,23 +72,21 @@ router.post('/vehiculos', isLoggedIn, async (req, res) => {
             }
             await pool.query('INSERT INTO asignacionvehiculos SET ?', [newAsignacionVehiculo]);
         }
-    
+
         // Insert newVehiculo into the 'vehiculos' table
         await pool.query('INSERT INTO vehiculos SET ?', [newVehiculo]);
-    
+
         // Insert newKilometraje into the 'registroskilometraje' table
         await pool.query('INSERT INTO registroskilometraje SET ?', [newKilometraje]);
-    
+
         req.flash('success', 'Vehículo y Kilometraje registrados correctamente');
         res.redirect('/imputaciones/vehiculos');
-    
+
     } catch (error) {
         req.flash('danger', 'Error al guardar los datos del vehículo y kilometraje');
         res.redirect('/imputaciones/vehiculos');
     }
 });
-
-
 
 // DELETE
 router.get('/vehiculos/delete/:id', (req, res) => {

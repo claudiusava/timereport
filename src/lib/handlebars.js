@@ -1,8 +1,7 @@
-const {format} = require('timeago.js');
-
+const { format } = require('timeago.js');
 const helpers = {};
 
-helpers.timeago =(relativeDate) => {
+helpers.timeago = (relativeDate) => {
     return format(relativeDate);
 };
 

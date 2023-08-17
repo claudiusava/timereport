@@ -49,9 +49,6 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
         });
     });
 
-    console.log("CONSULTA DE REGISTROS MATRICULAS DIFERENTES CON EL KILOMETRAJE MÁS ALTO");
-    console.log(registrosKilometrajeList);
-
     let asignacionVehiculosList = [];
     asignacionVehiculosList = await new Promise((resolve, reject) => {
       pool.query(`
@@ -66,9 +63,6 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
         });
     });
 
-    console.log("CONSULTA DE REGISTROS DE ASIGNACIÓN DE VEHICULOS POR USUARIO ACTUAL");
-    console.log(asignacionVehiculosList);
-
     // Crear una función para verificar si una matrícula existe en asignacionVehiculosList
     function matriculaExiste(matricula, asignacionVehiculosList) {
       return asignacionVehiculosList.some(item => item.matricula === matricula);
@@ -78,9 +72,6 @@ router.get('/registrarKilometros', isLoggedIn, async (req, res) => {
     const registrosKilometrajeSelect = registrosKilometrajeList.filter(item =>
       matriculaExiste(item.matricula, asignacionVehiculosList)
     );
-
-    console.log("REGISTROS KILOMETRAJE DEFINITIVOS PARA EL SELECT");
-    console.log(registrosKilometrajeSelect);
 
     res.render("imputaciones/registrarKilometros", { vehiculos, registroskilometraje, registrosKilometrajeSelect });
   } catch (error) {
@@ -101,9 +92,6 @@ router.post('/registrarKilometros', isLoggedIn, async (req, res) => {
       kilometros,
       user_id: req.user.id,
     };
-
-    console.log('EL NUEVO KILOMETRAJE ES: ');
-    console.log(newVehiculo);
 
     await pool.query('INSERT INTO registroskilometraje SET ?', [newVehiculo]);
     req.flash('success', 'Vehículo registrado correctamente');

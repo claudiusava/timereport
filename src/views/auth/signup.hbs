@@ -45,10 +45,12 @@
           <div class="card-body">
             <form action="/signup" method="POST">
               <div class="form-group">
-                <input type="text" name="fullname" placeholder="nombre y apellido" class="form-control" autofocus required />
+                <input type="text" name="fullname" placeholder="nombre y apellido" class="form-control" autofocus
+                  required />
               </div>
               <div class="form-group">
-                <input type="text" name="username" placeholder="usuario" class="form-control" pattern="^\S+$" required />
+                <input type="text" name="username" placeholder="usuario" class="form-control" pattern="^\S+$"
+                  required />
               </div>
               <div class="form-group">
                 <input type="password" name="password" placeholder="contraseña" class="form-control" required />
@@ -240,47 +242,47 @@
     });
 
     document.querySelector("form").addEventListener("submit", function (event) {
-  event.preventDefault(); // Evita que el formulario se envíe
+      event.preventDefault(); // Evita que el formulario se envíe
 
-  var vehiculosAsociados = [];
-  var vehiculosAsociadosAll = [];
-  var comunidadesAsociadas = [];
-  var comunidadesAsociadasAll = [];
-  var checkboxesVehiculos = document.getElementsByName("vehiculo");
-  var checkboxesComunidades = document.getElementsByName("comunidad");
+      var vehiculosAsociados = [];
+      var vehiculosAsociadosAll = [];
+      var comunidadesAsociadas = [];
+      var comunidadesAsociadasAll = [];
+      var checkboxesVehiculos = document.getElementsByName("vehiculo");
+      var checkboxesComunidades = document.getElementsByName("comunidad");
 
-  for (var i = 0; i < checkboxesVehiculos.length; i++) {
-    if (checkboxesVehiculos[i].checked) {
-      vehiculosAsociados.push(checkboxesVehiculos[i].value);
-    }
-  }
+      for (var i = 0; i < checkboxesVehiculos.length; i++) {
+        if (checkboxesVehiculos[i].checked) {
+          vehiculosAsociados.push(checkboxesVehiculos[i].value);
+        }
+      }
 
-  for (var i = 0; i < checkboxesVehiculos.length; i++) {
-    if (checkboxesVehiculos[i]) {
-      vehiculosAsociadosAll.push(checkboxesVehiculos[i].value);
-    }
-  }
+      for (var i = 0; i < checkboxesVehiculos.length; i++) {
+        if (checkboxesVehiculos[i]) {
+          vehiculosAsociadosAll.push(checkboxesVehiculos[i].value);
+        }
+      }
 
-  for (var i = 0; i < checkboxesComunidades.length; i++) {
-    if (checkboxesComunidades[i].checked) {
-      comunidadesAsociadas.push(checkboxesComunidades[i].value);
-    }
-  }
+      for (var i = 0; i < checkboxesComunidades.length; i++) {
+        if (checkboxesComunidades[i].checked) {
+          comunidadesAsociadas.push(checkboxesComunidades[i].value);
+        }
+      }
 
-  for (var i = 0; i < checkboxesComunidades.length; i++) {
-    if (checkboxesComunidades[i]) {
-      comunidadesAsociadasAll.push(checkboxesComunidades[i].value);
-    }
-  }
+      for (var i = 0; i < checkboxesComunidades.length; i++) {
+        if (checkboxesComunidades[i]) {
+          comunidadesAsociadasAll.push(checkboxesComunidades[i].value);
+        }
+      }
 
-  document.getElementById('vehiculosAsociadosInput').value = vehiculosAsociados.join(',');
-  document.getElementById('vehiculosAsociadosInputAll').value = vehiculosAsociadosAll.join(',');
-  document.getElementById('comunidadesAsociadasInput').value = comunidadesAsociadas.join(',');
-  document.getElementById('comunidadesAsociadasInputAll').value = comunidadesAsociadasAll.join(',');
+      document.getElementById('vehiculosAsociadosInput').value = vehiculosAsociados.join(',');
+      document.getElementById('vehiculosAsociadosInputAll').value = vehiculosAsociadosAll.join(',');
+      document.getElementById('comunidadesAsociadasInput').value = comunidadesAsociadas.join(',');
+      document.getElementById('comunidadesAsociadasInputAll').value = comunidadesAsociadasAll.join(',');
 
-    // Enviar el formulario
-  this.submit();
-});
+      // Enviar el formulario
+      this.submit();
+    });
 
     var initSelector = jQuery.noConflict();
     initSelector('#tabla').DataTable({

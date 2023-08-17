@@ -1,6 +1,5 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-
 const pool = require('../database');
 const helpers = require('../lib/helpers');
 
@@ -39,15 +38,6 @@ passport.use('local.signup', new LocalStrategy({
   var vehiculosAsociadosAll = req.body.vehiculosAsociadosAll.split(',');
   var comunidadesAsociadas = req.body.comunidadesAsociadas.split(',');
   var comunidadesAsociadasAll = req.body.comunidadesAsociadasAll.split(',');
-
-  console.log('vehiculosAsociados: ');
-  console.log(vehiculosAsociados);
-  console.log('vehiculosAsociadosAll: ');
-  console.log(vehiculosAsociadosAll);
-  console.log('comunidadesAsociadas: ');
-  console.log(comunidadesAsociadas);
-  console.log('comunidadesAsociadasAll: ');
-  console.log(comunidadesAsociadasAll);
 
   if (permisoDeAdministracion == "on") {
     permisoDeAdministracion = 1;
@@ -90,25 +80,20 @@ passport.use('local.signup', new LocalStrategy({
         newUser.id = results.insertId;
 
         if (permisoDeAdministracion == 1) {
-          if(vehiculosAsociadosAll[0] != ''){
+          if (vehiculosAsociadosAll[0] != '') {
             queryInsertAsignVehic(vehiculosAsociadosAll, newUser.id);
-            console.log("ENTRA POR EL IF DE QUE NO HAY NINGÚN VEHICULO");
           }
-          if(comunidadesAsociadasAll[0] != ''){
+          if (comunidadesAsociadasAll[0] != '') {
             queryInsertAsignComun(comunidadesAsociadasAll, newUser.id);
-            console.log("ENTRA POR EL IF DE QUE NO HAY NINGUNA COMUNIDAD");
           }
         } else {
           if (vehiculosAsociados[0] !== '' && comunidadesAsociadas[0] !== '') {
             queryInsertAsignVehic(vehiculosAsociados, newUser.id);
             queryInsertAsignComun(comunidadesAsociadas, newUser.id);
-            console.log('Entra por el IF');
           } else if (vehiculosAsociados[0] != '' && comunidadesAsociadas[0] === '') {
             queryInsertAsignVehic(vehiculosAsociados, newUser.id);
-            console.log('Entra por el primer Else If');
           } else if (comunidadesAsociadas[0] != '' && vehiculosAsociados[0] === '') {
             queryInsertAsignComun(comunidadesAsociadas, newUser.id);
-            console.log('Entra por el segundo ELSE IF');
           }
         }
         return done(null, false, req.flash('success', 'Usuario creado correctamente!'));
