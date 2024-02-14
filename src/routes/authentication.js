@@ -13,11 +13,7 @@ router.get('/signup', isLoggedIn, async (req, res) => {
           CASE permisoDeAdministracion
             WHEN 1 THEN 'Si'
             WHEN 0 THEN 'No'
-          END AS permisoDeAdministracion, 
-          CASE COALESCE(maquinista, 0)
-            WHEN 1 THEN 'Si'
-            ELSE 'No'
-          END AS maquinista, 
+          END AS permisoDeAdministracion,
           CASE COALESCE(socorrista, 0)
             WHEN 1 THEN 'Si'
             ELSE 'No'
@@ -25,16 +21,6 @@ router.get('/signup', isLoggedIn, async (req, res) => {
           FROM users`, (error, results) => {
         if (error) reject(error);
         resolve(results);
-      });
-    });
-
-    const vehiculosSelect = await new Promise((resolve, reject) => {
-      pool.query(`
-          SELECT *
-          FROM vehiculos
-        `, (error, resultados) => {
-        if (error) reject(error);
-        resolve(resultados);
       });
     });
 
@@ -47,7 +33,7 @@ router.get('/signup', isLoggedIn, async (req, res) => {
       });
     });
 
-    res.render('auth/signup', { usuarios, vehiculosSelect, comunidadesSelect });
+    res.render('auth/signup', { usuarios, comunidadesSelect });
   } catch (error) {
     console.error(error);
     // Manejar el error de alguna manera adecuada para tu aplicación

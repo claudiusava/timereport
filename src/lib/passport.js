@@ -32,10 +32,8 @@ passport.use('local.signup', new LocalStrategy({
   passwordField: 'password',
   passReqToCallback: true
 }, (req, username, password, done) => {
-  let { permisoDeAdministracion, maquinista, socorrista, fullname } = req.body;
+  let { permisoDeAdministracion, socorrista, fullname } = req.body;
 
-  var vehiculosAsociados = req.body.vehiculosAsociados.split(',');
-  var vehiculosAsociadosAll = req.body.vehiculosAsociadosAll.split(',');
   var comunidadesAsociadas = req.body.comunidadesAsociadas.split(',');
   var comunidadesAsociadasAll = req.body.comunidadesAsociadasAll.split(',');
 
@@ -43,12 +41,6 @@ passport.use('local.signup', new LocalStrategy({
     permisoDeAdministracion = 1;
   } else {
     permisoDeAdministracion = 0;
-  }
-
-  if (maquinista == "on") {
-    maquinista = 1;
-  } else {
-    maquinista = 0;
   }
 
   if (socorrista == "on") {
@@ -62,7 +54,6 @@ passport.use('local.signup', new LocalStrategy({
     username,
     password,
     permisoDeAdministracion,
-    maquinista,
     socorrista
   };
 
@@ -80,19 +71,11 @@ passport.use('local.signup', new LocalStrategy({
         newUser.id = results.insertId;
 
         if (permisoDeAdministracion == 1) {
-          if (vehiculosAsociadosAll[0] != '') {
-            queryInsertAsignVehic(vehiculosAsociadosAll, newUser.id);
-          }
           if (comunidadesAsociadasAll[0] != '') {
             queryInsertAsignComun(comunidadesAsociadasAll, newUser.id);
           }
         } else {
-          if (vehiculosAsociados[0] !== '' && comunidadesAsociadas[0] !== '') {
-            queryInsertAsignVehic(vehiculosAsociados, newUser.id);
-            queryInsertAsignComun(comunidadesAsociadas, newUser.id);
-          } else if (vehiculosAsociados[0] != '' && comunidadesAsociadas[0] === '') {
-            queryInsertAsignVehic(vehiculosAsociados, newUser.id);
-          } else if (comunidadesAsociadas[0] != '' && vehiculosAsociados[0] === '') {
+          if (comunidadesAsociadas[0] != '') {
             queryInsertAsignComun(comunidadesAsociadas, newUser.id);
           }
         }
@@ -101,20 +84,6 @@ passport.use('local.signup', new LocalStrategy({
     }
   });
 }));
-
-function queryInsertAsignVehic(vehiculosAsociados, newUserId) {
-  // Insertar registros en la tabla "asignacionvehiculos"
-  var insertQueryVehiculos = 'INSERT INTO asignacionvehiculos (user_id, matricula) VALUES ?';
-  var insertValuesVehiculos = vehiculosAsociados.map(function (matriculaVehiculo) {
-    return [newUserId, matriculaVehiculo];
-  });
-
-  pool.query(insertQueryVehiculos, [insertValuesVehiculos], function (error, results) {
-    if (error) {
-      throw "Error en la consulta de insertar las asignaciones de vehiculos: " + error;
-    }
-  });
-}
 
 function queryInsertAsignComun(comunidadesAsociadas, newUserId) {
   var insertQueryComunidades = 'INSERT INTO asignacioncomunidades (user_id, codigo) VALUES ?';

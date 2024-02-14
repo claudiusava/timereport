@@ -26,105 +26,58 @@
                     <div class="card-body">
                         <form action="/imputaciones/add" method="POST">
                             <div class="form-group">
-                                <input type="date" class="form-control" name="fecha" placeholder="fecha"
-                                    aria-label="Default select example" autofocus required>
-                            </div>
-                            <div class="form-group">
-                                <select name="comunidad" class="form-control" id="selector" required>
+                                <select name="piscina" class="form-control" id="selector" required>
                                     <option></option>
                                     {{#each comunidades}}
                                     <option value="{{nombre}}">{{nombre}}</option>
                                     {{/each}}
                                 </select>
                             </div>
-                            <div class="form-group row justify-content-center">
-                                <div class="col-sm-5">
-                                    <input class="form-control float-left" type="number" placeholder="Horas" min="0"
-                                        max="24" name="horas" required>
-                                </div>
-                                <div class="col-1 text-center">
-                                    <span>:</span>
-                                </div>
-                                <div class="col-sm-5">
-                                    <input class="form-control float-right" type="number" placeholder="Minutos" min="0"
-                                        max="59" name="minutos" step="5" required>
-                                </div>
-                            </div>
+                            <!-- Label para mostrar la fecha y hora actual -->
+                            <label id="fechaHoraLabel"></label>
                             <div class="form-group">
-                                <button class="btn btn-success">Guardar</button>
+                                <button class="btn btn-success">Fichar entrada</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-        <br>
-        {{!-- REGISTROS DEL PROPIO USUARIO --}}
-        <div>
-            {{#each imputaciones}}
-            <div class="list-group">
-                <div class="list-group-item list-group-item-action flex-column align-items-start"
-                    style="background-color: rgb(202, 202, 202); border-color: black;">
-                    <div>
-                        <div>
-                            <p class="mb-1"><b>Fecha: </b>{{fechaFormateada}}</p>
-                            <p class="mb-1"><b>Comunidad: </b>{{comunidad}}</p>
-                            <p><b>Horas trabajadas: </b>{{horas}}:{{minutos}}</p>
-                        </div>
-                    </div>
-                    <div class="w-100 text-right">
-                        <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
-                            onclick="confirmar({{id}})"></a>
-                    </div>
-                </div>
-            </div>
-            {{else}}
-            <div class="col-4 mx-auto">
-                <div class="card card-body text-center">
-                    <p>¡Todavía no tienes ningún registro guardado!</p>
-                </div>
-            </div>
-            {{/each}}
-        </div>
     </div>
 </body>
 
 <script>
+    // Función para actualizar la fecha y hora actual en el label
+    function actualizarFechaHora() {
+        const fechaHoraActual = new Date().toLocaleString();
+        document.getElementById('fechaHoraLabel').textContent = fechaHoraActual;
+    }
+
+    // Llamar a la función inicialmente y luego cada segundo para mantener la hora actualizada
+    actualizarFechaHora();
+    setInterval(actualizarFechaHora, 1000);
+</script>
+<script>
     var initSelector = jQuery.noConflict();
     initSelector(document).ready(function () {
-        if (initSelector("#selector").length > 0) {
-            initSelector('#selector').select2({
-                placeholder: 'Selecciona una comunidad',
-                allowClear: true,
-                language: {
-                    noResults: function () {
-                        return "No hay resultados";
-                    },
-                    searching: function () {
-                        return "Buscando...";
-                    }
-                }
-            });
-        } else {
-            console.log("No existe selector");
-        }
-    });
-
-    function confirmar(id) {
-        Swal.fire({
-            title: '¿Seguro que quieres eliminar este registro?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Eliminar',
-            confirmButtonColor: '#d63030',
-            focusConfirm: 'true'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location = '/imputaciones/delete/' + id;
+      if (initSelector("#selector").length > 0) {
+        initSelector('#selector').select2({
+          placeholder: 'Selecciona una comunidad',
+          allowClear: true,
+          language: {
+            noResults: function () {
+              return "No hay resultados";
+            },
+            searching: function () {
+              return "Buscando...";
             }
-        })
-    }
-</script>
+          }
+        });
+      } else {
+        console.log("No existe selector");
+      }
+    });
+  </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.all.min.js"></script>
 
 </html>
