@@ -34,7 +34,7 @@
                                 </select>
                             </div>
                             <!-- Label para mostrar la fecha y hora actual -->
-                            <label id="fechaHoraLabel"></label>
+                            <h2 id="fechaHoraLabel"></h2>
                             <div class="form-group">
                                 <button class="btn btn-success">Fichar entrada</button>
                             </div>
@@ -49,8 +49,10 @@
 <script>
     // Función para actualizar la fecha y hora actual en el label
     function actualizarFechaHora() {
-        const fechaHoraActual = new Date().toLocaleString();
-        document.getElementById('fechaHoraLabel').textContent = fechaHoraActual;
+        const fechaActual = new Date();
+        const opciones = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        const formatoDeseado = new Intl.DateTimeFormat('es-ES', opciones).format(fechaActual).replace(',', ' -');
+        document.getElementById('fechaHoraLabel').textContent = formatoDeseado;
     }
 
     // Llamar a la función inicialmente y luego cada segundo para mantener la hora actualizada
@@ -60,24 +62,24 @@
 <script>
     var initSelector = jQuery.noConflict();
     initSelector(document).ready(function () {
-      if (initSelector("#selector").length > 0) {
-        initSelector('#selector').select2({
-          placeholder: 'Selecciona una comunidad',
-          allowClear: true,
-          language: {
-            noResults: function () {
-              return "No hay resultados";
-            },
-            searching: function () {
-              return "Buscando...";
-            }
-          }
-        });
-      } else {
-        console.log("No existe selector");
-      }
+        if (initSelector("#selector").length > 0) {
+            initSelector('#selector').select2({
+                placeholder: 'Selecciona una comunidad',
+                allowClear: true,
+                language: {
+                    noResults: function () {
+                        return "No hay resultados";
+                    },
+                    searching: function () {
+                        return "Buscando...";
+                    }
+                }
+            });
+        } else {
+            console.log("No existe selector");
+        }
     });
-  </script>
+</script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.9/dist/sweetalert2.all.min.js"></script>
 
 </html>

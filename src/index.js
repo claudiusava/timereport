@@ -51,8 +51,6 @@ app.use((req, res, next) => {
 app.use(require('./routes'));
 app.use(require('./routes/authentication'));
 app.use('/imputaciones', require('./routes/imputaciones'));
-app.use('/imputaciones', require('./routes/registrarKilometros'));
-app.use('/imputaciones', require('./routes/vehiculos'));
 app.use('/imputaciones', require('./routes/calidadAgua'));
 app.use('/imputaciones', require('./routes/registrosDeUsuarios'));
 app.use('/imputaciones', require('./routes/administrarComunidades'));

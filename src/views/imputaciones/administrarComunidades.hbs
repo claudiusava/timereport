@@ -46,6 +46,9 @@
                 <span id="codigoError" style="color: red;"></span>
               </div>
               <div class="form-group">
+                <input id="coordenadasInput" type="text" name="coordenadas" placeholder="coordenadas" class="form-control" pattern="\d{1,2}\.\d+, -\d{1,3}\.\d+" required />
+              </div>
+              <div class="form-group">
                 <button id="guardarNuevaComunidadButton" type="submit" class="btn btn-success">Guardar</button>
               </div>
             </form>
@@ -68,7 +71,8 @@
                     <tr class="text-white" style="background-color:#6200ee;">
                       <th scope="col">COMUNIDAD</th>
                       <th scope="col">CÓDIGO</th>
-                      <th scope="col">Eliminar</th>
+                      <th scope="col">COORDENADAS</th>
+                      <th scope="col">ACCIONES</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -81,8 +85,11 @@
                         <p class="mb-1">{{codigo}}</p>
                       </td>
                       <td>
+                        <p class="mb-1">{{coordenadas}}</p>
+                      </td>
+                      <td><a class="btn m-1 fa-solid fa-pen-to-square" style="font-size: large; color: blue;" onclick="editar({{id}})"></a>
                         <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
-                          onclick="confirmar({{id}})"></a>
+                          onclick="borrar({{id}})"></a>
                       </td>
                     </tr>
                     {{/each}}
@@ -96,12 +103,27 @@
     </div>
   </div>
   <script>
-    function confirmar(id) {
+    function borrar(id) {
       Swal.fire({
         title: '¿Seguro que quieres eliminar esta comunidad?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Eliminar',
+        confirmButtonColor: '#d63030',
+        focusConfirm: 'true'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location = '/imputaciones/administrarComunidades/delete/' + id;
+        }
+      })
+    }
+
+    function editar(id) {
+      Swal.fire({
+        title: '¿Seguro que quieres editar esta comunidad?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Editar',
         confirmButtonColor: '#d63030',
         focusConfirm: 'true'
       }).then((result) => {

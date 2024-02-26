@@ -147,22 +147,6 @@
                 })
             }
 
-            // Función para borrar registros de furgonetas
-            function confirmarBorrarKm(id) {
-                Swal.fire({
-                    title: '¿Seguro que quieres eliminar este registro?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Eliminar',
-                    confirmButtonColor: '#d63030',
-                    focusConfirm: 'true'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location = '/imputaciones/registrosDeUsuarios/deleteKm/' + id;
-                    }
-                })
-            }
-
             // Función para borrar controles de calidad de agua
             function confirmarBorrarControlAgua(id) {
                 Swal.fire({

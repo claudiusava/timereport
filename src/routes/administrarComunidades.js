@@ -6,7 +6,7 @@ const { isLoggedIn } = require('../lib/auth');
 
 // SELECT
 router.get('/administrarComunidades', isLoggedIn, (req, res) => {
-    const comunidades = pool.query('SELECT id, nombre, codigo FROM comunidades', function (error, comunidades) {
+    const comunidades = pool.query('SELECT id, nombre, codigo, coordenadas FROM comunidades', function (error, comunidades) {
         if (error) throw error;
 
         res.render('imputaciones/administrarComunidades', { comunidades });
@@ -15,11 +15,12 @@ router.get('/administrarComunidades', isLoggedIn, (req, res) => {
 
 // INSERT
 router.post('/administrarComunidades', isLoggedIn, async (req, res) => {
-    const { nombre, codigo } = req.body;
+    const { nombre, codigo, coordenadas } = req.body;
 
     const newComunidad = {
         nombre,
-        codigo
+        codigo,
+        coordenadas
     };
 
     try {
