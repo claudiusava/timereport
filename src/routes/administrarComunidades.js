@@ -54,6 +54,21 @@ router.post('/administrarComunidades', isLoggedIn, async (req, res) => {
     }
 });
 
+// Actualización
+router.get('/administrarComunidades/editar', isLoggedIn, async (req, res) => {
+    const { id, nombre, codigo, coordenadas } = req.body;
+
+    try {
+        await pool.query('UPDATE comunidades SET nombre = ?, codigo = ?, coordenadas = ? WHERE id = ?', [nombre, codigo, coordenadas, id]);
+
+        req.flash('success', 'Comunidad editada correctamente!');
+        res.redirect('/imputaciones/administrarComunidades');
+    } catch (error) {
+        req.flash('danger', 'Error al editar la comunidad');
+        res.redirect('/imputaciones/administrarComunidades');
+    }
+});
+
 // DELETE
 router.get('/administrarComunidades/delete/:id', (req, res) => {
     const id = req.params.id;
