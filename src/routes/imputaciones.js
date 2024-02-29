@@ -9,37 +9,27 @@ router.get("/add", isLoggedIn, async (req, res) => {
     let comunidades = [];
     let imputaciones = [];
 
+    // Utilizando async/await y try/catch para manejar las consultas de manera más limpia
     try {
-      comunidades = await new Promise((resolve, reject) => {
-        pool.query(`SELECT nombre FROM comunidades`, (error, resultados) => {
-          if (error) reject(error);
-          resolve(resultados);
-        });
-      });
+      comunidades = await poolQuery('SELECT nombre FROM comunidades');
     } catch (error) {
       req.flash("danger", "Error al obtener las comunidades.");
     }
 
     try {
-      imputaciones = await new Promise((resolve, reject) => {
-        pool.query(
-          `SELECT 
-              DATE_FORMAT(fecha, "%d/%m/%Y") AS fechaFormateada, 
-              comunidad, 
-              horas, 
-              LPAD(minutos, 2, "0") AS minutos, 
-              id,
-              created_at
-            FROM imputaciones
-            WHERE user_id = ?
-            ORDER BY created_at DESC`,
-          [req.user.id],
-          (error, results) => {
-            if (error) reject(error);
-            resolve(results);
-          }
-        );
-      });
+      imputaciones = await poolQuery(
+        `SELECT 
+            DATE_FORMAT(fecha, "%d/%m/%Y") AS fechaFormateada, 
+            comunidad, 
+            horas, 
+            LPAD(minutos, 2, "0") AS minutos, 
+            id,
+            created_at
+          FROM imputaciones
+          WHERE user_id = ?
+          ORDER BY created_at DESC`,
+        [req.user.id]
+      );
     } catch (error) {
       req.flash("danger", "Error al obtener las imputaciones.");
     }
@@ -65,7 +55,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
   };
 
   try {
-    await pool.query(`INSERT INTO imputaciones SET ?`, [newImputacion]);
+    await poolQuery(`INSERT INTO imputaciones SET ?`, [newImputacion]);
     req.flash("success", "Registro guardado!");
     res.redirect("/imputaciones/add");
   } catch (error) {
@@ -78,7 +68,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
 router.get('/delete/:id', isLoggedIn, async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query(`DELETE FROM imputaciones WHERE id = ?`, [id]);
+    await poolQuery(`DELETE FROM imputaciones WHERE id = ?`, [id]);
     req.flash('success', 'Registro eliminado correctamente!');
     res.redirect('/imputaciones/add');
   } catch (error) {
@@ -86,5 +76,18 @@ router.get('/delete/:id', isLoggedIn, async (req, res) => {
     res.redirect('/imputaciones/add');
   }
 });
+
+// Función para realizar consultas a la base de datos y liberar la conexión
+async function poolQuery(sql, params) {
+  return new Promise((resolve, reject) => {
+    pool.query(sql, params, (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    });
+  });
+}
 
 module.exports = router;

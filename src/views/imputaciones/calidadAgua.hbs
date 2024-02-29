@@ -78,7 +78,7 @@
                   min="0" max="1000000">
               </div>
               <div class="form-group">
-                <input type="file" id="foto" name="foto" accept="image/*" capture="camera" placeholder="foto" required>
+                <input type="file" name="foto" accept="image/*" capture="camera" placeholder="foto" required>
               </div>
               <div class="form-group">
                 <button class="btn btn-success">Guardar</button>
@@ -104,6 +104,7 @@
               <p class="mb-1"><b>Número de bañistas: </b>{{numeroBanistas}}</p>
               <p class="mb-1"><b>Nivel de rebosadero: </b>{{nivelRebosadero}}</p>
               <p class="mb-1"><b>Agua depurada (M³): </b>{{aguaDepurada}}</p>
+              <p class="mb-1"><b>Foto medidor: </b><img src="{{foto}}" alt="Foto del medidor" style="max-width: 100%; max-height: 200px;"></p>
             </div>
           </div>
           <div class="w-100 text-right">

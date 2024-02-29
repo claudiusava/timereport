@@ -5,21 +5,43 @@ const { isLoggedIn } = require('../lib/auth');
 
 // SELECT
 router.get('/calidadAgua', isLoggedIn, (req, res) => {
-  // Consulta para recuperar los registros de la tabla 'comunidades'
-  pool.query('SELECT c.nombre FROM asignacioncomunidades AS ac JOIN comunidades AS c ON ac.codigo = c.codigo WHERE ac.user_id = ?', [req.user.id], function (error, comunidadesResults) {
-    if (error) throw error;
-    // Consulta para recuperar los registros de la tabla 'controlagua' con todos los campos
-    pool.query(`SELECT *, 
-        DATE_FORMAT(controlagua.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at
-        FROM controlagua
-        WHERE user_id = ?
-        ORDER BY created_at DESC;
-`, [req.user.id], function (error, controlaguaResults) {
-      if (error) throw error;
+  // Obtener una conexión del pool
+  pool.getConnection((error, connection) => {
+    if (error) {
+      throw error;
+    }
 
-      res.render('imputaciones/calidadAgua', {
-        comunidades: comunidadesResults,
-        controlagua: controlaguaResults
+    // Consulta para recuperar los registros de la tabla 'comunidades'
+    connection.query('SELECT c.nombre FROM asignacioncomunidades AS ac JOIN comunidades AS c ON ac.codigo = c.codigo WHERE ac.user_id = ?', [req.user.id], function (error, comunidadesResults) {
+      if (error) {
+        connection.release(); // Liberar la conexión en caso de error
+        throw error;
+      }
+
+      // Consulta para recuperar los registros de la tabla 'controlagua' con todos los campos
+      connection.query(`SELECT *, 
+          DATE_FORMAT(controlagua.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at
+          FROM controlagua
+          WHERE user_id = ?
+          ORDER BY created_at DESC;
+  `, [req.user.id], function (error, controlaguaResults) {
+        connection.release(); // Liberar la conexión después de la consulta
+
+        if (error) {
+          throw error;
+        }
+
+        // Convertir la foto a cadena base64
+        controlaguaResults.forEach(result => {
+          if (result.foto) {
+            result.foto = Buffer.from(result.foto).toString('base64');
+          }
+        });
+
+        res.render('imputaciones/calidadAgua', {
+          comunidades: comunidadesResults,
+          controlagua: controlaguaResults
+        });
       });
     });
   });
@@ -27,7 +49,7 @@ router.get('/calidadAgua', isLoggedIn, (req, res) => {
 
 // INSERT
 router.post("/calidadAgua/add", isLoggedIn, async (req, res) => {
-  const { piscina, nivelCloro, nivelPh, numeroBanistas, nivelRebosadero, aguaDepurada } = req.body;
+  const { piscina, nivelCloro, nivelPh, numeroBanistas, nivelRebosadero, aguaDepurada, foto } = req.body;
 
   const newWaterControl = {
     piscina,
@@ -36,30 +58,52 @@ router.post("/calidadAgua/add", isLoggedIn, async (req, res) => {
     numeroBanistas,
     nivelRebosadero,
     aguaDepurada,
+    foto,
     user_id: req.user.id,
   };
 
-  try {
-    await pool.query("INSERT INTO controlagua SET ?", [newWaterControl]);
-    req.flash("success", "Registro guardado!");
-    res.redirect("/imputaciones/calidadAgua");
-  } catch (error) {
-    req.flash("danger", "Error al guardar el registro");
-    res.redirect("/imputaciones/calidadAgua");
-  }
+  // Obtener una conexión del pool
+  pool.getConnection(async (error, connection) => {
+    if (error) {
+      throw error;
+    }
+
+    try {
+      // Insertar el nuevo registro
+      await connection.query("INSERT INTO controlagua SET ?", [newWaterControl]);
+      req.flash("success", "Registro guardado!");
+      res.redirect("/imputaciones/calidadAgua");
+    } catch (error) {
+      req.flash("danger", "Error al guardar el registro");
+    } finally {
+      connection.release(); // Liberar la conexión después de la consulta
+    }
+  });
 });
+
 
 // DELETE
 router.get('/calidadAgua/delete/:id', (req, res) => {
   const id = req.params.id;
-  pool.query('DELETE FROM controlagua WHERE id = ?', [id], (error) => {
+
+  // Obtener una conexión del pool
+  pool.getConnection((error, connection) => {
     if (error) {
-      console.error('Error al eliminar el control de calidad del agua seleccionado:', error);
-      req.flash('danger', 'Ocurrió un error al eliminar el control de calidad del agua seleccionado.');
-    } else {
-      req.flash('success', 'Control de calidad de agua eliminado correctamente!');
+      throw error;
     }
-    res.redirect('/imputaciones/calidadAgua');
+
+    // Eliminar el registro
+    connection.query('DELETE FROM controlagua WHERE id = ?', [id], (error) => {
+      connection.release(); // Liberar la conexión después de la consulta
+
+      if (error) {
+        console.error('Error al eliminar el control de calidad del agua seleccionado:', error);
+        req.flash('danger', 'Ocurrió un error al eliminar el control de calidad del agua seleccionado.');
+      } else {
+        req.flash('success', 'Control de calidad de agua eliminado correctamente!');
+      }
+      res.redirect('/imputaciones/calidadAgua');
+    });
   });
 });
 
