@@ -1,6 +1,0 @@
-{
-    "files.exclude": {
-        ".history": true,
-        "\"**/.history\": true": true
-    }
-}

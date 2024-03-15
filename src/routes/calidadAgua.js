@@ -51,34 +51,38 @@ router.get('/calidadAgua', isLoggedIn, (req, res) => {
 router.post("/calidadAgua/add", isLoggedIn, async (req, res) => {
   const { piscina, nivelCloro, nivelPh, numeroBanistas, nivelRebosadero, aguaDepurada, foto } = req.body;
 
-  const newWaterControl = {
-    piscina,
-    nivelCloro,
-    nivelPh,
-    numeroBanistas,
-    nivelRebosadero,
-    aguaDepurada,
-    foto,
-    user_id: req.user.id,
-  };
+    fotoBuffer = Buffer.from(foto.split(",").pop(), 'base64');
 
-  // Obtener una conexión del pool
-  pool.getConnection(async (error, connection) => {
-    if (error) {
-      throw error;
-    }
-
-    try {
-      // Insertar el nuevo registro
-      await connection.query("INSERT INTO controlagua SET ?", [newWaterControl]);
-      req.flash("success", "Registro guardado!");
-      res.redirect("/imputaciones/calidadAgua");
-    } catch (error) {
-      req.flash("danger", "Error al guardar el registro");
-    } finally {
-      connection.release(); // Liberar la conexión después de la consulta
-    }
-  });
+    console.log(fotoBuffer)
+  
+    const newWaterControl = {
+      piscina,
+      nivelCloro,
+      nivelPh,
+      numeroBanistas,
+      nivelRebosadero,
+      aguaDepurada,
+      foto: fotoBuffer,
+      user_id: req.user.id,
+    };
+  
+    // Obtener una conexión del pool
+    pool.getConnection(async (error, connection) => {
+      if (error) {
+        throw error;
+      }
+  
+      try {
+        // Insertar el nuevo registro
+        await connection.query("INSERT INTO controlagua SET ?", [newWaterControl]);
+        req.flash("success", "Registro guardado!");
+        res.redirect("/imputaciones/calidadAgua");
+      } catch (error) {
+        req.flash("danger", "Error al guardar el registro");
+      } finally {
+        connection.release(); // Liberar la conexión después de la consulta
+      }
+    });
 });
 
 
