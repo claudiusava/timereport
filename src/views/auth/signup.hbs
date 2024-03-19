@@ -110,7 +110,7 @@
                       <th scope="col">USUARIO</th>
                       <th scope="col">SOCORRISTA</th>
                       <th scope="col">ADMINISTRADOR</th>
-                      {{!-- <th scope="col">Eliminar</th> --}}
+                      <th scope="col">ACCIONES</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -128,10 +128,11 @@
                       <td>
                         <p class="mb-1" id="permisoDeAministracion">{{permisoDeAdministracion}}</p>
                       </td>
-                      {{!-- <td>
+                      <td><a class="btn m-1 fa-solid fa-pen-to-square" style="font-size: large; color: blue;"
+                          onclick="editar({{id}}, '{{fullname}}', '{{username}}', '{{socorrista}}', '{{permisoDeAdministracion}}')"></a>
                         <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
-                          onclick="confirmar({{id}})"></a>
-                      </td> --}}
+                          onclick="borrar({{id}})"></a>
+                      </td>
                     </tr>
                     {{/each}}
                   </tbody>
@@ -144,7 +145,7 @@
     </div>
   </div>
   <script>
-    function confirmar(id) {
+    function borrar(id) {
       Swal.fire({
         title: '¿Seguro que quieres eliminar este usuario?',
         icon: 'warning',
@@ -157,6 +158,14 @@
           window.location = '/auth/signup/delete/' + id;
         }
       })
+    }
+
+    function editar(id, fullname, username, socorrista, permisoDeAdministracion ) {
+        console.log(id);
+        console.log(fullname);
+        console.log(username);
+        console.log(socorrista);
+        console.log(permisoDeAdministracion);
     }
 
     // Declaración de variables
