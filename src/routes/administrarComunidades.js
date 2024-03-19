@@ -51,8 +51,8 @@ router.post('/administrarComunidades', isLoggedIn, async (req, res) => {
 });
 
 // Actualización
-router.post('/administrarComunidades/editar', isLoggedIn, async (req, res) => {
-  const { id, nombre, codigo, coordenadas } = req.body;
+router.get('/administrarComunidades/editar', isLoggedIn, async (req, res) => {
+  const { id, nombre, codigo, coordenadas } = req.query;
 
   try {
     await poolQuery('UPDATE comunidades SET nombre = ?, codigo = ?, coordenadas = ? WHERE id = ?', [nombre, codigo, coordenadas, id]);

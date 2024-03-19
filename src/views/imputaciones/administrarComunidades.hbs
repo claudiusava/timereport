@@ -75,15 +75,15 @@
           <form id="editarComunidadForm" action="/imputaciones/administrarComunidades/editar" method="POST">
             <div class="form-group">
               <label for="nombreEdit">Nombre:</label>
-              <input type="text" id="nombreEdit" name="nombre" class="form-control" required>
+              <input type="text" id="nombreEdit1" name="nombre" class="form-control" required>
             </div>
             <div class="form-group">
               <label for="codigoEdit">Código:</label>
-              <input type="number" id="codigoEdit" name="codigo" class="form-control" min="0" required>
+              <input type="number" id="codigoEdit1" name="codigo" class="form-control" min="0" required>
             </div>
             <div class="form-group">
               <label for="coordenadasEdit">Coordenadas:</label>
-              <input type="text" id="coordenadasEdit" name="coordenadas" class="form-control"
+              <input type="text" id="coordenadasEdit1" name="coordenadas" class="form-control"
                 pattern="\d{1,2}\.\d+, -\d{1,3}\.\d+" required>
             </div>
             <div class="form-group">
@@ -182,13 +182,12 @@
         cancelButtonText: 'Cancelar',
         focusConfirm: false,
         showLoaderOnConfirm: true,
-        preConfirm: () => {
-          // La función preConfirm no se utilizará, ya que manejaremos el evento click del botón
-        }
+        preConfirm: () => { return [ $('#nombreEdit').val(), $('#codigoEdit').val(), $('#coordenadasEdit').val() ] }
       });
 
       // Agregar un botón personalizado de "Guardar Cambios" al modal
       swalWithForm.then((result) => {
+        const res = result.value;
         if (result.isConfirmed) {
           Swal.fire({
             title: '¿Seguro que quieres guardar los cambios?',
@@ -199,12 +198,8 @@
           }).then((result) => {
             if (result.isConfirmed) {
               // Enviar el formulario al servidor
-              const nombre = document.getElementById('nombreEdit').value;
-              const codigo = document.getElementById('codigoEdit').value;
-              const coordenadas = document.getElementById('coordenadasEdit').value;
-
               // Hacer una redirección a la ruta de actualización con los datos del formulario
-              window.location = `/imputaciones/administrarComunidades/editar?id=${id}&nombre=${nombre}&codigo=${codigo}&coordenadas=${coordenadas}`;
+              window.location = `/imputaciones/administrarComunidades/editar?id=${id}&nombre=${res[0]}&codigo=${res[1]}&coordenadas=${res[2]}`;     
             }
           });
         }
