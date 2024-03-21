@@ -161,11 +161,59 @@
     }
 
     function editar(id, fullname, username, socorrista, permisoDeAdministracion ) {
-        console.log(id);
-        console.log(fullname);
-        console.log(username);
-        console.log(socorrista);
-        console.log(permisoDeAdministracion);
+      let checked1 = permisoDeAdministracion == 'Si' ? 'checked' : '';
+      let checked2 = socorrista == 'Si' ? 'checked' : '';
+      const formHTML = `
+      <form id="editarUserForm"">
+        <div class="form-group">
+          <label for="nombreEdit">Nombre:</label>
+          <input type="text" id="nombreEdit" class="swal2-input form-control" value="${fullname}" required>
+        </div>
+        <div class="form-group">
+          <label for="usernameEdit">Username:</label>
+          <input type="text" id="usernameEdit" class="swal2-input form-control" pattern="^\S+$"
+            required  value="${username}" />
+        </div>
+        <div class="form-group">
+          <input class="swal2-input" name="admincheck" type="checkbox" id="permisoDeAdministracion" ${checked1} /> Administrador
+        </div>
+        <div class="form-group">
+          <input type="checkbox" name="sococheck" class="swal2-input" id="socorrista" ${checked2} /> Socorrista
+        </div>
+      </form>`;
+
+      const swalWithForm = Swal.fire({
+        title: 'Editar Usuario',
+        html: formHTML,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar Cambios',
+        cancelButtonText: 'Cancelar',
+        focusConfirm: false,
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+          let checkAdmin = $('input[name="admincheck"]').is(':checked')
+          let checkSoco = $('input[name="sococheck"]').is(':checked')
+           return [ $('#nombreEdit').val(), $('#usernameEdit').val(), checkAdmin, checkSoco ] }
+      });
+
+      // Agregar un botón personalizado de "Guardar Cambios" al modal
+      swalWithForm.then((result) => {
+        const res = result.value;
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: '¿Seguro que quieres guardar los cambios?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí',
+            cancelButtonText: 'No'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Enviar el formulario al servidor
+              window.location = `/userEdit?id=${id}&fullname=${res[0]}&username=${res[1]}&socorrista=${res[2]}&admin=${res[3]}`;     
+            }
+          });
+        }
+      });
     }
 
     // Declaración de variables

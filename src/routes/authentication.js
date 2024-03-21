@@ -66,6 +66,22 @@ router.get('/auth/signup/delete/:id', isLoggedIn, async (req, res) => {
   }
 });
 
+// Editar usuario
+router.get('/userEdit', isLoggedIn, async (req, res) => {
+  const { id, fullname, username, socorrista, admin } = req.query;
+  let Socorrista = socorrista == 'true' ? '1' : '0';
+  let Admin = admin == 'true' ? '1' : '0';
+
+  try {
+    await poolQuery('UPDATE users SET username = ?, fullname = ?, socorrista = ?, permisoDeAdministracion = ? WHERE id = ?', [username, fullname, Socorrista, Admin, id]);
+    req.flash('success', 'Usuario editado correctamente!');
+    res.redirect('/signup');
+  } catch (error) {
+    console.error(error);
+    req.flash('danger', 'Error al editar el usuario');
+    res.redirect('/signup');
+  }
+});
 
 router.post('/signup', passport.authenticate('local.signup', {
   successRedirect: '/signup',
