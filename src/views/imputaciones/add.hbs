@@ -58,6 +58,27 @@
     // Llamar a la función inicialmente y luego cada segundo para mantener la hora actualizada
     actualizarFechaHora();
     setInterval(actualizarFechaHora, 1000);
+
+    $(document).ready(function() {
+    // Check if geolocation is supported by the browser
+    if ("geolocation" in navigator) {
+        // Call the getCurrentPosition method to get the user's current position
+        navigator.geolocation.getCurrentPosition(function(position) {
+            // Retrieve latitude and longitude from the position object
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            
+            // Use latitude and longitude as needed
+            console.log("Latitude: " + latitude + ", Longitude: " + longitude);
+        }, function(error) {
+            // Handle error if geolocation request fails
+            console.error("Error getting geolocation:", error);
+        });
+        } else {
+        // Handle case where geolocation is not supported
+        console.error("Geolocation is not supported by this browser.");
+        }
+    });
 </script>
 <script>
     var initSelector = jQuery.noConflict();

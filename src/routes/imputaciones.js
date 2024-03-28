@@ -11,7 +11,13 @@ router.get("/add", isLoggedIn, async (req, res) => {
 
     // Utilizando async/await y try/catch para manejar las consultas de manera más limpia
     try {
-      comunidades = await poolQuery('SELECT nombre FROM comunidades');
+      comunidades = await poolQuery(`
+      SELECT c.nombre
+      FROM comunidades c
+      WHERE 
+          (SELECT permisoDeAdministracion FROM users WHERE id = ?) = 1 
+          OR 
+          c.codigo IN (SELECT codigo FROM asignacioncomunidades WHERE user_id = ?);`,[req.user.id, req.user.id]);
     } catch (error) {
       req.flash("danger", "Error al obtener las comunidades.");
     }

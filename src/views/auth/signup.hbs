@@ -145,6 +145,30 @@
     </div>
   </div>
   <script>
+
+  var originalHtml = ""
+
+  function fetchAsignedComunidades(id){
+    fetch(`/coumunidadesById/${id}`).then((response) => response.json())
+    .then((res) => {
+          $('#hide').html(originalHtml);
+
+          let comunidadesCheckCodigos = res.comunidades.map(function(comunidad) {
+            return comunidad.codigo;
+          });
+
+          console.log(comunidadesCheckCodigos)
+
+        $('.form-check-input[name="comunidad"]').each(function() {
+          var codigo = $(this).val();          
+          // Check if the current 'codigo' exists in fetched array
+          if (comunidadesCheckCodigos.includes(codigo)) {
+            $(this).prop('checked', true);
+          }
+        });
+    })
+  }
+
     function borrar(id) {
       Swal.fire({
         title: '¿Seguro que quieres eliminar este usuario?',
@@ -161,8 +185,10 @@
     }
 
     function editar(id, fullname, username, socorrista, permisoDeAdministracion ) {
-      let checked1 = permisoDeAdministracion == 'Si' ? 'checked' : '';
+      let isAdmin = permisoDeAdministracion == 'Si'
+      let checked1 = isAdmin ? 'checked' : '';
       let checked2 = socorrista == 'Si' ? 'checked' : '';
+      if(!isAdmin) fetchAsignedComunidades(id)
       const formHTML = `
       <form id="editarUserForm"">
         <div class="form-group">
@@ -174,12 +200,27 @@
           <input type="text" id="usernameEdit" class="swal2-input form-control" pattern="^\S+$"
             required  value="${username}" />
         </div>
-        <div class="form-group">
-          <input class="swal2-input" name="admincheck" type="checkbox" id="permisoDeAdministracion" ${checked1} /> Administrador
-        </div>
-        <div class="form-group">
-          <input type="checkbox" name="sococheck" class="swal2-input" id="socorrista" ${checked2} /> Socorrista
-        </div>
+        <div id="hide">
+          <div class="form-group">
+            <input class="swal2-input" name="admincheck" type="checkbox" id="permisoDeAdministracion" ${checked1} /> Administrador
+          </div>
+          <div class="form-group">
+            <input type="checkbox" name="sococheck" class="swal2-input" id="socorrista" ${checked2} /> Socorrista
+          </div>
+          <div class="form-group">
+            <div class="scrollable-label" style="text-align: left; margin-left: 20px;">
+              {{#each comunidadesSelect}}
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" class="form-check-input" name="comunidad" value="{{codigo}}"
+                    data-comunidad="{{nombre}}">
+                  {{nombre}}
+                </label>
+              </div>
+              {{/each}}
+            </div>
+          </div>
+        </div>        
       </form>`;
 
       const swalWithForm = Swal.fire({
@@ -193,9 +234,14 @@
         preConfirm: () => {
           let checkAdmin = $('input[name="admincheck"]').is(':checked')
           let checkSoco = $('input[name="sococheck"]').is(':checked')
-           return [ $('#nombreEdit').val(), $('#usernameEdit').val(), checkAdmin, checkSoco ] }
+           return [ $('#nombreEdit').val(), $('#usernameEdit').val(), checkSoco, checkAdmin ] }
       });
 
+      if(isAdmin) $("#hide").hide()
+      else{
+        originalHtml = $('#hide').html();
+        $('#hide').html('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+      }
       // Agregar un botón personalizado de "Guardar Cambios" al modal
       swalWithForm.then((result) => {
         const res = result.value;
@@ -209,11 +255,16 @@
           }).then((result) => {
             if (result.isConfirmed) {
               // Enviar el formulario al servidor
-              window.location = `/userEdit?id=${id}&fullname=${res[0]}&username=${res[1]}&socorrista=${res[2]}&admin=${res[3]}`;     
+              if(isAdmin) window.location = `/userEdit?id=${id}&fullname=${res[0]}&username=${res[1]}&socorrista=false&admin=true`;
+              else window.location = `/userEdit?id=${id}&fullname=${res[0]}&username=${res[1]}&socorrista=${res[2]}&admin=${res[3]}&${encodeArray('codes', ['0101'])}`;     
             }
           });
         }
       });
+    }
+
+    function encodeArray(key, array) {
+      return array.map(value => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
     }
 
     // Declaración de variables
