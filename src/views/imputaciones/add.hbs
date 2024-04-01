@@ -20,7 +20,12 @@
                 <div class="alert alert-danger alert-dismissible col-md-12" id="alertLoc" role="alert" style="display: none;">
                     <strong>¡Alerta! -</strong> No puedes fichar a tanta distancia de la comunidad
                     <button type="button" class="btn-close" data-bs-dismiss="alert" onclick="$('#alertLoc').hide()"></button>
-                </div
+                </div>
+                <div>
+                    {{#each imputaciones}}
+                    <div class="imputaciones" data-fecha="{{created_at}}" data-tipo="{{isEntrada}}"></div>
+                    {{/each}}
+                </div>
                 <div class="card text-center">
                     <div class="card-header">
                         <strong>
@@ -41,11 +46,12 @@
                                 <input type="hidden" id="fecha" name="fecha" value="">
                                 <input type="hidden" id="horas" name="horas" value="">
                                 <input type="hidden" id="minutos" name="minutos" value="">
+                                <input type="hidden" id="isEntrada" name="isEntrada" value="true">
                             </div>
                             <!-- Label para mostrar la fecha y hora actual -->
                             <h2 id="fechaHoraLabel"></h2>
                             <div class="form-group">
-                                <button class="btn btn-success">Fichar entrada</button>
+                                <button class="btn btn-success" id="btn">Fichar entrada</button>
                             </div>
                         </form>
                     </div>
@@ -76,6 +82,28 @@
     setInterval(actualizarFechaHora, 1000);
 
     $(document).ready(function() {
+        //checkear si ya ha fichado
+        var today = new Date();
+        let todayEntrada = false
+        let todaySalida = false
+        today.setHours(0, 0, 0, 0);
+        $('.imputaciones').each(function() {
+            var createdAtDate = new Date($(this).data('fecha'));
+            createdAtDate.setHours(0, 0, 0, 0);
+
+            // Compare createdAtDate with today
+            if (createdAtDate.getTime() === today.getTime()) {
+                if($(this).data('tipo') == 0)
+                    todaySalida = true
+                else todayEntrada = true
+            }
+        });
+
+        if(todayEntrada && !todaySalida){
+            $("#isEntrada").val(false)
+            $("#btn").html('Fichar salida');
+        }
+
         // Check if geolocation is supported by the browser
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(function(position) {

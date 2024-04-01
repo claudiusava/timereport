@@ -25,10 +25,11 @@ router.get("/add", isLoggedIn, async (req, res) => {
     try {
       imputaciones = await poolQuery(
         `SELECT 
-            DATE_FORMAT(fecha, "%d/%m/%Y") AS fechaFormateada, 
+            fecha, 
             comunidad, 
             horas, 
             LPAD(minutos, 2, "0") AS minutos, 
+            isEntrada,
             id,
             created_at
           FROM imputaciones
@@ -49,7 +50,9 @@ router.get("/add", isLoggedIn, async (req, res) => {
 
 // INSERT
 router.post("/add", isLoggedIn, async (req, res) => {
-  const { fecha, comunidad, horas, minutos } = req.body;
+  const { fecha, comunidad, horas, minutos, isEntrada } = req.body;
+
+  console.log(req.body)
 
   const newImputacion = {
     fecha,
@@ -58,7 +61,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
     minutos,
     minutos_formateados: (minutos / 60) * 100,
     user_id: req.user.id,
-    isEntrada: 1
+    isEntrada: isEntrada == "true" ? 1 : 0
   };
 
   try {
