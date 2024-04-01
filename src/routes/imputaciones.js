@@ -12,7 +12,7 @@ router.get("/add", isLoggedIn, async (req, res) => {
     // Utilizando async/await y try/catch para manejar las consultas de manera más limpia
     try {
       comunidades = await poolQuery(`
-      SELECT c.nombre
+      SELECT c.id, c.nombre, c.coordenadas, c.codigo
       FROM comunidades c
       WHERE 
           (SELECT permisoDeAdministracion FROM users WHERE id = ?) = 1 
@@ -58,6 +58,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
     minutos,
     minutos_formateados: (minutos / 60) * 100,
     user_id: req.user.id,
+    isEntrada: 1
   };
 
   try {
@@ -65,6 +66,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
     req.flash("success", "Registro guardado!");
     res.redirect("/imputaciones/add");
   } catch (error) {
+    console.log(error)
     req.flash("danger", "Error al guardar el registro");
     res.redirect("/imputaciones/add");
   }

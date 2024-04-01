@@ -17,6 +17,10 @@
     <div class="container p-4">
         <div class="row">
             <div class="col-md-4 mx-auto">
+                <div class="alert alert-danger alert-dismissible col-md-12" id="alertLoc" role="alert" style="display: none;">
+                    <strong>¡Alerta! -</strong> No puedes fichar a tanta distancia de la comunidad
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" onclick="$('#alertLoc').hide()"></button>
+                </div
                 <div class="card text-center">
                     <div class="card-header">
                         <strong>
@@ -24,14 +28,19 @@
                         </strong>
                     </div>
                     <div class="card-body">
-                        <form action="/imputaciones/add" method="POST">
+                        <form id="add" action="/imputaciones/add" method="POST">
                             <div class="form-group">
-                                <select name="piscina" class="form-control" id="selector" required>
+                                <select name="comunidad" class="form-control" id="selector" required>
                                     <option></option>
                                     {{#each comunidades}}
-                                    <option value="{{nombre}}">{{nombre}}</option>
+                                    <option value="{{nombre}}" data-coords="{{coordenadas}}">{{nombre}}</option>
                                     {{/each}}
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <input type="hidden" id="fecha" name="fecha" value="">
+                                <input type="hidden" id="horas" name="horas" value="">
+                                <input type="hidden" id="minutos" name="minutos" value="">
                             </div>
                             <!-- Label para mostrar la fecha y hora actual -->
                             <h2 id="fechaHoraLabel"></h2>
@@ -47,12 +56,19 @@
 </body>
 
 <script>
+    var latitude = 0
+    var longitude = 0
     // Función para actualizar la fecha y hora actual en el label
     function actualizarFechaHora() {
         const fechaActual = new Date();
         const opciones = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
         const formatoDeseado = new Intl.DateTimeFormat('es-ES', opciones).format(fechaActual).replace(',', ' -');
         document.getElementById('fechaHoraLabel').textContent = formatoDeseado;
+        let dataArray = formatoDeseado.split(' - ')
+        $('#fecha').val(dataArray[0])
+        let timeArray = dataArray[1].split(":")
+        $('#horas').val(timeArray[0])
+        $('#minutos').val(timeArray[1])
     }
 
     // Llamar a la función inicialmente y luego cada segundo para mantener la hora actualizada
@@ -60,25 +76,68 @@
     setInterval(actualizarFechaHora, 1000);
 
     $(document).ready(function() {
-    // Check if geolocation is supported by the browser
-    if ("geolocation" in navigator) {
-        // Call the getCurrentPosition method to get the user's current position
-        navigator.geolocation.getCurrentPosition(function(position) {
-            // Retrieve latitude and longitude from the position object
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-            
-            // Use latitude and longitude as needed
-            console.log("Latitude: " + latitude + ", Longitude: " + longitude);
-        }, function(error) {
-            // Handle error if geolocation request fails
-            console.error("Error getting geolocation:", error);
-        });
+        // Check if geolocation is supported by the browser
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                latitude = position.coords.latitude;
+                longitude = position.coords.longitude;
+
+                console.log("Latitude: " + latitude + ", Longitude: " + longitude);
+            }, function(error) {
+                console.error("Error getting geolocation:", error);
+            });
         } else {
-        // Handle case where geolocation is not supported
-        console.error("Geolocation is not supported by this browser.");
+            // Handle case where geolocation is not supported
+            console.error("Geolocation is not supported by this browser.");
         }
+
+        $('#add').submit(function(event) {
+            event.preventDefault();
+            
+            var selectedOption = $('#selector option:selected');
+            var selectedValue = selectedOption.val();
+            var selectedCoords = selectedOption.data('coords');
+
+            console.log("Selected Value:", selectedValue);
+            console.log("Selected Coordinates:", selectedCoords);
+
+            var coordsArray = selectedCoords.split(',')
+            var comuniLat = parseFloat(coordsArray[0])
+            var comuniLon = parseFloat(coordsArray[1])
+
+            if(!insideComunidad(latitude, longitude, comuniLat, comuniLon, 1)){
+                $('#alertLoc').show();
+                return
+            }                
+            
+            $(this)[0].submit();
+        });
     });
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        // Convert latitude and longitude from degrees to radians
+        var degToRad = function (degrees) {
+            return degrees * (Math.PI / 180);
+        };
+
+        var R = 6371; // Radius of the Earth in kilometers
+        var dLat = degToRad(lat2 - lat1);
+        var dLon = degToRad(lon2 - lon1);
+
+        var a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(degToRad(lat1)) * Math.cos(degToRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var distance = R * c; // Distance in kilometers
+
+        return distance;
+    }
+
+    function insideComunidad(lat1, lon1, lat2, lon2, threshold) {
+        var distance = calculateDistance(lat1, lon1, lat2, lon2);
+        return distance <= threshold;
+    }
 </script>
 <script>
     var initSelector = jQuery.noConflict();
