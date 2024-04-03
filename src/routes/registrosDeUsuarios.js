@@ -19,27 +19,66 @@ async function poolQuery(sql, params) {
 // SELECT
 router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
   try {
-    let controlAgua = [];
+    let controlagua = [];
     let imputaciones = [];
     try {
       imputaciones = await poolQuery(
         `SELECT 
-            fecha, 
-            comunidad, 
-            horas, 
-            LPAD(minutos, 2, "0") AS minutos, 
-            isEntrada,
-            id,
-            created_at
-          FROM imputaciones
-          WHERE user_id = ?
-          ORDER BY created_at DESC`,
+            u.fullname, 
+            i.fecha, 
+            i.comunidad, 
+            i.horas, 
+            LPAD(i.minutos, 2, "0") AS minutos, 
+            i.isEntrada,
+            i.id,
+            DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at
+        FROM 
+            imputaciones i
+        JOIN 
+            users u ON i.user_id = u.id
+        WHERE i.user_id = ?
+        ORDER BY created_at DESC`,
         [req.user.id]
       );
     } catch (error) {
+      console.log(error)
       req.flash("danger", "Error al obtener las imputaciones.");
     }
-    res.render("imputaciones/registrosDeUsuarios",{ controlAgua, imputaciones });
+
+    try {
+      controlagua = await poolQuery(
+        `SELECT 
+            u.fullname, 
+            c.nivelCloro,
+            c.nivelPh,
+            c.piscina,
+            c.numeroBanistas,
+            c.nivelRebosadero,
+            c.aguaDepurada,
+            c.foto,
+            DATE_FORMAT(c.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at,
+            c.id
+        FROM 
+            controlagua c
+        JOIN 
+            users u ON c.user_id = u.id
+        WHERE c.user_id = ?
+        ORDER BY created_at DESC`,
+        [req.user.id]
+      );
+    } catch (error) {
+      console.log(error)
+      req.flash("danger", "Error al obtener las imputaciones.");
+    }
+
+    // Convertir la foto a cadena base64
+    controlagua.forEach(result => {
+      if (result.foto) {
+        result.foto = Buffer.from(result.foto).toString('base64');
+      }
+    });
+
+    res.render("imputaciones/registrosDeUsuarios",{ controlagua, imputaciones });
   } catch (error) {
     console.error(error);
     req.flash("danger", "Error al obtener...");

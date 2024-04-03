@@ -37,9 +37,10 @@
                             <th scope="col">TRABAJADOR</th>
                             <th scope="col">COMUNIDAD</th>
                             <th scope="col">FECHA</th>
-                            <th scope="col">HORAS TRABAJADAS</th>
-                            <th scope="col">HORAS TRABAJADAS (formato numérico)</th>
+                            <!--<th scope="col">HORAS TRABAJADAS</th>
+                            <th scope="col">HORAS TRABAJADAS (formato numérico)</th>-->
                             <th scope="col">CREACIÓN DEL REGISTRO</th>
+                            <th scope="col">TIPO (1 - entrada, 0 - salida)</th>
                             <th scope="col">Eliminar</th>
                         </tr>
                     </thead>
@@ -47,7 +48,7 @@
                         {{#each imputaciones}}
                         <tr>
                             <td>
-                                <p class="mb-1">{{user_id}}</p>
+                                <p class="mb-1">{{fullname}}</p>
                             </td>
                             <td>
                                 <p class="mb-1">{{comunidad}}</p>
@@ -55,14 +56,18 @@
                             <td>
                                 <p class="mb-1">{{fecha}}</p>
                             </td>
+                            <!-- 
                             <td>
                                 <p class="mb-1">{{horas}}:{{minutos}}</p>
                             </td>
                             <td>
                                 <p class="mb-1">{{horas}}:{{minutos}}</p>
+                            </td>-->
+                            <td>
+                                <p class="mb-1">{{formatted_created_at}}</p>
                             </td>
                             <td>
-                                <p class="mb-1">{{created_at}}</p>
+                                <p class="mb-1">{{isEntrada}}</p>
                             </td>
                             <td>
                                 <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
@@ -88,6 +93,7 @@
                             <th scope="col">NÚMERO DE BAÑISTAS</th>
                             <th scope="col">NIVEL DE REBOSADERO</th>
                             <th scope="col">AGUA DEPURADA (M³)</th>
+                            <th scope="col">FOTO</th>
                             <th scope="col">Eliminar</th>
                         </tr>
                     </thead>
@@ -117,6 +123,9 @@
                             </td>
                             <td>
                                 <p class="mb-1">{{aguaDepurada}}</p>
+                            </td>
+                            <td>
+                                <img src="data:image/jpg;base64,{{foto}}" alt="Foto del medidor" style="max-width: 100%; max-height: 200px;">
                             </td>
                             <td>
                                 <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
