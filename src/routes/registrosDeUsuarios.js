@@ -19,7 +19,27 @@ async function poolQuery(sql, params) {
 // SELECT
 router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
   try {
-    res.render("imputaciones/registrosDeUsuarios");
+    let controlAgua = [];
+    let imputaciones = [];
+    try {
+      imputaciones = await poolQuery(
+        `SELECT 
+            fecha, 
+            comunidad, 
+            horas, 
+            LPAD(minutos, 2, "0") AS minutos, 
+            isEntrada,
+            id,
+            created_at
+          FROM imputaciones
+          WHERE user_id = ?
+          ORDER BY created_at DESC`,
+        [req.user.id]
+      );
+    } catch (error) {
+      req.flash("danger", "Error al obtener las imputaciones.");
+    }
+    res.render("imputaciones/registrosDeUsuarios",{ controlAgua, imputaciones });
   } catch (error) {
     console.error(error);
     req.flash("danger", "Error al obtener...");
