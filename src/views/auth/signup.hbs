@@ -54,7 +54,7 @@
             </strong>
           </div>
           <div class="card-body">
-            <form action="/signup" method="POST">
+            <form id="myForm" action="/signup" method="POST">
               <div class="form-group">
                 <input type="text" name="fullname" placeholder="nombre y apellido" class="form-control" autofocus
                   required />
@@ -70,11 +70,12 @@
                 aplicarán
                 permisos mínimos (Partes de trabajo)</p>
               <div class="form-group" style="text-align: left;">
-                <input class="form-check-input" type="checkbox" name="permisoDeAdministracion"
-                  id="permisoDeAdministracion" /> Permiso de administración (control total).
+                <input class="form-check-input" name="role" type="radio" 
+                id="permisoDeAdministracion" value="admin" onclick="$('#comunidadesSelect').hide()" required /> Permiso de administración (control total).
               </div>
               <div class="form-group" style="text-align: left;">
-                <input type="checkbox" class="form-check-input" name="socorrista" id="socorrista" /> Socorrista.
+                <input type="radio" class="form-check-input" name="role" 
+                id="socorrista" value="socorrista" onclick="$('#comunidadesSelect').show()" /> Socorrista.
               </div>
               <div class="form-group" id="comunidadesSelect" style="display: none;">
                 <label for="comunidad">Asociar comunidad</label>
@@ -292,32 +293,6 @@
     if (permisoDeAdministracion == 1) {
       document.getElementById('permisoDeAdministracion').value = 'si';
     }
-
-    // Si "permisoAdminCheckbox" está marcado que "maquinistaCheckbox" y "socorristaCheckbox" se deshabiliten.
-    permisoAdminCheckbox.addEventListener('change', function () {
-      if (this.checked) {
-        socorristaCheckbox.disabled = true;
-      } else {
-        maquinistaCheckbox.disabled = false;
-        socorristaCheckbox.disabled = false;
-      }
-    });
-
-    socorristaCheckbox.addEventListener('change', function () {
-      if (this.checked) {
-        permisoAdminCheckbox.disabled = true;
-      } else {
-        permisoAdminCheckbox.disabled = false;
-      }
-    });
-
-    socorristaCheckbox.addEventListener('change', function () {
-      if (socorristaCheckbox.checked) {
-        comunidadesSelect.style.display = 'block';
-      } else {
-        comunidadesSelect.style.display = 'none';
-      }
-    });
 
     document.querySelector("form").addEventListener("submit", function (event) {
       event.preventDefault(); // Evita que el formulario se envíe

@@ -52,7 +52,7 @@ router.get("/add", isLoggedIn, async (req, res) => {
 router.post("/add", isLoggedIn, async (req, res) => {
   const { fecha, comunidad, horas, minutos, isEntrada } = req.body;
 
-  console.log(req.body)
+  //console.log(req.body)
 
   const newImputacion = {
     fecha,

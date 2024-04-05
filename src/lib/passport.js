@@ -32,29 +32,17 @@ passport.use('local.signup', new LocalStrategy({
   passwordField: 'password',
   passReqToCallback: true
 }, (req, username, password, done) => {
-  let { permisoDeAdministracion, socorrista, fullname } = req.body;
+  let { role, fullname } = req.body;
 
   var comunidadesAsociadas = req.body.comunidadesAsociadas.split(',');
   var comunidadesAsociadasAll = req.body.comunidadesAsociadasAll.split(',');
-
-  if (permisoDeAdministracion == "on") {
-    permisoDeAdministracion = 1;
-  } else {
-    permisoDeAdministracion = 0;
-  }
-
-  if (socorrista == "on") {
-    socorrista = 1;
-  } else {
-    socorrista = 0;
-  }
 
   let newUser = {
     fullname,
     username,
     password,
-    permisoDeAdministracion,
-    socorrista
+    permisoDeAdministracion: (role == "admin") ? 1 : 0,
+    socorrista: (role == "socorrista") ? 1 : 0
   };
 
   newUser.password = helpers.encryptPassword(password);
@@ -70,7 +58,7 @@ passport.use('local.signup', new LocalStrategy({
         }
         newUser.id = results.insertId;
 
-        if (permisoDeAdministracion == 1) {
+        if (role == "admin") {
           if (comunidadesAsociadasAll[0] != '') {
             queryInsertAsignComun(comunidadesAsociadasAll, newUser.id);
           }
