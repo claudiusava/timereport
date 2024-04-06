@@ -18,7 +18,10 @@
         <div class="row">
             <div class="col-md-4 mx-auto">
                 <div class="alert alert-danger alert-dismissible col-md-12" id="alertLoc" role="alert" style="display: none;">
-                    <strong>¡Alerta! -</strong> No puedes fichar a tanta distancia de la comunidad
+                    <strong>¡Alerta! -</strong> 
+                    <span id="customText">
+                        No puedes fichar a tanta distancia de la comunidad
+                    </span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" onclick="$('#alertLoc').hide()"></button>
                 </div>
                 <div>
@@ -84,8 +87,8 @@
     $(document).ready(function() {
         //checkear si ya ha fichado
         var today = new Date();
-        let todayEntrada = false
-        let todaySalida = false
+        let entradasHoy = 0
+        let salidasHoy = 0
         today.setHours(0, 0, 0, 0);
         $('.imputaciones').each(function() {
             var createdAtDate = new Date($(this).data('fecha'));
@@ -94,12 +97,12 @@
             // Compare createdAtDate with today
             if (createdAtDate.getTime() === today.getTime()) {
                 if($(this).data('tipo') == 0)
-                    todaySalida = true
-                else todayEntrada = true
+                    salidasHoy ++
+                else entradasHoy ++
             }
         });
 
-        if(todayEntrada && !todaySalida){
+        if(entradasHoy > salidasHoy){
             $("#isEntrada").val(false)
             $("#btn").html('Fichar salida');
         }
@@ -116,6 +119,12 @@
 
         $('#add').submit(function(event) {
             event.preventDefault();
+
+            if(entradasHoy == 2 && salidasHoy == 2){
+                $('#customText').text("Has alcanzado el máximo de fichajes diarios");
+                $('#alertLoc').show();
+                return
+            }
             
             var selectedOption = $('#selector option:selected');
             var selectedValue = selectedOption.val();
