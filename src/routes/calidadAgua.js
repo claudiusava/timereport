@@ -12,7 +12,13 @@ router.get('/calidadAgua', isLoggedIn, (req, res) => {
     }
 
     // Consulta para recuperar los registros de la tabla 'comunidades'
-    connection.query('SELECT c.nombre FROM asignacioncomunidades AS ac JOIN comunidades AS c ON ac.codigo = c.codigo WHERE ac.user_id = ?', [req.user.id], function (error, comunidadesResults) {
+    connection.query(`
+      SELECT c.nombre, c.codigo
+      FROM comunidades c
+      WHERE 
+          (SELECT permisoDeAdministracion FROM users WHERE id = ?) = 1 
+          OR 
+          c.codigo IN (SELECT codigo FROM asignacioncomunidades WHERE user_id = ?);`, [req.user.id, req.user.id], function (error, comunidadesResults) {
       if (error) {
         connection.release(); // Liberar la conexión en caso de error
         throw error;

@@ -129,7 +129,9 @@
                       <td><a class="btn m-1 fa-solid fa-pen-to-square" style="font-size: large; color: blue;"
                           onclick="editar({{id}}, '{{nombre}}', {{codigo}}, '{{coordenadas}}')"></a>
                         <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
-                          onclick="borrar({{id}})"></a>
+   onclick="borrar({{id}}, '{{codigo}}')"></a>
+
+
                       </td>
                     </tr>
                     {{/each}}
@@ -143,20 +145,21 @@
     </div>
   </div>
   <script>
-    function borrar(id) {
-      Swal.fire({
-        title: '¿Seguro que quieres eliminar esta comunidad?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Eliminar',
-        confirmButtonColor: '#d63030',
-        focusConfirm: 'true'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location = '/imputaciones/administrarComunidades/delete/' + id;
-        }
-      })
+  function borrar(id, codigo) {
+  Swal.fire({
+    title: '¿Seguro que quieres eliminar esta comunidad?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Eliminar',
+    confirmButtonColor: '#d63030',
+    focusConfirm: 'true'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location = '/imputaciones/administrarComunidades/delete/' + id + '?codigo=' + codigo;
     }
+  })
+}
+
 
     function editar(id, nombre, codigo, coordenadas) {
       const formHTML = `<form id="editarComunidadForm">
@@ -166,7 +169,7 @@
     </div>
     <div class="form-group">
       <label for="codigoEdit">Código:</label>
-      <input type="number" id="codigoEdit" class="swal2-input" value="${codigo}" min="0" required>
+      <input type="number" id="codigoEdit" class="swal2-input" value="${codigo}" min="0" required disabled>
     </div>
     <div class="form-group">
       <label for="coordenadasEdit">Coordenadas:</label>
@@ -182,7 +185,7 @@
         cancelButtonText: 'Cancelar',
         focusConfirm: false,
         showLoaderOnConfirm: true,
-        preConfirm: () => { return [ $('#nombreEdit').val(), $('#codigoEdit').val(), $('#coordenadasEdit').val() ] }
+        preConfirm: () => { return [$('#nombreEdit').val(), $('#codigoEdit').val(), $('#coordenadasEdit').val()] }
       });
 
       // Agregar un botón personalizado de "Guardar Cambios" al modal
@@ -199,7 +202,7 @@
             if (result.isConfirmed) {
               // Enviar el formulario al servidor
               // Hacer una redirección a la ruta de actualización con los datos del formulario
-              window.location = `/imputaciones/administrarComunidades/editar?id=${id}&nombre=${res[0]}&codigo=${res[1]}&coordenadas=${res[2]}`;     
+              window.location = `/imputaciones/administrarComunidades/editar?id=${id}&nombre=${res[0]}&codigo=${res[1]}&coordenadas=${res[2]}`;
             }
           });
         }

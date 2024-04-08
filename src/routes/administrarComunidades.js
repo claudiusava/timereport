@@ -65,12 +65,17 @@ router.get('/administrarComunidades/editar', isLoggedIn, async (req, res) => {
   }
 });
 
-// DELETE
 router.get('/administrarComunidades/delete/:id', isLoggedIn, async (req, res) => {
   const id = req.params.id;
+  const codigo = req.query.codigo; // Accede al parámetro 'codigo' desde la consulta
   
   try {
+    // Eliminar registros de la tabla asignacioncomunidad relacionados con la comunidad
+    await poolQuery('DELETE FROM asignacioncomunidades WHERE codigo = ?', [codigo]);
+
+    // Luego eliminar la comunidad de la tabla comunidades
     await poolQuery('DELETE FROM comunidades WHERE id = ?', [id]);
+
     req.flash('success', 'Comunidad eliminada correctamente!');
     res.redirect('/imputaciones/administrarComunidades');
   } catch (error) {
@@ -79,5 +84,7 @@ router.get('/administrarComunidades/delete/:id', isLoggedIn, async (req, res) =>
     res.redirect('/imputaciones/administrarComunidades');
   }
 });
+
+
 
 module.exports = router;
