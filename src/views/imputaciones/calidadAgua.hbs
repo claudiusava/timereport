@@ -20,6 +20,33 @@
     src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.min.js"></script>
   <script
     src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.templates.min.js"></script>
+    <style>
+    .foto {
+        max-width: 100%;
+        max-height: 200px;
+        cursor: pointer;
+        border-radius: 5%;
+        transition: transform 0.5s ease;
+    }
+    
+    .foto.agrandada {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(3);
+        z-index: 1000;
+    }
+
+    .fondo-ampliado {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8); /* Fondo semi-transparente */
+        z-index: 999; /* Por debajo de la imagen ampliada */
+    }
+</style>
 </head>
 
 <body>
@@ -106,7 +133,7 @@
               <p class="mb-1"><b>Número de bañistas: </b>{{numeroBanistas}}</p>
               <p class="mb-1"><b>Nivel de rebosadero: </b>{{nivelRebosadero}}</p>
               <p class="mb-1"><b>Agua depurada (M³): </b>{{aguaDepurada}}</p>
-              <p class="mb-1"><b>Foto medidor: </b><img src="data:image/jpg;base64,{{foto}}" alt="Foto del medidor" style="max-width: 100%; max-height: 200px;"></p>
+              <p class="mb-1"><b>Foto medidor: </b><img src="data:image/jpg;base64,{{foto}}" alt="Foto del medidor" style="max-width: 100px; max-height: 100px; border-radius: 5%;" class="foto" onclick="ampliar(this)"></p>
             </div>
           </div>
           <div class="w-100 text-right">
@@ -199,6 +226,37 @@
 
     document.querySelector("#inp").addEventListener("change", readFile);
   </script>
+  <script>
+    function ampliar(img) {
+        img.classList.toggle('agrandada');
+        if (img.classList.contains('agrandada')) {
+            // Crear un div para el fondo semi-transparente
+            var fondo = document.createElement('div');
+            fondo.className = 'fondo-ampliado';
+            // Agregar el fondo antes de la imagen ampliada en el DOM
+            img.parentNode.insertBefore(fondo, img);
+            // Escuchar clics en el fondo y en la imagen para cerrar la imagen ampliada
+            fondo.addEventListener('click', cerrarAmpliada);
+            img.addEventListener('click', cerrarAmpliada);
+        } else {
+            // Quitar el fondo semi-transparente
+            var fondo = document.querySelector('.fondo-ampliado');
+            fondo.parentNode.removeChild(fondo);
+        }
+    }
+
+    function cerrarAmpliada(event) {
+        // Verificar si el clic ocurrió en el fondo semi-transparente
+        if (event.target.classList.contains('fondo-ampliado')) {
+            // Obtener la imagen ampliada y cerrarla
+            var imgAmpliada = document.querySelector('.foto.agrandada');
+            imgAmpliada.classList.remove('agrandada');
+            // Quitar el fondo semi-transparente
+            var fondo = document.querySelector('.fondo-ampliado');
+            fondo.parentNode.removeChild(fondo);
+        }
+    }
+</script>
 </body>
 
 </html>

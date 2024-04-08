@@ -36,7 +36,6 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
             imputaciones i
         JOIN 
             users u ON i.user_id = u.id
-        WHERE i.user_id = ?
         ORDER BY created_at DESC`,
         [req.user.id]
       );
@@ -62,7 +61,6 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
             controlagua c
         JOIN 
             users u ON c.user_id = u.id
-        WHERE c.user_id = ?
         ORDER BY created_at DESC`,
         [req.user.id]
       );
