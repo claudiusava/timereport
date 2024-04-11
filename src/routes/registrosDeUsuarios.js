@@ -24,19 +24,23 @@ router.get('/registrosDeUsuarios', isLoggedIn, async (req, res) => {
     try {
       imputaciones = await poolQuery(
         `SELECT 
-            u.fullname, 
-            i.fecha, 
-            i.comunidad, 
-            i.horas, 
-            LPAD(i.minutos, 2, "0") AS minutos, 
-            i.isEntrada,
-            i.id,
-            DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at
-        FROM 
-            imputaciones i
-        JOIN 
-            users u ON i.user_id = u.id
-        ORDER BY created_at DESC`,
+        u.fullname, 
+        i.fecha, 
+        i.comunidad, 
+        i.horas, 
+        LPAD(i.minutos, 2, "0") AS minutos, 
+        CASE i.isEntrada
+            WHEN 1 THEN 'ENTRADA'
+            WHEN 0 THEN 'SALIDA'
+        END AS isEntrada,
+        i.id,
+        DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i') AS formatted_created_at
+    FROM 
+        imputaciones i
+    JOIN 
+        users u ON i.user_id = u.id
+    ORDER BY created_at DESC
+    `,
         [req.user.id]
       );
     } catch (error) {

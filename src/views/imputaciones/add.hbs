@@ -111,7 +111,7 @@
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition( 
             successHandler, errorHandler, 
-            {enableHighAccuracy: true, maximumAge: 10000})
+            {enableHighAccuracy: true, maximumAge: 1000, accuracy: 100})
         } else {
             console.error("Geolocation is not supported by this browser.");
             alert("Error, no se pudo obtener la localización")
