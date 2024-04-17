@@ -65,4 +65,11 @@ app.listen(app.get('port'), () => {
     console.log('Server on port', app.get('port'));
 });
 
+// Manejo de errores
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
+
 

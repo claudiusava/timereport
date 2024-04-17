@@ -24,32 +24,34 @@
     <script
         src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.templates.min.js"></script>
     <style>
-    .foto {
-        max-width: 100%;
-        max-height: 200px;
-        cursor: pointer;
-        border-radius: 5%;
-        transition: transform 0.5s ease;
-    }
-    
-    .foto.agrandada {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(3);
-        z-index: 1000;
-    }
+        .foto {
+            max-width: 100%;
+            max-height: 200px;
+            cursor: pointer;
+            border-radius: 5%;
+            transition: transform 0.5s ease;
+        }
 
-    .fondo-ampliado {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.8); /* Fondo semi-transparente */
-        z-index: 999; /* Por debajo de la imagen ampliada */
-    }
-</style>
+        .foto.agrandada {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(3);
+            z-index: 1000;
+        }
+
+        .fondo-ampliado {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            /* Fondo semi-transparente */
+            z-index: 999;
+            /* Por debajo de la imagen ampliada */
+        }
+    </style>
 </head>
 
 <body>
@@ -139,7 +141,9 @@
                                 <p class="mb-1">{{aguaDepurada}}</p>
                             </td>
                             <td>
-                                <img src="data:image/jpg;base64,{{foto}}" alt="Foto del medidor" style="max-width: 100px; max-height: 100px; border-radius: 5%;" class="foto" onclick="ampliar(this)">
+                                <img src="data:image/jpg;base64,{{foto}}" alt="Foto del medidor"
+                                    style="max-width: 100px; max-height: 100px; border-radius: 5%;" class="foto"
+                                    onclick="ampliar(this)">
                             </td>
                             <td>
                                 <a class="btn m-1 fa-solid fa-trash-can" style="font-size: large; color: red;"
@@ -151,425 +155,427 @@
                 </table>
             </div>
         </div>
+    </div>
 
 
-        <script>
-            // Función para borrar horas trabajadas
-            function confirmarBorrarHoras(id) {
-                Swal.fire({
-                    title: '¿Seguro que quieres eliminar este registro?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Eliminar',
-                    confirmButtonColor: '#d63030',
-                    focusConfirm: 'true'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location = '/imputaciones/registrosDeUsuarios/deleteHoras/' + id;
-                    }
-                })
+    <script>
+        // Función para borrar horas trabajadas
+        function confirmarBorrarHoras(id) {
+            Swal.fire({
+                title: '¿Seguro que quieres eliminar este registro?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                confirmButtonColor: '#d63030',
+                focusConfirm: 'true'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location = '/imputaciones/registrosDeUsuarios/deleteHoras/' + id;
+                }
+            })
+        }
+
+        // Función para borrar controles de calidad de agua
+        function confirmarBorrarControlAgua(id) {
+            Swal.fire({
+                title: '¿Seguro que quieres eliminar este registro?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                confirmButtonColor: '#d63030',
+                focusConfirm: 'true'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location = '/imputaciones/registrosDeUsuarios/deleteControlAgua/' + id;
+                }
+            })
+        }
+
+        // Función para ampliar una imagen al hacer click sobre ella
+        function ampliar(img) {
+            img.classList.toggle('agrandada');
+            if (img.classList.contains('agrandada')) {
+                // Crear un div para el fondo semi-transparente
+                var fondo = document.createElement('div');
+                fondo.className = 'fondo-ampliado';
+                // Agregar el fondo antes de la imagen ampliada en el DOM
+                img.parentNode.insertBefore(fondo, img);
+                // Escuchar clics en el fondo y en la imagen para cerrar la imagen ampliada
+                fondo.addEventListener('click', cerrarAmpliada);
+                img.addEventListener('click', cerrarAmpliada);
+            } else {
+                // Quitar el fondo semi-transparente
+                var fondo = document.querySelector('.fondo-ampliado');
+                fondo.parentNode.removeChild(fondo);
             }
+        }
 
-            // Función para borrar controles de calidad de agua
-            function confirmarBorrarControlAgua(id) {
-                Swal.fire({
-                    title: '¿Seguro que quieres eliminar este registro?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Eliminar',
-                    confirmButtonColor: '#d63030',
-                    focusConfirm: 'true'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location = '/imputaciones/registrosDeUsuarios/deleteControlAgua/' + id;
-                    }
-                })
+        // Función para devolver imagen a tamaño original
+        function cerrarAmpliada(event) {
+            // Verificar si el clic ocurrió en el fondo semi-transparente
+            if (event.target.classList.contains('fondo-ampliado')) {
+                // Obtener la imagen ampliada y cerrarla
+                var imgAmpliada = document.querySelector('.foto.agrandada');
+                imgAmpliada.classList.remove('agrandada');
+                // Quitar el fondo semi-transparente
+                var fondo = document.querySelector('.fondo-ampliado');
+                fondo.parentNode.removeChild(fondo);
             }
+        }
 
-            // Configuración de las tablas 
-            var configTables = {
-                lengthMenu: [
-                    [10, 25, 50, 100, -1],
-                    ['10', '25', '50', '100', 'todos']
-                ],
-                dom: "Bflrtip",
-                buttons: {
-                    dom: {
-                        button: {
-                            className: 'btn'
-                        }
-                    },
-                    buttons: [
-                        {
-                            extend: "excel",
-                            text: 'Exportar a excel',
-                            className: 'btn btn-success',
-                            margin: '100px',
-                            excelStyles: [
-                                {
-                                    cells: "sh",
-                                    style: {
-                                        font: {
-                                            name: "Arial",
-                                            size: "12",
-                                            color: "FFFFFF",
-                                            b: true
-                                        },
-                                        fill: {
-                                            pattern: {
-                                                color: "6200ee",
-                                            }
-                                        },
-                                        border: {
-                                            top: "thin",
-                                            bottom: "thin",
-                                            left: "thin",
-                                            right: "thin"
-                                        },
-                                        alignment: {
-                                            vertical: "center",
-                                            horizontal: "center"
+        // Configuración de las tablas 
+        var configTables = {
+            lengthMenu: [
+                [10, 25, 50, 100, -1],
+                ['10', '25', '50', '100', 'todos']
+            ],
+            dom: "Bflrtip",
+            buttons: {
+                dom: {
+                    button: {
+                        className: 'btn'
+                    }
+                },
+                buttons: [
+                    {
+                        extend: "excel",
+                        text: 'Exportar a excel',
+                        className: 'btn btn-success',
+                        margin: '100px',
+                        excelStyles: [
+                            {
+                                cells: "sh",
+                                style: {
+                                    font: {
+                                        name: "Arial",
+                                        size: "12",
+                                        color: "FFFFFF",
+                                        b: true
+                                    },
+                                    fill: {
+                                        pattern: {
+                                            color: "6200ee",
                                         }
                                     },
-                                },
-                                {
-                                    cells: "s",
-                                    style: {
-                                        fill: {
-                                            pattern: {
-                                                color: "CACACA"
-                                            }
-                                        },
-                                        border: {
-                                            top: "thin",
-                                            bottom: "thin",
-                                            left: "thin",
-                                            right: "thin"
-                                        }
+                                    border: {
+                                        top: "thin",
+                                        bottom: "thin",
+                                        left: "thin",
+                                        right: "thin"
+                                    },
+                                    alignment: {
+                                        vertical: "center",
+                                        horizontal: "center"
                                     }
                                 },
-                                {
-                                    cells: "sB",
-                                    style: {
-                                        alignment: {
-                                            vertical: "center",
-                                            horizontal: "center"
+                            },
+                            {
+                                cells: "s",
+                                style: {
+                                    fill: {
+                                        pattern: {
+                                            color: "CACACA"
                                         }
-                                    }
-                                },
-                                {
-                                    cells: "sD",
-                                    style: {
-                                        alignment: {
-                                            vertical: "center",
-                                            horizontal: "center",
-                                        },
-                                        fill: {
-                                            width: "50"
-                                        }
-                                    }
-                                },
-                                {
-                                    cells: "sE",
-                                    style: {
-                                        alignment: {
-                                            vertical: "center",
-                                            horizontal: "center"
-                                        }
+                                    },
+                                    border: {
+                                        top: "thin",
+                                        bottom: "thin",
+                                        left: "thin",
+                                        right: "thin"
                                     }
                                 }
-                            ]
+                            },
+                            {
+                                cells: "sB",
+                                style: {
+                                    alignment: {
+                                        vertical: "center",
+                                        horizontal: "center"
+                                    }
+                                }
+                            },
+                            {
+                                cells: "sD",
+                                style: {
+                                    alignment: {
+                                        vertical: "center",
+                                        horizontal: "center",
+                                    },
+                                    fill: {
+                                        width: "50"
+                                    }
+                                }
+                            },
+                            {
+                                cells: "sE",
+                                style: {
+                                    alignment: {
+                                        vertical: "center",
+                                        horizontal: "center"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            'language': {
+                "processing": "Procesando...",
+                "lengthMenu": "Mostrar _MENU_ registros",
+                "zeroRecords": "No se encontraron resultados",
+                "emptyTable": "Ningún dato disponible en esta tabla",
+                "infoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                "infoFiltered": "(filtrado de un total de _MAX_ registros)",
+                "search": "Buscar:",
+                "infoThousands": ",",
+                "loadingRecords": "Cargando...",
+                "paginate": {
+                    "first": "Primero",
+                    "last": "Último",
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                },
+                "aria": {
+                    "sortAscending": ": Activar para ordenar la columna de manera ascendente",
+                    "sortDescending": ": Activar para ordenar la columna de manera descendente"
+                },
+                "buttons": {
+                    "copy": "Copiar",
+                    "colvis": "Visibilidad",
+                    "collection": "Colección",
+                    "colvisRestore": "Restaurar visibilidad",
+                    "copyKeys": "Presione ctrl o u2318 + C para copiar los datos de la tabla al portapapeles del sistema. <br \/> <br \/> Para cancelar, haga clic en este mensaje o presione escape.",
+                    "copySuccess": {
+                        "1": "Copiada 1 fila al portapapeles",
+                        "_": "Copiadas %ds fila al portapapeles"
+                    },
+                    "copyTitle": "Copiar al portapapeles",
+                    "csv": "CSV",
+                    "excel": "Excel",
+                    "pageLength": {
+                        "-1": "Mostrar todas las filas",
+                        "_": "Mostrar %d filas"
+                    },
+                    "pdf": "PDF",
+                    "print": "Imprimir",
+                    "renameState": "Cambiar nombre",
+                    "updateState": "Actualizar",
+                    "createState": "Crear Estado",
+                    "removeAllStates": "Remover Estados",
+                    "removeState": "Remover",
+                    "savedStates": "Estados Guardados",
+                    "stateRestore": "Estado %d"
+                },
+                "autoFill": {
+                    "cancel": "Cancelar",
+                    "fill": "Rellene todas las celdas con <i>%d<\/i>",
+                    "fillHorizontal": "Rellenar celdas horizontalmente",
+                    "fillVertical": "Rellenar celdas verticalmentemente"
+                },
+                "decimal": ",",
+                "searchBuilder": {
+                    "add": "Añadir condición",
+                    "button": {
+                        "0": "Constructor de búsqueda",
+                        "_": "Constructor de búsqueda (%d)"
+                    },
+                    "clearAll": "Borrar todo",
+                    "condition": "Condición",
+                    "conditions": {
+                        "date": {
+                            "after": "Despues",
+                            "before": "Antes",
+                            "between": "Entre",
+                            "empty": "Vacío",
+                            "equals": "Igual a",
+                            "notBetween": "No entre",
+                            "notEmpty": "No Vacio",
+                            "not": "Diferente de"
+                        },
+                        "number": {
+                            "between": "Entre",
+                            "empty": "Vacio",
+                            "equals": "Igual a",
+                            "gt": "Mayor a",
+                            "gte": "Mayor o igual a",
+                            "lt": "Menor que",
+                            "lte": "Menor o igual que",
+                            "notBetween": "No entre",
+                            "notEmpty": "No vacío",
+                            "not": "Diferente de"
+                        },
+                        "string": {
+                            "contains": "Contiene",
+                            "empty": "Vacío",
+                            "endsWith": "Termina en",
+                            "equals": "Igual a",
+                            "notEmpty": "No Vacio",
+                            "startsWith": "Empieza con",
+                            "not": "Diferente de",
+                            "notContains": "No Contiene",
+                            "notStarts": "No empieza con",
+                            "notEnds": "No termina con"
+                        },
+                        "array": {
+                            "not": "Diferente de",
+                            "equals": "Igual",
+                            "empty": "Vacío",
+                            "contains": "Contiene",
+                            "notEmpty": "No Vacío",
+                            "without": "Sin"
                         }
+                    },
+                    "data": "Data",
+                    "deleteTitle": "Eliminar regla de filtrado",
+                    "leftTitle": "Criterios anulados",
+                    "logicAnd": "Y",
+                    "logicOr": "O",
+                    "rightTitle": "Criterios de sangría",
+                    "title": {
+                        "0": "Constructor de búsqueda",
+                        "_": "Constructor de búsqueda (%d)"
+                    },
+                    "value": "Valor"
+                },
+                "searchPanes": {
+                    "clearMessage": "Borrar todo",
+                    "collapse": {
+                        "0": "Paneles de búsqueda",
+                        "_": "Paneles de búsqueda (%d)"
+                    },
+                    "count": "{total}",
+                    "countFiltered": "{shown} ({total})",
+                    "emptyPanes": "Sin paneles de búsqueda",
+                    "loadMessage": "Cargando paneles de búsqueda",
+                    "title": "Filtros Activos - %d",
+                    "showMessage": "Mostrar Todo",
+                    "collapseMessage": "Colapsar Todo"
+                },
+                "select": {
+                    "cells": {
+                        "1": "1 celda seleccionada",
+                        "_": "%d celdas seleccionadas"
+                    },
+                    "columns": {
+                        "1": "1 columna seleccionada",
+                        "_": "%d columnas seleccionadas"
+                    },
+                    "rows": {
+                        "1": "1 fila seleccionada",
+                        "_": "%d filas seleccionadas"
+                    }
+                },
+                "thousands": ".",
+                "datetime": {
+                    "previous": "Anterior",
+                    "next": "Proximo",
+                    "hours": "Horas",
+                    "minutes": "Minutos",
+                    "seconds": "Segundos",
+                    "unknown": "-",
+                    "amPm": [
+                        "AM",
+                        "PM"
+                    ],
+                    "months": {
+                        "0": "Enero",
+                        "1": "Febrero",
+                        "10": "Noviembre",
+                        "11": "Diciembre",
+                        "2": "Marzo",
+                        "3": "Abril",
+                        "4": "Mayo",
+                        "5": "Junio",
+                        "6": "Julio",
+                        "7": "Agosto",
+                        "8": "Septiembre",
+                        "9": "Octubre"
+                    },
+                    "weekdays": [
+                        "Dom",
+                        "Lun",
+                        "Mar",
+                        "Mie",
+                        "Jue",
+                        "Vie",
+                        "Sab"
                     ]
                 },
-                'language': {
-                    "processing": "Procesando...",
-                    "lengthMenu": "Mostrar _MENU_ registros",
-                    "zeroRecords": "No se encontraron resultados",
-                    "emptyTable": "Ningún dato disponible en esta tabla",
-                    "infoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
-                    "infoFiltered": "(filtrado de un total de _MAX_ registros)",
-                    "search": "Buscar:",
-                    "infoThousands": ",",
-                    "loadingRecords": "Cargando...",
-                    "paginate": {
-                        "first": "Primero",
-                        "last": "Último",
-                        "next": "Siguiente",
-                        "previous": "Anterior"
+                "editor": {
+                    "close": "Cerrar",
+                    "create": {
+                        "button": "Nuevo",
+                        "title": "Crear Nuevo Registro",
+                        "submit": "Crear"
                     },
-                    "aria": {
-                        "sortAscending": ": Activar para ordenar la columna de manera ascendente",
-                        "sortDescending": ": Activar para ordenar la columna de manera descendente"
+                    "edit": {
+                        "button": "Editar",
+                        "title": "Editar Registro",
+                        "submit": "Actualizar"
                     },
-                    "buttons": {
-                        "copy": "Copiar",
-                        "colvis": "Visibilidad",
-                        "collection": "Colección",
-                        "colvisRestore": "Restaurar visibilidad",
-                        "copyKeys": "Presione ctrl o u2318 + C para copiar los datos de la tabla al portapapeles del sistema. <br \/> <br \/> Para cancelar, haga clic en este mensaje o presione escape.",
-                        "copySuccess": {
-                            "1": "Copiada 1 fila al portapapeles",
-                            "_": "Copiadas %ds fila al portapapeles"
-                        },
-                        "copyTitle": "Copiar al portapapeles",
-                        "csv": "CSV",
-                        "excel": "Excel",
-                        "pageLength": {
-                            "-1": "Mostrar todas las filas",
-                            "_": "Mostrar %d filas"
-                        },
-                        "pdf": "PDF",
-                        "print": "Imprimir",
-                        "renameState": "Cambiar nombre",
-                        "updateState": "Actualizar",
-                        "createState": "Crear Estado",
-                        "removeAllStates": "Remover Estados",
-                        "removeState": "Remover",
-                        "savedStates": "Estados Guardados",
-                        "stateRestore": "Estado %d"
-                    },
-                    "autoFill": {
-                        "cancel": "Cancelar",
-                        "fill": "Rellene todas las celdas con <i>%d<\/i>",
-                        "fillHorizontal": "Rellenar celdas horizontalmente",
-                        "fillVertical": "Rellenar celdas verticalmentemente"
-                    },
-                    "decimal": ",",
-                    "searchBuilder": {
-                        "add": "Añadir condición",
-                        "button": {
-                            "0": "Constructor de búsqueda",
-                            "_": "Constructor de búsqueda (%d)"
-                        },
-                        "clearAll": "Borrar todo",
-                        "condition": "Condición",
-                        "conditions": {
-                            "date": {
-                                "after": "Despues",
-                                "before": "Antes",
-                                "between": "Entre",
-                                "empty": "Vacío",
-                                "equals": "Igual a",
-                                "notBetween": "No entre",
-                                "notEmpty": "No Vacio",
-                                "not": "Diferente de"
-                            },
-                            "number": {
-                                "between": "Entre",
-                                "empty": "Vacio",
-                                "equals": "Igual a",
-                                "gt": "Mayor a",
-                                "gte": "Mayor o igual a",
-                                "lt": "Menor que",
-                                "lte": "Menor o igual que",
-                                "notBetween": "No entre",
-                                "notEmpty": "No vacío",
-                                "not": "Diferente de"
-                            },
-                            "string": {
-                                "contains": "Contiene",
-                                "empty": "Vacío",
-                                "endsWith": "Termina en",
-                                "equals": "Igual a",
-                                "notEmpty": "No Vacio",
-                                "startsWith": "Empieza con",
-                                "not": "Diferente de",
-                                "notContains": "No Contiene",
-                                "notStarts": "No empieza con",
-                                "notEnds": "No termina con"
-                            },
-                            "array": {
-                                "not": "Diferente de",
-                                "equals": "Igual",
-                                "empty": "Vacío",
-                                "contains": "Contiene",
-                                "notEmpty": "No Vacío",
-                                "without": "Sin"
-                            }
-                        },
-                        "data": "Data",
-                        "deleteTitle": "Eliminar regla de filtrado",
-                        "leftTitle": "Criterios anulados",
-                        "logicAnd": "Y",
-                        "logicOr": "O",
-                        "rightTitle": "Criterios de sangría",
-                        "title": {
-                            "0": "Constructor de búsqueda",
-                            "_": "Constructor de búsqueda (%d)"
-                        },
-                        "value": "Valor"
-                    },
-                    "searchPanes": {
-                        "clearMessage": "Borrar todo",
-                        "collapse": {
-                            "0": "Paneles de búsqueda",
-                            "_": "Paneles de búsqueda (%d)"
-                        },
-                        "count": "{total}",
-                        "countFiltered": "{shown} ({total})",
-                        "emptyPanes": "Sin paneles de búsqueda",
-                        "loadMessage": "Cargando paneles de búsqueda",
-                        "title": "Filtros Activos - %d",
-                        "showMessage": "Mostrar Todo",
-                        "collapseMessage": "Colapsar Todo"
-                    },
-                    "select": {
-                        "cells": {
-                            "1": "1 celda seleccionada",
-                            "_": "%d celdas seleccionadas"
-                        },
-                        "columns": {
-                            "1": "1 columna seleccionada",
-                            "_": "%d columnas seleccionadas"
-                        },
-                        "rows": {
-                            "1": "1 fila seleccionada",
-                            "_": "%d filas seleccionadas"
+                    "remove": {
+                        "button": "Eliminar",
+                        "title": "Eliminar Registro",
+                        "submit": "Eliminar",
+                        "confirm": {
+                            "_": "¿Está seguro que desea eliminar %d filas?",
+                            "1": "¿Está seguro que desea eliminar 1 fila?"
                         }
                     },
-                    "thousands": ".",
-                    "datetime": {
-                        "previous": "Anterior",
-                        "next": "Proximo",
-                        "hours": "Horas",
-                        "minutes": "Minutos",
-                        "seconds": "Segundos",
-                        "unknown": "-",
-                        "amPm": [
-                            "AM",
-                            "PM"
-                        ],
-                        "months": {
-                            "0": "Enero",
-                            "1": "Febrero",
-                            "10": "Noviembre",
-                            "11": "Diciembre",
-                            "2": "Marzo",
-                            "3": "Abril",
-                            "4": "Mayo",
-                            "5": "Junio",
-                            "6": "Julio",
-                            "7": "Agosto",
-                            "8": "Septiembre",
-                            "9": "Octubre"
-                        },
-                        "weekdays": [
-                            "Dom",
-                            "Lun",
-                            "Mar",
-                            "Mie",
-                            "Jue",
-                            "Vie",
-                            "Sab"
-                        ]
+                    "error": {
+                        "system": "Ha ocurrido un error en el sistema (<a target=\"\\\" rel=\"\\ nofollow\" href=\"\\\">Más información&lt;\\\/a&gt;).<\/a>"
                     },
-                    "editor": {
-                        "close": "Cerrar",
-                        "create": {
-                            "button": "Nuevo",
-                            "title": "Crear Nuevo Registro",
-                            "submit": "Crear"
-                        },
-                        "edit": {
-                            "button": "Editar",
-                            "title": "Editar Registro",
-                            "submit": "Actualizar"
-                        },
-                        "remove": {
-                            "button": "Eliminar",
-                            "title": "Eliminar Registro",
-                            "submit": "Eliminar",
-                            "confirm": {
-                                "_": "¿Está seguro que desea eliminar %d filas?",
-                                "1": "¿Está seguro que desea eliminar 1 fila?"
-                            }
-                        },
-                        "error": {
-                            "system": "Ha ocurrido un error en el sistema (<a target=\"\\\" rel=\"\\ nofollow\" href=\"\\\">Más información&lt;\\\/a&gt;).<\/a>"
-                        },
-                        "multi": {
-                            "title": "Múltiples Valores",
-                            "info": "Los elementos seleccionados contienen diferentes valores para este registro. Para editar y establecer todos los elementos de este registro con el mismo valor, hacer click o tap aquí, de lo contrario conservarán sus valores individuales.",
-                            "restore": "Deshacer Cambios",
-                            "noMulti": "Este registro puede ser editado individualmente, pero no como parte de un grupo."
-                        }
-                    },
-                    "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                    "stateRestore": {
-                        "creationModal": {
-                            "button": "Crear",
-                            "name": "Nombre:",
-                            "order": "Clasificación",
-                            "paging": "Paginación",
-                            "search": "Busqueda",
-                            "select": "Seleccionar",
-                            "columns": {
-                                "search": "Búsqueda de Columna",
-                                "visible": "Visibilidad de Columna"
-                            },
-                            "title": "Crear Nuevo Estado",
-                            "toggleLabel": "Incluir:"
-                        },
-                        "emptyError": "El nombre no puede estar vacio",
-                        "removeConfirm": "¿Seguro que quiere eliminar este %s?",
-                        "removeError": "Error al eliminar el registro",
-                        "removeJoiner": "y",
-                        "removeSubmit": "Eliminar",
-                        "renameButton": "Cambiar Nombre",
-                        "renameLabel": "Nuevo nombre para %s",
-                        "duplicateError": "Ya existe un Estado con este nombre.",
-                        "emptyStates": "No hay Estados guardados",
-                        "removeTitle": "Remover Estado",
-                        "renameTitle": "Cambiar Nombre Estado"
+                    "multi": {
+                        "title": "Múltiples Valores",
+                        "info": "Los elementos seleccionados contienen diferentes valores para este registro. Para editar y establecer todos los elementos de este registro con el mismo valor, hacer click o tap aquí, de lo contrario conservarán sus valores individuales.",
+                        "restore": "Deshacer Cambios",
+                        "noMulti": "Este registro puede ser editado individualmente, pero no como parte de un grupo."
                     }
+                },
+                "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                "stateRestore": {
+                    "creationModal": {
+                        "button": "Crear",
+                        "name": "Nombre:",
+                        "order": "Clasificación",
+                        "paging": "Paginación",
+                        "search": "Busqueda",
+                        "select": "Seleccionar",
+                        "columns": {
+                            "search": "Búsqueda de Columna",
+                            "visible": "Visibilidad de Columna"
+                        },
+                        "title": "Crear Nuevo Estado",
+                        "toggleLabel": "Incluir:"
+                    },
+                    "emptyError": "El nombre no puede estar vacio",
+                    "removeConfirm": "¿Seguro que quiere eliminar este %s?",
+                    "removeError": "Error al eliminar el registro",
+                    "removeJoiner": "y",
+                    "removeSubmit": "Eliminar",
+                    "renameButton": "Cambiar Nombre",
+                    "renameLabel": "Nuevo nombre para %s",
+                    "duplicateError": "Ya existe un Estado con este nombre.",
+                    "emptyStates": "No hay Estados guardados",
+                    "removeTitle": "Remover Estado",
+                    "renameTitle": "Cambiar Nombre Estado"
                 }
-            };
+            }
+        };
 
-            var currentTable;
+        var currentTable;
 
-            var initSelector = jQuery.noConflict();
+        var initSelector = jQuery.noConflict();
 
-            document.addEventListener("DOMContentLoaded", function () {
-                // Inicializa DataTables en todas las tablas
-                var tablas = document.getElementsByTagName("table");
-                initSelector("#tabla").DataTable(configTables);
-                initSelector("#tabla1").DataTable(configTables);
-                initSelector("#tabla2").DataTable(configTables);
-            });
+        document.addEventListener("DOMContentLoaded", function () {
+            // Inicializa DataTables en todas las tablas
+            var tablas = document.getElementsByTagName("table");
+            initSelector("#tabla").DataTable(configTables);
+            initSelector("#tabla1").DataTable(configTables);
+            initSelector("#tabla2").DataTable(configTables);
+        });
 
-        </script>
-        <script>
-    function ampliar(img) {
-        img.classList.toggle('agrandada');
-        if (img.classList.contains('agrandada')) {
-            // Crear un div para el fondo semi-transparente
-            var fondo = document.createElement('div');
-            fondo.className = 'fondo-ampliado';
-            // Agregar el fondo antes de la imagen ampliada en el DOM
-            img.parentNode.insertBefore(fondo, img);
-            // Escuchar clics en el fondo y en la imagen para cerrar la imagen ampliada
-            fondo.addEventListener('click', cerrarAmpliada);
-            img.addEventListener('click', cerrarAmpliada);
-        } else {
-            // Quitar el fondo semi-transparente
-            var fondo = document.querySelector('.fondo-ampliado');
-            fondo.parentNode.removeChild(fondo);
-        }
-    }
-
-    function cerrarAmpliada(event) {
-        // Verificar si el clic ocurrió en el fondo semi-transparente
-        if (event.target.classList.contains('fondo-ampliado')) {
-            // Obtener la imagen ampliada y cerrarla
-            var imgAmpliada = document.querySelector('.foto.agrandada');
-            imgAmpliada.classList.remove('agrandada');
-            // Quitar el fondo semi-transparente
-            var fondo = document.querySelector('.fondo-ampliado');
-            fondo.parentNode.removeChild(fondo);
-        }
-    }
-</script>
+    </script>
 </body>
 
 </html>

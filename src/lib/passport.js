@@ -1,6 +1,6 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const pool = require('../database');
+const connection = require('../database');
 const helpers = require('../lib/helpers');
 
 // SELECT
@@ -9,7 +9,7 @@ passport.use('local.signin', new LocalStrategy({
   passwordField: 'password',
   passReqToCallback: true
 }, (req, username, password, done) => {
-  pool.query('SELECT * FROM users WHERE username = ?', username, function (error, rows) {
+  connection.query('SELECT * FROM users WHERE username = ?', username, function (error, rows) {
     if (error) throw "Error en la consulta al buscar usuario: " + error;
     if (rows.length > 0) {
       const user = rows[0];
@@ -47,12 +47,12 @@ passport.use('local.signup', new LocalStrategy({
 
   newUser.password = helpers.encryptPassword(password);
 
-  pool.query('SELECT * FROM users WHERE username=?', username, function (error, rows) {
+  connection.query('SELECT * FROM users WHERE username=?', username, function (error, rows) {
     if (error) throw "Error en la consulta al buscar usuario: " + error;
     if (rows.length > 0) {
       done(null, false, req.flash('danger', 'Ese nombre de usuario ya existe.'));
     } else {
-      pool.query('INSERT INTO users SET ?', [newUser], function (error, results) {
+      connection.query('INSERT INTO users SET ?', [newUser], function (error, results) {
         if (error) {
           throw "Error en la consulta de insertar usuario: " + error;
         }
@@ -79,20 +79,19 @@ function queryInsertAsignComun(comunidadesAsociadas, newUserId) {
     return [newUserId, parseInt(comunidadId)];
   });
 
-  pool.query(insertQueryComunidades, [insertValuesComunidades], function (error, results) {
+  connection.query(insertQueryComunidades, [insertValuesComunidades], function (error, results) {
     if (error) {
       throw "Error en la consulta de insertar las asignaciones de comunidades: " + error;
     }
   });
 };
 
-
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
 passport.deserializeUser((id, done) => {
-  pool.query('SELECT * FROM users WHERE id = ?', id, function (error, rows) {
+  connection.query('SELECT * FROM users WHERE id = ?', id, function (error, rows) {
     if (error) throw "Error en la deserialización: " + error;
 
     return done(null, rows[0]);

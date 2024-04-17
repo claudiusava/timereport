@@ -17,12 +17,14 @@
     <div class="container p-4">
         <div class="row">
             <div class="col-md-4 mx-auto">
-                <div class="alert alert-danger alert-dismissible col-md-12" id="alertLoc" role="alert" style="display: none;">
-                    <strong>¡Alerta! -</strong> 
+                <div class="alert alert-danger alert-dismissible col-md-12" id="alertLoc" role="alert"
+                    style="display: none;">
+                    <strong>¡Alerta! -</strong>
                     <span id="customText">
                         No puedes fichar a tanta distancia de la comunidad
                     </span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" onclick="$('#alertLoc').hide()"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                        onclick="$('#alertLoc').hide()"></button>
                 </div>
                 <div>
                     {{#each imputaciones}}
@@ -84,48 +86,48 @@
     actualizarFechaHora();
     setInterval(actualizarFechaHora, 1000);
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         //checkear si ya ha fichado
         var today = new Date();
         let entradasHoy = 0
         let salidasHoy = 0
         today.setHours(0, 0, 0, 0);
-        $('.imputaciones').each(function() {
+        $('.imputaciones').each(function () {
             var createdAtDate = new Date($(this).data('fecha'));
             createdAtDate.setHours(0, 0, 0, 0);
 
             // Compare createdAtDate with today
             if (createdAtDate.getTime() === today.getTime()) {
-                if($(this).data('tipo') == 0)
-                    salidasHoy ++
-                else entradasHoy ++
+                if ($(this).data('tipo') == 0)
+                    salidasHoy++
+                else entradasHoy++
             }
         });
 
-        if(entradasHoy > salidasHoy){
+        if (entradasHoy > salidasHoy) {
             $("#isEntrada").val(false)
             $("#btn").html('Fichar salida');
         }
 
         // Check if geolocation is supported by the browser
         if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition( 
-            successHandler, errorHandler, 
-            {enableHighAccuracy: true, maximumAge: 1000, accuracy: 100})
+            navigator.geolocation.getCurrentPosition(
+                successHandler, errorHandler,
+                { enableHighAccuracy: true, maximumAge: 1000, accuracy: 100 })
         } else {
             console.error("Geolocation is not supported by this browser.");
             alert("Error, no se pudo obtener la localización")
         }
 
-        $('#add').submit(function(event) {
+        $('#add').submit(function (event) {
             event.preventDefault();
 
-            if(entradasHoy == 2 && salidasHoy == 2){
+            if (entradasHoy == 2 && salidasHoy == 2) {
                 $('#customText').text("Has alcanzado el máximo de fichajes diarios");
                 $('#alertLoc').show();
                 return
             }
-            
+
             var selectedOption = $('#selector option:selected');
             var selectedValue = selectedOption.val();
             var selectedCoords = selectedOption.data('coords');
@@ -137,23 +139,23 @@
             var comuniLat = parseFloat(coordsArray[0])
             var comuniLon = parseFloat(coordsArray[1])
 
-            if(!insideComunidad(latitude, longitude, comuniLat, comuniLon, 1)){
+            if (!insideComunidad(latitude, longitude, comuniLat, comuniLon, 1)) {
                 $('#alertLoc').show();
                 return
-            }                
-            
+            }
+
             $(this)[0].submit();
         });
     });
 
-    const successHandler = function(position) { 
-        latitude = position.coords.latitude 
+    const successHandler = function (position) {
+        latitude = position.coords.latitude
         longitude = position.coords.longitude
         //alert(`lon: ${longitude}  lat: ${latitude}`)
-    }; 
+    };
 
-    const errorHandler = function (errorObj) { 
-        alert(errorObj.code + ": " + errorObj.message); 
+    const errorHandler = function (errorObj) {
+        alert(errorObj.code + ": " + errorObj.message);
     };
 
     function calculateDistance(lat1, lon1, lat2, lon2) {

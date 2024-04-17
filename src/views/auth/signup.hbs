@@ -29,17 +29,18 @@
   <script
     src="https://cdn.jsdelivr.net/npm/datatables-buttons-excel-styles@1.2.0/js/buttons.html5.styles.templates.min.js"></script>
 
-<style>
- .correct-height{
-  height: auto;
-  margin-top: auto !important;
-  vertical-align: middle;
- }
- span {
-  display: block;
-  margin-top: 8px;
-}
-</style>
+  <style>
+    .correct-height {
+      height: auto;
+      margin-top: auto !important;
+      vertical-align: middle;
+    }
+
+    span {
+      display: block;
+      margin-top: 8px;
+    }
+  </style>
 </head>
 
 <body>
@@ -70,12 +71,12 @@
                 aplicarán
                 permisos mínimos (Partes de trabajo)</p>
               <div class="form-group" style="text-align: left;">
-                <input class="form-check-input" name="role" type="radio" 
-                id="permisoDeAdministracion" value="admin" onclick="$('#comunidadesSelect').hide()" required /> Permiso de administración (control total).
+                <input class="form-check-input" name="role" type="radio" id="permisoDeAdministracion" value="admin"
+                  onclick="$('#comunidadesSelect').hide()" required /> Permiso de administración (control total).
               </div>
               <div class="form-group" style="text-align: left;">
-                <input type="radio" class="form-check-input" name="role" 
-                id="socorrista" value="socorrista" onclick="$('#comunidadesSelect').show()" /> Socorrista.
+                <input type="radio" class="form-check-input" name="role" id="socorrista" value="socorrista"
+                  onclick="$('#comunidadesSelect').show()" /> Socorrista.
               </div>
               <div class="form-group" id="comunidadesSelect" style="display: none;">
                 <label for="comunidad">Asociar comunidad</label>
@@ -83,11 +84,11 @@
                   <input id="filter" type="text" placeholder="Buscar comunidades" class="filter">
                   <div class="scrollable-label" id="mdi" style="text-align: left; margin-left: 20px;">
                     {{#each comunidadesSelect}}
-                      <span>
-                        <input type="checkbox" class="form-check-input" name="comunidad" value="{{codigo}}"
-                          data-comunidad="{{nombre}}">
-                        {{nombre}}
-                      </span>
+                    <span>
+                      <input type="checkbox" class="form-check-input" name="comunidad" value="{{codigo}}"
+                        data-comunidad="{{nombre}}">
+                      {{nombre}}
+                    </span>
                     {{/each}}
                   </div>
                 </div>
@@ -157,29 +158,29 @@
   </div>
   <script>
 
-  var originalHtml = ""
+    var originalHtml = ""
 
-  function fetchAsignedComunidades(id){
-    fetch(`/coumunidadesById/${id}`).then((response) => response.json())
-    .then((res) => {
+    function fetchAsignedComunidades(id) {
+      fetch(`/coumunidadesById/${id}`).then((response) => response.json())
+        .then((res) => {
           $('#hide').html(originalHtml);
 
-          let comunidadesCheckCodigos = res.comunidades.map(function(comunidad) {
+          let comunidadesCheckCodigos = res.comunidades.map(function (comunidad) {
             return comunidad.codigo;
           });
 
           console.log(comunidadesCheckCodigos)
 
-        $('.swal2-input[name="comunidad"]').each(function() {
-          var codigo = $(this).val();          
-          // Check if the current 'codigo' exists in fetched array
-          if (comunidadesCheckCodigos.includes(codigo)) {
-            $(this).prop('checked', true);
-          }
-        });
-        setupFiltering('#filter2', '#mdi2 > span');
-    })
-  }
+          $('.swal2-input[name="comunidad"]').each(function () {
+            var codigo = $(this).val();
+            // Check if the current 'codigo' exists in fetched array
+            if (comunidadesCheckCodigos.includes(codigo)) {
+              $(this).prop('checked', true);
+            }
+          });
+          setupFiltering('#filter2', '#mdi2 > span');
+        })
+    }
 
     function borrar(id) {
       Swal.fire({
@@ -196,11 +197,11 @@
       })
     }
 
-    function editar(id, fullname, username, socorrista, permisoDeAdministracion ) {
+    function editar(id, fullname, username, socorrista, permisoDeAdministracion) {
       let isAdmin = permisoDeAdministracion == 'Si'
       let checked1 = isAdmin ? 'checked' : '';
       let checked2 = socorrista == 'Si' ? 'checked' : '';
-      if(!isAdmin) fetchAsignedComunidades(id)
+      if (!isAdmin) fetchAsignedComunidades(id)
       const formHTML = `
       <form id="editarUserForm"">
         <div class="form-group">
@@ -251,11 +252,12 @@
           console.log(comunidades)
           let checkAdmin = $('#adminRadio').is(':checked')
           let checkSoco = $('#socorristaRadio').is(':checked')
-           return [ $('#nombreEdit').val(), $('#usernameEdit').val(), checkSoco, checkAdmin, comunidades ] }
+          return [$('#nombreEdit').val(), $('#usernameEdit').val(), checkSoco, checkAdmin, comunidades]
+        }
       });
 
-      if(isAdmin) $("#hide").hide()
-      else{
+      if (isAdmin) $("#hide").hide()
+      else {
         originalHtml = $('#hide').html();
         $('#hide').html('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
       }
@@ -272,8 +274,8 @@
           }).then((result) => {
             if (result.isConfirmed) {
               // Enviar el formulario al servidor
-              if(res[3]) window.location = `/userEdit?id=${id}&fullname=${res[0]}&username=${res[1]}&socorrista=false&admin=true`;
-              else window.location = `/userEdit?id=${id}&fullname=${res[0]}&username=${res[1]}&socorrista=${res[2]}&admin=${res[3]}&${encodeArray('codes', res[4])}`;     
+              if (res[3]) window.location = `/userEdit?id=${id}&fullname=${res[0]}&username=${res[1]}&socorrista=false&admin=true`;
+              else window.location = `/userEdit?id=${id}&fullname=${res[0]}&username=${res[1]}&socorrista=${res[2]}&admin=${res[3]}&${encodeArray('codes', res[4])}`;
             }
           });
         }
@@ -312,7 +314,7 @@
           comunidadesAsociadasAll.push(checkboxesComunidades[i].value);
         }
       }
-      
+
       document.getElementById('comunidadesAsociadasInput').value = comunidadesAsociadas.join(',');
       document.getElementById('comunidadesAsociadasInputAll').value = comunidadesAsociadasAll.join(',');
 
@@ -324,7 +326,7 @@
       const filterEl = document.querySelector(filterId);
       const els = Array.from(document.querySelectorAll(elementsSelector));
       const labels = els.map(el => el.textContent);
-      
+
       const handler = value => {
         const matching = labels.map((label, idx, arr) => label.toLowerCase().includes(value.toLowerCase()) ? idx : null).filter(el => el != null);
 
@@ -684,5 +686,4 @@
 
   </script>
 </body>
-
 </html>

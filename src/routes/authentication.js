@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const { isLoggedIn, isNotLoggedIn } = require('../lib/auth');
-const pool = require('../database');
+const connection = require('../database');
 
 // Función para realizar consultas a la base de datos y liberar la conexión
-async function poolQuery(sql, params) {
+async function connectionQuery(sql, params) {
   return new Promise((resolve, reject) => {
-    pool.query(sql, params, (error, results) => {
+    connection.query(sql, params, (error, results) => {
       if (error) {
         reject(error);
       } else {
@@ -20,7 +20,7 @@ async function poolQuery(sql, params) {
 // SELECT
 router.get('/signup', isLoggedIn, async (req, res) => {
   try {
-    const usuarios = await poolQuery(`
+    const usuarios = await connectionQuery(`
       SELECT id, fullname, username, 
         CASE permisoDeAdministracion
           WHEN 1 THEN 'Si'
@@ -33,7 +33,7 @@ router.get('/signup', isLoggedIn, async (req, res) => {
       FROM users
     `);
 
-    const comunidadesSelect = await poolQuery(`
+    const comunidadesSelect = await connectionQuery(`
       SELECT id, nombre, codigo FROM comunidades
     `);
 
@@ -46,12 +46,12 @@ router.get('/signup', isLoggedIn, async (req, res) => {
 });
 
 
-//Get comunidades by userId
+// SELECT
 router.get("/coumunidadesById/:id", isLoggedIn, async (req, res) => {
   try {
     let comunidades = [];
     // Utilizando async/await y try/catch para manejar las consultas de manera más limpia
-    comunidades = await poolQuery(`
+    comunidades = await connectionQuery(`
     SELECT c.id, c.nombre, c.codigo
     FROM comunidades c
     WHERE 
@@ -75,7 +75,7 @@ router.get('/auth/signup/delete/:id', isLoggedIn, async (req, res) => {
     res.redirect('/signup');
   } else {
     try {
-      await poolQuery('DELETE FROM users WHERE id = ?', [id]);
+      await connectionQuery('DELETE FROM users WHERE id = ?', [id]);
       req.flash('success', 'Usuario eliminado correctamente!');
       res.redirect('/signup');
     } catch (error) {
@@ -86,11 +86,12 @@ router.get('/auth/signup/delete/:id', isLoggedIn, async (req, res) => {
   }
 });
 
+// DELETE Asignación de comunidad
 async function queryInsertAsignComun(comunidadesAsociadas, userId) {
   // First, delete all rows where user_id == userId
   var deleteQuery = 'DELETE FROM asignacioncomunidades WHERE user_id = ?';
 
-  pool.query(deleteQuery, [userId], function (error, results) {
+  connection.query(deleteQuery, [userId], function (error, results) {
     if (error) {
       throw "Error en la consulta de eliminar las asignaciones de comunidades: " + error;
     }else if(comunidadesAsociadas.length === 0){ 
@@ -103,7 +104,7 @@ async function queryInsertAsignComun(comunidadesAsociadas, userId) {
         return [userId, comunidadId.toString()];
       });
 
-      pool.query(insertQueryComunidades, [insertValuesComunidades], function (error, results) {
+      connection.query(insertQueryComunidades, [insertValuesComunidades], function (error, results) {
         if (error) {
           throw "Error en la consulta de insertar las asignaciones de comunidades: " + error;
         }
@@ -125,7 +126,7 @@ router.get('/userEdit', isLoggedIn, async (req, res) => {
   let arrayCodes = makeArray(codes)
 
   try {
-    await poolQuery('UPDATE users SET username = ?, fullname = ?, socorrista = ?, permisoDeAdministracion = ? WHERE id = ?', [username, fullname, Socorrista, Admin, id]);
+    await connectionQuery('UPDATE users SET username = ?, fullname = ?, socorrista = ?, permisoDeAdministracion = ? WHERE id = ?', [username, fullname, Socorrista, Admin, id]);
     if(socorrista) await queryInsertAsignComun(arrayCodes, id)
     req.flash('success', 'Usuario editado correctamente!');
     res.redirect('/signup');

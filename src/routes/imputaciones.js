@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { isLoggedIn } = require('../lib/auth');
-const pool = require('../database');
+const connection = require('../database');
 
 // SELECT
 router.get("/add", isLoggedIn, async (req, res) => {
@@ -11,7 +11,7 @@ router.get("/add", isLoggedIn, async (req, res) => {
 
     // Utilizando async/await y try/catch para manejar las consultas de manera más limpia
     try {
-      comunidades = await poolQuery(`
+      comunidades = await connectionQuery(`
       SELECT c.id, c.nombre, c.coordenadas, c.codigo
       FROM comunidades c
       WHERE 
@@ -23,7 +23,7 @@ router.get("/add", isLoggedIn, async (req, res) => {
     }
 
     try {
-      imputaciones = await poolQuery(
+      imputaciones = await connectionQuery(
         `SELECT 
             fecha, 
             comunidad, 
@@ -52,8 +52,6 @@ router.get("/add", isLoggedIn, async (req, res) => {
 router.post("/add", isLoggedIn, async (req, res) => {
   const { fecha, comunidad, horas, minutos, isEntrada } = req.body;
 
-  //console.log(req.body)
-
   const newImputacion = {
     fecha,
     comunidad,
@@ -65,7 +63,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
   };
 
   try {
-    await poolQuery(`INSERT INTO imputaciones SET ?`, [newImputacion]);
+    await connectionQuery(`INSERT INTO imputaciones SET ?`, [newImputacion]);
     req.flash("success", "Registro guardado!");
     res.redirect("/imputaciones/add");
   } catch (error) {
@@ -79,7 +77,7 @@ router.post("/add", isLoggedIn, async (req, res) => {
 router.get('/delete/:id', isLoggedIn, async (req, res) => {
   const { id } = req.params;
   try {
-    await poolQuery(`DELETE FROM imputaciones WHERE id = ?`, [id]);
+    await connectionQuery(`DELETE FROM imputaciones WHERE id = ?`, [id]);
     req.flash('success', 'Registro eliminado correctamente!');
     res.redirect('/imputaciones/add');
   } catch (error) {
@@ -89,9 +87,9 @@ router.get('/delete/:id', isLoggedIn, async (req, res) => {
 });
 
 // Función para realizar consultas a la base de datos y liberar la conexión
-async function poolQuery(sql, params) {
+async function connectionQuery(sql, params) {
   return new Promise((resolve, reject) => {
-    pool.query(sql, params, (error, results) => {
+    connection.query(sql, params, (error, results) => {
       if (error) {
         reject(error);
       } else {
