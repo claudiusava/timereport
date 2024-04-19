@@ -38,7 +38,6 @@
 
     span {
       display: block;
-      margin-top: 8px;
     }
   </style>
 </head>
@@ -82,6 +81,7 @@
                 <label for="comunidad">Asociar comunidad</label>
                 <div class="form-group">
                   <input id="filter" type="text" placeholder="Buscar comunidades" class="filter">
+                  <br><br>
                   <div class="scrollable-label" id="mdi" style="text-align: left; margin-left: 20px;">
                     {{#each comunidadesSelect}}
                     <span>
@@ -363,6 +363,9 @@
               initSelector(node).css('float', 'left');
             },
             margin: '100px',
+            exportOptions: {
+              columns: ':not(:last-child)'
+            },
             excelStyles: [
               {
                 cells: "sh",
@@ -686,4 +689,5 @@
 
   </script>
 </body>
+
 </html>
