@@ -34,6 +34,7 @@
     "passport-local": "^1.0.0",
     "pg": "^8.7.3",
     "select2": "^4.1.0-rc.0",
+    "serve-favicon": "^2.5.0",
     "sweetalert2": "^11.4.9",
     "timeago.js": "^4.0.2"
   },

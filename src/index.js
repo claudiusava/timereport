@@ -8,6 +8,7 @@ const passport = require('passport');
 const flash = require('connect-flash');
 const { database } = require('./keys');
 const bodyParser = require('body-parser');
+var favicon = require('serve-favicon');
 
 //Inicializaciones
 const app = express();
@@ -58,6 +59,7 @@ app.use('/imputaciones', require('./routes/administrarComunidades'));
 
 //Public
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public', 'favicon')));
 app.use(express.static('public'));
 
 //Starting the server
