@@ -1,0 +1,89 @@
+<mat-toolbar class="barra">
+  <a class="marca" routerLink="/app">
+    <img [src]="empresa.logoUrl()" alt="" />
+    <span class="textos">
+      <span class="nombre-app">{{ empresa.nombreApp() }}</span>
+      @if (empresa.empresa(); as e) {
+        <span class="nombre-empresa">{{ e.nombre }}</span>
+      }
+    </span>
+  </a>
+  <span class="espacio"></span>
+  @if (sinConexion()) {
+    <mat-icon class="sin-conexion" svgIcon="wifi_off" matTooltip="Sin conexión" aria-label="Sin conexión" />
+  }
+  @if (auth.sesion(); as s) {
+    <button mat-button class="usuario" [matMenuTriggerFor]="menuUsuario" aria-label="Menú de usuario">
+      <span class="avatar">{{ s.nombre.charAt(0) }}</span>
+      @if (!movil()) {
+        <span class="nombre">{{ s.nombre }}</span>
+      }
+    </button>
+    <mat-menu #menuUsuario="matMenu" xPosition="before">
+      <div class="menu-cabecera" mat-menu-item disabled>
+        <strong>{{ s.nombre }}</strong>
+        <span>{{ s.username }} · {{ etiquetaRol(s.rol) }}</span>
+      </div>
+      <mat-divider />
+      <a mat-menu-item routerLink="/app/perfil"><mat-icon svgIcon="person" />Mi perfil</a>
+      <button mat-menu-item [matMenuTriggerFor]="menuTema"><mat-icon svgIcon="contrast" />Tema</button>
+      <button mat-menu-item (click)="salir()"><mat-icon svgIcon="logout" />Cerrar sesión</button>
+    </mat-menu>
+    <mat-menu #menuTema="matMenu">
+      <button mat-menu-item (click)="empresa.cambiarModo('sistema')"><mat-icon svgIcon="contrast" />Como el sistema</button>
+      <button mat-menu-item (click)="empresa.cambiarModo('claro')"><mat-icon svgIcon="light_mode" />Claro</button>
+      <button mat-menu-item (click)="empresa.cambiarModo('oscuro')"><mat-icon svgIcon="dark_mode" />Oscuro</button>
+    </mat-menu>
+  }
+</mat-toolbar>
+
+<mat-sidenav-container class="contenedor-lateral">
+  <!-- Siempre presente (en movil, cerrada) para que el contenido recalcule su margen. -->
+  <mat-sidenav [mode]="movil() ? 'over' : 'side'" [opened]="!movil()" [disableClose]="!movil()" class="lateral">
+      <mat-nav-list>
+        @if (gestion().length) {
+          <div mat-subheader>Gestión</div>
+          @for (e of gestion(); track e.ruta) {
+            <a mat-list-item [routerLink]="e.ruta" routerLinkActive="activo" #rla="routerLinkActive" [activated]="rla.isActive">
+              <mat-icon matListItemIcon [svgIcon]="e.icono" />
+              <span matListItemTitle>{{ e.etiqueta }}</span>
+            </a>
+          }
+          <div mat-subheader>Mi jornada</div>
+        }
+        @for (e of jornada(); track e.ruta) {
+          <a mat-list-item [routerLink]="e.ruta" routerLinkActive="activo" #rla="routerLinkActive" [activated]="rla.isActive">
+            <mat-icon matListItemIcon [svgIcon]="e.icono" />
+            <span matListItemTitle>{{ e.etiqueta }}</span>
+          </a>
+        }
+      </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <main class="contenido" [class.con-barra-inferior]="movil()">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+@if (movil()) {
+  <nav class="barra-inferior" aria-label="Secciones">
+    @for (e of inferior(); track e.ruta) {
+      <a [routerLink]="e.ruta" routerLinkActive="activo" class="pestana">
+        <span class="indicador"><mat-icon [svgIcon]="e.icono" /></span>
+        <span class="etiqueta">{{ e.etiqueta }}</span>
+      </a>
+    }
+    @if (enMas().length) {
+      <button type="button" class="pestana" [matMenuTriggerFor]="menuMas">
+        <span class="indicador"><mat-icon svgIcon="menu" /></span>
+        <span class="etiqueta">Más</span>
+      </button>
+      <mat-menu #menuMas="matMenu" yPosition="above">
+        @for (e of enMas(); track e.ruta) {
+          <a mat-menu-item [routerLink]="e.ruta"><mat-icon [svgIcon]="e.icono" />{{ e.etiqueta }}</a>
+        }
+      </mat-menu>
+    }
+  </nav>
+}

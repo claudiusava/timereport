@@ -1,60 +1,54 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { connectAuthEmulator, getAuth, provideAuth } from '@angular/fire/auth';
 import {
-  connectFirestoreEmulator,
-  getFirestore,
-  provideFirestore,
-} from '@angular/fire/firestore';
-import {
-  connectFunctionsEmulator,
-  getFunctions,
-  provideFunctions,
-} from '@angular/fire/functions';
-import {
-  connectStorageEmulator,
-  getStorage,
-  provideStorage,
-} from '@angular/fire/storage';
-import { provideRouter, withHashLocation } from '@angular/router';
+  ApplicationConfig,
+  Injectable,
+  LOCALE_ID,
+  isDevMode,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
+import { DateAdapter, MAT_DATE_LOCALE, NativeDateAdapter, provideNativeDateAdapter } from '@angular/material/core';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
+import { provideRouter, withComponentInputBinding, withHashLocation, withInMemoryScrolling } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 
-import { environment } from '../environments/environment';
 import { routes } from './app.routes';
+import { provideIconos } from './core/iconos';
 
-const emu = environment.useEmulators;
+/** Fechas escritas a mano en formato español (dd/mm/aaaa). */
+@Injectable()
+class AdaptadorFechas extends NativeDateAdapter {
+  override parse(valor: unknown): Date | null {
+    if (typeof valor === 'string') {
+      const m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/.exec(valor.trim());
+      if (m) {
+        const anio = Number(m[3]) < 100 ? 2000 + Number(m[3]) : Number(m[3]);
+        const fecha = new Date(anio, Number(m[2]) - 1, Number(m[1]));
+        return fecha.getDate() === Number(m[1]) ? fecha : this.invalid();
+      }
+    }
+    return super.parse(valor);
+  }
+
+  override getFirstDayOfWeek() {
+    return 1;
+  }
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    // Rutas con hash (#/fichaje): GitHub Pages solo sabe servir ficheros que
-    // existen, asi que con rutas "limpias" una recarga en /timereport/fichaje
-    // daria 404. Con hash el servidor siempre recibe /timereport/ (index.html,
-    // estado 200) y el router resuelve el resto en el navegador.
-    provideRouter(routes, withHashLocation()),
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideAuth(() => {
-      const auth = getAuth();
-      if (emu) {
-        connectAuthEmulator(auth, 'http://127.0.0.1:9099', {
-          disableWarnings: true,
-        });
-      }
-      return auth;
-    }),
-    provideFirestore(() => {
-      const db = getFirestore();
-      if (emu) connectFirestoreEmulator(db, '127.0.0.1', 8080);
-      return db;
-    }),
-    provideStorage(() => {
-      const storage = getStorage();
-      if (emu) connectStorageEmulator(storage, '127.0.0.1', 9199);
-      return storage;
-    }),
-    provideFunctions(() => {
-      const functions = getFunctions(undefined, environment.functionsRegion);
-      if (emu) connectFunctionsEmulator(functions, '127.0.0.1', 5001);
-      return functions;
+    provideBrowserGlobalErrorListeners(),
+    // Rutas con hash (#/app/fichaje): GitHub Pages solo sirve ficheros que
+    // existen, asi que con rutas "limpias" recargar /timereport/app/fichaje
+    // daria 404. Con hash el servidor siempre recibe /timereport/.
+    provideRouter(routes, withHashLocation(), withComponentInputBinding(), withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
+    provideIconos(),
+    provideNativeDateAdapter(),
+    { provide: DateAdapter, useClass: AdaptadorFechas },
+    { provide: LOCALE_ID, useValue: 'es' },
+    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
+    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline', subscriptSizing: 'dynamic' } },
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
 };

@@ -1,0 +1,89 @@
+.pantalla {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--mat-sys-primary) 30%, transparent), transparent 55%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--mat-sys-tertiary) 25%, transparent), transparent 50%),
+    var(--mat-sys-surface-container);
+}
+
+.panel {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 28px;
+  border-radius: 28px;
+  background: var(--mat-sys-surface-container-lowest);
+  box-shadow: var(--mat-sys-level3);
+}
+
+.marca {
+  text-align: center;
+  margin-bottom: 24px;
+
+  img {
+    height: 72px;
+    max-width: 220px;
+    object-fit: contain;
+  }
+
+  h1 {
+    margin: 12px 0 4px;
+    font: var(--mat-sys-headline-small);
+  }
+
+  p {
+    margin: 0;
+    color: var(--mat-sys-on-surface-variant);
+    font: var(--mat-sys-body-medium);
+  }
+}
+
+.enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mat-sys-primary);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.entrar {
+  height: 52px;
+  margin-top: 8px;
+}
+
+.demo {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  font: var(--mat-sys-body-medium);
+
+  p {
+    margin: 0 0 12px;
+  }
+}
+
+.usuarios-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.volver {
+  display: block;
+  margin-top: 24px;
+  text-align: center;
+  font: var(--mat-sys-body-small);
+}

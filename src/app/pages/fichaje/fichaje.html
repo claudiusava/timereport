@@ -1,0 +1,85 @@
+@if (cargando()) {
+  <div class="cargando"><mat-spinner diameter="40" /></div>
+} @else if (errorCarga()) {
+  <app-estado-vacio icono="wifi_off" titulo="No se han podido cargar tus datos" [texto]="errorCarga()">
+    <button mat-stroked-button (click)="cargar()"><mat-icon svgIcon="refresh" />Reintentar</button>
+  </app-estado-vacio>
+} @else {
+  <section class="fichar">
+    <p class="dia">{{ diaLargo(ahora()) }}</p>
+    <p class="reloj">{{ hora(ahora()) }}<small>:{{ ahora().getSeconds().toString().padStart(2, '0') }}</small></p>
+
+    <p class="estado">
+      @if (siguiente() === 'salida' && ultimo(); as u) {
+        <span class="punto en-curso"></span>
+        Trabajando desde las {{ hora(u.fecha) }} en {{ u.comunidadNombre }} · {{ duracion(minutosHoy()) }}
+      } @else if (minutosHoy() > 0) {
+        <span class="punto"></span> Hoy llevas {{ duracion(minutosHoy()) }}
+      } @else {
+        <span class="punto"></span> Todavía no has fichado hoy
+      }
+    </p>
+
+    @if (comunidades().length === 0) {
+      <div class="aviso-suave"><mat-icon svgIcon="info" />No tienes ninguna comunidad asignada. Avisa al administrador.</div>
+    } @else if (limiteAlcanzado()) {
+      <div class="aviso-suave"><mat-icon svgIcon="check_circle" />Has completado los fichajes de hoy. ¡Hasta mañana!</div>
+    } @else {
+      <mat-form-field class="ancho-completo">
+        <mat-label>Comunidad</mat-label>
+        <mat-select [ngModel]="comunidadId()" (ngModelChange)="comunidadId.set($event); error.set('')" [disabled]="ocupado()">
+          @for (c of comunidades(); track c.id) {
+            <mat-option [value]="c.id">{{ c.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-icon matIconPrefix svgIcon="location_on" />
+      </mat-form-field>
+
+      @if (error()) {
+        <div class="error-formulario" role="alert"><mat-icon svgIcon="warning" />{{ error() }}</div>
+      }
+
+      <button mat-flat-button class="boton-grande" [class.salida]="siguiente() === 'salida'"
+              [disabled]="ocupado() || !comunidadId()" (click)="fichar()">
+        <span class="contenido-boton">
+        @switch (fase()) {
+          @case ('ubicando') { <mat-spinner diameter="24" /> Comprobando tu ubicación… }
+          @case ('guardando') { <mat-spinner diameter="24" /> Registrando… }
+          @default {
+            <mat-icon [svgIcon]="siguiente() === 'entrada' ? 'login' : 'logout'" />
+            {{ siguiente() === 'entrada' ? 'Fichar entrada' : 'Fichar salida' }}
+          }
+        }
+        </span>
+      </button>
+      @if (empresa.esDemo()) {
+        <p class="nota">En la demo puedes fichar desde cualquier sitio; en una empresa real hay que estar en la comunidad.</p>
+      }
+    }
+  </section>
+
+  <section class="tarjeta">
+    <div class="cabecera-seccion">
+      <h2>Hoy</h2>
+      <a mat-button routerLink="/app/historial"><mat-icon svgIcon="history" />Mi historial</a>
+    </div>
+    @if (hoy().length) {
+      <ol class="linea-tiempo">
+        @for (f of hoy().slice().reverse(); track f.id) {
+          <li [class.anulado-fila]="f.anulado">
+            <span class="chip" [class.entrada]="f.tipo === 'entrada'" [class.salida]="f.tipo === 'salida'">
+              {{ f.tipo === 'entrada' ? 'Entrada' : 'Salida' }}
+            </span>
+            <strong>{{ f.fecha ? hora(f.fecha) : '…' }}</strong>
+            <span class="texto-suave">{{ f.comunidadNombre }}</span>
+            @if (f.origen === 'manual') {
+              <span class="chip manual">Corregido</span>
+            }
+          </li>
+        }
+      </ol>
+    } @else {
+      <p class="texto-suave">Sin fichajes hoy.</p>
+    }
+  </section>
+}

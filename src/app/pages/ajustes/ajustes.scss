@@ -1,0 +1,118 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 4px;
+
+  img {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    padding: 8px;
+    border-radius: 16px;
+    background: var(--mat-sys-surface-container-high);
+  }
+}
+
+.subir {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  &.desactivado {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+}
+
+.etiqueta-campo {
+  margin: 16px 0 8px;
+  font: var(--mat-sys-title-small);
+}
+
+.colores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.color {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  outline-offset: 2px;
+
+  &.elegido {
+    border-color: var(--mat-sys-on-surface);
+  }
+
+  &.personalizado {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--mat-sys-surface-container-high);
+    color: var(--mat-sys-on-surface-variant);
+
+    input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+  }
+}
+
+.separado {
+  margin-top: 24px !important;
+}
+
+.auditoria {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 520px;
+  overflow-y: auto;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 0;
+    border-top: 1px solid var(--mat-sys-outline-variant);
+    font: var(--mat-sys-body-medium);
+  }
+
+  .cuando {
+    color: var(--mat-sys-on-surface-variant);
+    font: var(--mat-sys-label-medium);
+  }
+
+  .motivo {
+    font-style: italic;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.subir {
+  height: 40px;
+  padding: 0 20px;
+  border: 1px solid var(--mat-sys-outline);
+  border-radius: 20px;
+  color: var(--mat-sys-primary);
+  font: var(--mat-sys-label-large);
+}

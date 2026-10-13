@@ -1,0 +1,83 @@
+:host {
+  display: block;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.selector-mes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font: var(--mat-sys-title-medium);
+
+  span {
+    min-width: 160px;
+    text-align: center;
+  }
+}
+
+.resumen {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+  }
+
+  strong {
+    font: var(--mat-sys-headline-medium);
+  }
+}
+
+.dia {
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container-low);
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font: var(--mat-sys-title-small);
+  }
+
+  .horas {
+    font: var(--mat-sys-label-large);
+    color: var(--mat-sys-primary);
+  }
+
+  ul {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 8px 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chip mat-icon {
+    width: 16px;
+    height: 16px;
+  }
+}

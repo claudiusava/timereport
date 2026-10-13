@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // Mismo modelo que firestore.rules: los custom claims { clienteId, rol } del
-// token deciden el acceso.
+// token y, para lo delicado, el perfil y los documentos de Firestore.
 
 service firebase.storage {
   match /b/{bucket}/o {
@@ -10,34 +10,47 @@ service firebase.storage {
       return request.auth != null && request.auth.token.clienteId == c;
     }
 
+    function perfil(c) {
+      return firestore.get(/databases/(default)/documents/clientes/$(c)/usuarios/$(request.auth.uid)).data;
+    }
+
     function esAdmin(c) {
-      return delCliente(c) && request.auth.token.rol == 'admin';
+      return delCliente(c)
+        && request.auth.token.rol == 'admin'
+        && perfil(c).rol == 'admin'
+        && perfil(c).activo == true;
     }
 
     // Fotos de los controles de agua: clientes/{c}/controlesAgua/{uid}/{controlId}.jpg
     match /clientes/{c}/controlesAgua/{uid}/{archivo} {
       allow read: if esAdmin(c) || (delCliente(c) && request.auth.uid == uid);
 
-      // Solo el propio socorrista (o admin) en su carpeta, una vez (no se
-      // sobrescribe), JPEG de hasta 5 MB. El nombre es el id del documento
-      // de Firestore (20 caracteres alfanumericos).
+      // Solo el autor del control, despues de crear el documento en
+      // Firestore (que fija esta ruta en fotoPath), una sola vez y como JPEG
+      // de hasta 5 MB.
       allow create: if delCliente(c)
-        && resource == null
         && request.auth.uid == uid
-        && request.auth.token.rol in ['admin', 'socorrista']
+        && resource == null
         && archivo.matches('^[A-Za-z0-9]{20}[.]jpg$')
         && request.resource.size <= 5 * 1024 * 1024
-        && request.resource.contentType == 'image/jpeg';
+        && request.resource.contentType == 'image/jpeg'
+        && firestore.get(/databases/(default)/documents/clientes/$(c)/controlesAgua/$(archivo.split('[.]')[0])).data.fotoPath
+          == 'clientes/' + c + '/controlesAgua/' + uid + '/' + archivo;
 
-      allow update: if false;
-      allow delete: if esAdmin(c);
+      // Nada se borra: los controles se anulan, no se eliminan.
+      allow update, delete: if false;
     }
 
-    // Logo del cliente: publico (se muestra en el login). Se sube con el
-    // script scripts/crear-cliente.ts.
+    // Logo de la empresa: publico (se muestra en el login). Lo sube el admin
+    // y despues lo activa con la Cloud Function actualizarEmpresa.
     match /clientes/{c}/branding/{archivo} {
       allow read: if true;
-      allow write: if false;
+      allow create: if esAdmin(c)
+        && resource == null
+        && archivo.matches('^logo-[0-9]{10,16}[.](png|jpg|webp)$')
+        && request.resource.size <= 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)');
+      allow update, delete: if false;
     }
 
     match /{allPaths=**} {

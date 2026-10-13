@@ -1,93 +1,58 @@
-import { getAuth } from "firebase-admin/auth";
-import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
-import { CallableRequest, HttpsError, onCall } from "firebase-functions/v2/https";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 
-import { emailDeLogin, normalizarUsername } from "./email-usuario";
+import {
+  Rol,
+  Sesion,
+  auditar,
+  auth,
+  db,
+  exigirAdmin,
+  id,
+  objeto,
+  password,
+  refCliente,
+  rol,
+  texto,
+} from "./comun.js";
+import { emailDeLogin, normalizarUsername } from "./email-usuario.js";
 
-// Alta, edicion y baja de usuarios. Solo puede llamarlas un admin, y solo
-// sobre usuarios de su propio cliente. Mantienen sincronizados:
-//   - la cuenta de Firebase Auth (email, contraseña, deshabilitada),
-//   - los custom claims { clienteId, rol } que usan las reglas,
-//   - clientes/{c}/usuarios/{uid},
-//   - el array `asignados` de cada comunidad.
+// Alta, edicion y baja de usuarios. Solo un admin activo, y solo sobre su
+// propia empresa. Firestore (clientes/{c}/usuarios/{uid}) es la fuente de
+// verdad del rol y del estado; Auth y los custom claims se sincronizan.
 
-const ROLES = ["admin", "socorrista", "maquinista"] as const;
-type Rol = (typeof ROLES)[number];
-
-const PASSWORD_MINIMA = 6;
 const MAX_COMUNIDADES = 2000;
+const MAX_USUARIOS_POR_DEFECTO = 500;
 
-interface Llamante {
-  uid: string;
-  clienteId: string;
-}
-
-function exigirAdmin(request: CallableRequest): Llamante {
-  const token = request.auth?.token;
-  if (!request.auth || !token) {
-    throw new HttpsError("unauthenticated", "Tienes que iniciar sesión.");
-  }
-  if (token.rol !== "admin" || typeof token.clienteId !== "string") {
-    throw new HttpsError("permission-denied", "Solo un administrador puede gestionar usuarios.");
-  }
-  return { uid: request.auth.uid, clienteId: token.clienteId };
-}
-
-function objeto(data: unknown): Record<string, unknown> {
-  if (!data || typeof data !== "object") {
-    throw new HttpsError("invalid-argument", "Datos no válidos.");
-  }
-  return data as Record<string, unknown>;
-}
-
-function texto(valor: unknown, campo: string, max: number): string {
-  if (typeof valor !== "string" || !valor.trim() || valor.trim().length > max) {
-    throw new HttpsError("invalid-argument", `El campo ${campo} no es válido.`);
-  }
-  return valor.trim();
-}
-
-function rol(valor: unknown): Rol {
-  if (!ROLES.includes(valor as Rol)) {
-    throw new HttpsError("invalid-argument", "Rol no válido.");
-  }
-  return valor as Rol;
-}
-
-function password(valor: unknown): string {
-  if (typeof valor !== "string" || valor.length < PASSWORD_MINIMA || valor.length > 128) {
-    throw new HttpsError(
-      "invalid-argument",
-      `La contraseña debe tener al menos ${PASSWORD_MINIMA} caracteres.`,
-    );
-  }
-  return valor;
-}
+const ETIQUETA_ROL: Record<Rol, string> = {
+  admin: "administrador",
+  socorrista: "socorrista",
+  maquinista: "maquinista",
+};
 
 function listaIds(valor: unknown): string[] {
-  if (
-    !Array.isArray(valor) ||
-    valor.length > MAX_COMUNIDADES ||
-    !valor.every((v) => typeof v === "string" && /^[A-Za-z0-9_-]{1,100}$/.test(v))
-  ) {
+  if (!Array.isArray(valor) || valor.length > MAX_COMUNIDADES) {
     throw new HttpsError("invalid-argument", "Lista de comunidades no válida.");
   }
-  return [...new Set(valor as string[])];
+  return [...new Set(valor.map((v) => id(v, "identificador de comunidad")))];
 }
 
-/** Email de login y nombre de usuario a guardar a partir de lo que escribe el admin. */
-function identidad(usuario: string, clienteId: string) {
-  let email: string;
-  try {
-    email = emailDeLogin(usuario, clienteId);
-  } catch {
+/**
+ * Solo nombres de usuario (nada de emails): el email de login se construye
+ * siempre con la empresa de quien llama, asi que un admin no puede ocupar ni
+ * sondear usuarios de otra empresa.
+ */
+function identidad(usuario: unknown, clienteId: string) {
+  const original = texto(usuario, "el usuario", 1, 60);
+  if (original.includes("@")) {
+    throw new HttpsError("invalid-argument", "Usa un nombre de usuario, no un email.");
+  }
+  const username = normalizarUsername(original);
+  if (username.length < 2) {
     throw new HttpsError("invalid-argument", "El nombre de usuario no es válido.");
   }
-  if (usuario.includes("@") && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-    throw new HttpsError("invalid-argument", "El email no es válido.");
-  }
-  return { email, username: usuario.includes("@") ? "" : normalizarUsername(usuario) };
+  return { username, email: emailDeLogin(username, clienteId) };
 }
 
 function errorAuth(e: unknown): never {
@@ -98,59 +63,64 @@ function errorAuth(e: unknown): never {
   if (code === "auth/invalid-password") {
     throw new HttpsError("invalid-argument", "La contraseña no es válida.");
   }
-  if (code === "auth/invalid-email") {
-    throw new HttpsError("invalid-argument", "El usuario no es válido.");
-  }
   throw e;
 }
 
-function refCliente(clienteId: string) {
-  return getFirestore().collection("clientes").doc(clienteId);
+function sinDemo(sesion: Sesion) {
+  if (sesion.cliente["demo"] === true) {
+    throw new HttpsError(
+      "failed-precondition",
+      "En la empresa de demostración no se pueden cambiar contraseñas ni desactivar usuarios.",
+    );
+  }
 }
 
 async function exigirComunidades(clienteId: string, ids: string[]) {
   if (!ids.length) return;
-  const refs = ids.map((id) => refCliente(clienteId).collection("comunidades").doc(id));
-  const docs = await getFirestore().getAll(...refs);
+  const docs = await db().getAll(
+    ...ids.map((c) => refCliente(clienteId).collection("comunidades").doc(c)),
+  );
   if (docs.some((d) => !d.exists)) {
     throw new HttpsError("invalid-argument", "Alguna de las comunidades ya no existe.");
   }
 }
 
-/** Usuario del mismo cliente que el admin; si no, "no encontrado". */
-async function usuarioDelCliente(clienteId: string, uid: unknown) {
-  if (typeof uid !== "string" || !uid) {
-    throw new HttpsError("invalid-argument", "Usuario no válido.");
-  }
-  const ref = refCliente(clienteId).collection("usuarios").doc(uid);
-  const snap = await ref.get();
-  if (!snap.exists) throw new HttpsError("not-found", "El usuario no existe.");
-  return { ref, uid, datos: snap.data() as { rol: Rol; email: string; activo: boolean } };
+/** Numero de admins activos de la empresa, sin contar a `excepto`. */
+async function adminsActivos(clienteId: string, excepto: string, tx: FirebaseFirestore.Transaction) {
+  const snap = await tx.get(
+    refCliente(clienteId).collection("usuarios").where("rol", "==", "admin").where("activo", "==", true),
+  );
+  return snap.docs.filter((d) => d.id !== excepto).length;
 }
 
 export const crearUsuario = onCall(async (request) => {
-  const { clienteId, uid: adminUid } = exigirAdmin(request);
+  const sesion = await exigirAdmin(request);
   const d = objeto(request.data);
-  const nombre = texto(d.nombre, "nombre", 100);
-  const usuario = texto(d.usuario, "usuario", 100);
-  const pass = password(d.password);
-  const nuevoRol = rol(d.rol);
-  const comunidades = nuevoRol === "admin" ? [] : listaIds(d.comunidades);
-  const { email, username } = identidad(usuario, clienteId);
-  await exigirComunidades(clienteId, comunidades);
+  const nombre = texto(d["nombre"], "el nombre", 1, 100);
+  const pass = password(d["password"]);
+  const nuevoRol = rol(d["rol"]);
+  const comunidades = nuevoRol === "admin" ? [] : listaIds(d["comunidades"]);
+  const { username, email } = identidad(d["usuario"], sesion.clienteId);
+  await exigirComunidades(sesion.clienteId, comunidades);
 
-  const auth = getAuth();
+  const usuarios = refCliente(sesion.clienteId).collection("usuarios");
+  const maximo: number = sesion.cliente["config"]?.maxUsuarios ?? MAX_USUARIOS_POR_DEFECTO;
+  const total = (await usuarios.count().get()).data().count;
+  if (total >= maximo) {
+    throw new HttpsError("resource-exhausted", `Tu plan permite como máximo ${maximo} usuarios.`);
+  }
+
   let uid: string;
   try {
-    ({ uid } = await auth.createUser({ email, password: pass, displayName: nombre }));
+    ({ uid } = await auth().createUser({ email, password: pass, displayName: nombre }));
   } catch (e) {
     errorAuth(e);
   }
 
   try {
-    await auth.setCustomUserClaims(uid, { clienteId, rol: nuevoRol });
-    const batch = getFirestore().batch();
-    batch.set(refCliente(clienteId).collection("usuarios").doc(uid), {
+    await auth().setCustomUserClaims(uid, { clienteId: sesion.clienteId, rol: nuevoRol });
+    const batch = db().batch();
+    batch.set(usuarios.doc(uid), {
       nombre,
       username,
       email,
@@ -158,114 +128,164 @@ export const crearUsuario = onCall(async (request) => {
       activo: true,
       createdAt: FieldValue.serverTimestamp(),
     });
-    for (const id of comunidades) {
-      batch.update(refCliente(clienteId).collection("comunidades").doc(id), {
+    for (const c of comunidades) {
+      batch.update(refCliente(sesion.clienteId).collection("comunidades").doc(c), {
         asignados: FieldValue.arrayUnion(uid),
       });
     }
+    auditar(batch, sesion, {
+      accion: "usuario.crear",
+      descripcion: `Da de alta a ${nombre} (${username}) como ${ETIQUETA_ROL[nuevoRol]}`,
+      objetivo: { coleccion: "usuarios", id: uid },
+    });
     await batch.commit();
   } catch (e) {
-    // Sin el documento el usuario quedaria a medias: se deshace el alta.
-    await auth.deleteUser(uid).catch(() => undefined);
+    // Sin perfil el usuario quedaria a medias: se deshace el alta.
+    await auth().deleteUser(uid).catch(() => undefined);
     throw e;
   }
 
-  logger.info("Usuario creado", { clienteId, uid, rol: nuevoRol, por: adminUid });
+  logger.info("Usuario creado", { clienteId: sesion.clienteId, uid, rol: nuevoRol, por: sesion.uid });
   return { uid };
 });
 
 export const actualizarUsuario = onCall(async (request) => {
-  const { clienteId, uid: adminUid } = exigirAdmin(request);
+  const sesion = await exigirAdmin(request);
   const d = objeto(request.data);
-  const { ref, uid, datos } = await usuarioDelCliente(clienteId, d.uid);
-  const nombre = texto(d.nombre, "nombre", 100);
-  const usuario = texto(d.usuario, "usuario", 100);
-  const nuevoRol = rol(d.rol);
-  const comunidades = nuevoRol === "admin" ? [] : listaIds(d.comunidades);
-  const { email, username } = identidad(usuario, clienteId);
-
-  if (uid === adminUid && nuevoRol !== "admin") {
-    throw new HttpsError(
-      "failed-precondition",
-      "No puedes quitarte a ti mismo el rol de administrador.",
-    );
+  const uid = id(d["uid"], "usuario");
+  const nombre = texto(d["nombre"], "el nombre", 1, 100);
+  const nuevoRol = rol(d["rol"]);
+  const comunidades = nuevoRol === "admin" ? [] : listaIds(d["comunidades"]);
+  const { username, email } = identidad(d["usuario"], sesion.clienteId);
+  if (uid === sesion.uid && nuevoRol !== "admin") {
+    throw new HttpsError("failed-precondition", "No puedes quitarte a ti mismo el rol de administrador.");
   }
-  await exigirComunidades(clienteId, comunidades);
+  await exigirComunidades(sesion.clienteId, comunidades);
 
-  const auth = getAuth();
-  if (email !== datos.email) {
+  const cliente = refCliente(sesion.clienteId);
+  const perfilRef = cliente.collection("usuarios").doc(uid);
+  const antes = await perfilRef.get();
+  if (!antes.exists) throw new HttpsError("not-found", "El usuario no existe.");
+  const rolAnterior = antes.get("rol") as Rol;
+  const emailAnterior = antes.get("email") as string;
+
+  // 1. Auth primero solo si cambia el email (puede chocar con otro usuario).
+  if (email !== emailAnterior) {
     try {
-      await auth.updateUser(uid, { email, displayName: nombre });
+      await auth().updateUser(uid, { email, displayName: nombre });
     } catch (e) {
       errorAuth(e);
     }
-  } else {
-    await auth.updateUser(uid, { displayName: nombre });
-  }
-  if (nuevoRol !== datos.rol) {
-    await auth.setCustomUserClaims(uid, { clienteId, rol: nuevoRol });
   }
 
-  const comunidadesRef = refCliente(clienteId).collection("comunidades");
-  const actuales = await comunidadesRef.where("asignados", "array-contains", uid).get();
-  const idsActuales = new Set(actuales.docs.map((doc) => doc.id));
-  const nuevas = new Set(comunidades);
-
-  const batch = getFirestore().batch();
-  batch.update(ref, { nombre, username, email, rol: nuevoRol });
-  for (const id of nuevas) {
-    if (!idsActuales.has(id)) {
-      batch.update(comunidadesRef.doc(id), { asignados: FieldValue.arrayUnion(uid) });
+  // 2. Firestore (fuente de verdad) en una transaccion.
+  try {
+    await db().runTransaction(async (tx) => {
+      const perfil = await tx.get(perfilRef);
+      if (!perfil.exists) throw new HttpsError("not-found", "El usuario no existe.");
+      if (perfil.get("rol") === "admin" && nuevoRol !== "admin" && perfil.get("activo") === true) {
+        if ((await adminsActivos(sesion.clienteId, uid, tx)) === 0) {
+          throw new HttpsError("failed-precondition", "La empresa tiene que tener al menos un administrador activo.");
+        }
+      }
+      const actuales = await tx.get(cliente.collection("comunidades").where("asignados", "array-contains", uid));
+      const idsActuales = new Set(actuales.docs.map((c) => c.id));
+      const nuevas = new Set(comunidades);
+      tx.update(perfilRef, { nombre, username, email, rol: nuevoRol });
+      for (const c of nuevas) {
+        if (!idsActuales.has(c)) tx.update(cliente.collection("comunidades").doc(c), { asignados: FieldValue.arrayUnion(uid) });
+      }
+      for (const c of idsActuales) {
+        if (!nuevas.has(c)) tx.update(cliente.collection("comunidades").doc(c), { asignados: FieldValue.arrayRemove(uid) });
+      }
+      const cambios = [
+        perfil.get("nombre") !== nombre ? `nombre: ${perfil.get("nombre")} → ${nombre}` : "",
+        perfil.get("username") !== username ? `usuario: ${perfil.get("username")} → ${username}` : "",
+        rolAnterior !== nuevoRol ? `rol: ${ETIQUETA_ROL[rolAnterior]} → ${ETIQUETA_ROL[nuevoRol]}` : "",
+        comunidades.length !== idsActuales.size || comunidades.some((c) => !idsActuales.has(c))
+          ? `comunidades asignadas: ${comunidades.length}`
+          : "",
+      ].filter(Boolean);
+      auditar(tx, sesion, {
+        accion: "usuario.editar",
+        descripcion: `Edita a ${nombre}${cambios.length ? ` (${cambios.join("; ")})` : ""}`,
+        objetivo: { coleccion: "usuarios", id: uid },
+      });
+    });
+  } catch (e) {
+    if (email !== emailAnterior) {
+      await auth().updateUser(uid, { email: emailAnterior }).catch(() => undefined);
     }
+    throw e;
   }
-  for (const id of idsActuales) {
-    if (!nuevas.has(id)) {
-      batch.update(comunidadesRef.doc(id), { asignados: FieldValue.arrayRemove(uid) });
-    }
-  }
-  await batch.commit();
 
-  logger.info("Usuario actualizado", { clienteId, uid, rol: nuevoRol, por: adminUid });
+  // 3. Claims y sesiones. Si esto fallara, las reglas y las Functions ya
+  //    usan el rol de Firestore, asi que no hay escalada de privilegios.
+  if (email === emailAnterior) await auth().updateUser(uid, { displayName: nombre });
+  if (nuevoRol !== rolAnterior) {
+    await auth().setCustomUserClaims(uid, { clienteId: sesion.clienteId, rol: nuevoRol });
+    await auth().revokeRefreshTokens(uid);
+  }
+
+  logger.info("Usuario actualizado", { clienteId: sesion.clienteId, uid, rol: nuevoRol, por: sesion.uid });
   return { uid };
 });
 
 export const cambiarEstadoUsuario = onCall(async (request) => {
-  const { clienteId, uid: adminUid } = exigirAdmin(request);
+  const sesion = await exigirAdmin(request);
+  sinDemo(sesion);
   const d = objeto(request.data);
-  const { ref, uid } = await usuarioDelCliente(clienteId, d.uid);
-  if (typeof d.activo !== "boolean") {
-    throw new HttpsError("invalid-argument", "Estado no válido.");
-  }
-  if (uid === adminUid) {
-    throw new HttpsError("failed-precondition", "No puedes desactivarte a ti mismo.");
-  }
+  const uid = id(d["uid"], "usuario");
+  if (typeof d["activo"] !== "boolean") throw new HttpsError("invalid-argument", "Estado no válido.");
+  const activo = d["activo"];
+  if (uid === sesion.uid) throw new HttpsError("failed-precondition", "No puedes desactivarte a ti mismo.");
 
-  const auth = getAuth();
-  await auth.updateUser(uid, { disabled: !d.activo });
-  // Cierra las sesiones abiertas. Los tokens ya emitidos siguen valiendo
-  // hasta 1 h, pero las reglas exigen usuarios/{uid}.activo para registrar
-  // fichajes y controles, asi que no podra seguir fichando.
-  if (!d.activo) await auth.revokeRefreshTokens(uid);
-  await ref.update({ activo: d.activo });
+  const perfilRef = refCliente(sesion.clienteId).collection("usuarios").doc(uid);
+  let nombre = "";
+  await db().runTransaction(async (tx) => {
+    const perfil = await tx.get(perfilRef);
+    if (!perfil.exists) throw new HttpsError("not-found", "El usuario no existe.");
+    nombre = perfil.get("nombre");
+    if (!activo && perfil.get("rol") === "admin" && (await adminsActivos(sesion.clienteId, uid, tx)) === 0) {
+      throw new HttpsError("failed-precondition", "La empresa tiene que tener al menos un administrador activo.");
+    }
+    tx.update(perfilRef, { activo });
+    auditar(tx, sesion, {
+      accion: activo ? "usuario.reactivar" : "usuario.desactivar",
+      descripcion: `${activo ? "Reactiva" : "Desactiva"} a ${nombre}`,
+      objetivo: { coleccion: "usuarios", id: uid },
+    });
+  });
 
-  logger.info("Estado de usuario cambiado", { clienteId, uid, activo: d.activo, por: adminUid });
+  await auth().updateUser(uid, { disabled: !activo });
+  if (!activo) await auth().revokeRefreshTokens(uid);
+  logger.info("Estado de usuario cambiado", { clienteId: sesion.clienteId, uid, activo, por: sesion.uid });
   return { uid };
 });
 
 export const restablecerPassword = onCall(async (request) => {
-  const { clienteId, uid: adminUid } = exigirAdmin(request);
+  const sesion = await exigirAdmin(request);
+  sinDemo(sesion);
   const d = objeto(request.data);
-  const { uid } = await usuarioDelCliente(clienteId, d.uid);
-  const pass = password(d.password);
+  const uid = id(d["uid"], "usuario");
+  const pass = password(d["password"]);
+  const perfil = await refCliente(sesion.clienteId).collection("usuarios").doc(uid).get();
+  if (!perfil.exists) throw new HttpsError("not-found", "El usuario no existe.");
 
-  const auth = getAuth();
   try {
-    await auth.updateUser(uid, { password: pass });
+    await auth().updateUser(uid, { password: pass });
   } catch (e) {
     errorAuth(e);
   }
-  if (uid !== adminUid) await auth.revokeRefreshTokens(uid);
+  if (uid !== sesion.uid) await auth().revokeRefreshTokens(uid);
 
-  logger.info("Contraseña restablecida", { clienteId, uid, por: adminUid });
+  const batch = db().batch();
+  auditar(batch, sesion, {
+    accion: "usuario.password",
+    descripcion: `Cambia la contraseña de ${perfil.get("nombre")}`,
+    objetivo: { coleccion: "usuarios", id: uid },
+  });
+  await batch.commit();
+  logger.info("Contraseña restablecida", { clienteId: sesion.clienteId, uid, por: sesion.uid });
   return { uid };
 });

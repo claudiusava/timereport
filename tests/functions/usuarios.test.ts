@@ -1,261 +1,202 @@
-import { initializeApp as initAdmin } from 'firebase-admin/app';
-import { getAuth as adminAuth } from 'firebase-admin/auth';
-import { GeoPoint as AdminGeoPoint, getFirestore as adminDb } from 'firebase-admin/firestore';
-import { deleteApp, initializeApp } from 'firebase/app';
-import {
-  connectAuthEmulator,
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut,
-} from 'firebase/auth';
-import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
+import { deleteApp } from 'firebase/app';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { emailDeLogin } from '../../src/app/shared/email-usuario';
+import {
+  adminAuth,
+  adminDb,
+  clienteSdk,
+  codigoError,
+  crearComunidad,
+  crearEmpresa,
+  crearUsuarioDirecto,
+  esperarFunctions,
+} from './entorno';
 
-// Ejecutar con `npm run test:functions` (arranca los emuladores de auth,
-// firestore y functions y define las variables *_EMULATOR_HOST).
+const sdk = clienteSdk('usuarios');
+const CLAVE = 'clave-larga-1';
 
-const PROYECTO = 'demo-timereport';
-const PASSWORD = 'clave-de-prueba';
-
-initAdmin({ projectId: PROYECTO });
-
-const app = initializeApp({ projectId: PROYECTO, apiKey: 'demo-api-key' }, 'tests');
-const auth = getAuth(app);
-connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
-const functions = getFunctions(app, 'europe-southwest1');
-connectFunctionsEmulator(functions, '127.0.0.1', 5001);
-
-const llamar = (nombre: string, datos: unknown) => httpsCallable(functions, nombre)(datos);
-
-async function entrarComo(usuario: string, clienteId: string, password = PASSWORD) {
-  await signOut(auth);
-  await signInWithEmailAndPassword(auth, emailDeLogin(usuario, clienteId), password);
-}
-
-async function crearDirecto(uid: string, clienteId: string, rol: string) {
-  await adminAuth().createUser({ uid, email: emailDeLogin(uid, clienteId), password: PASSWORD });
-  await adminAuth().setCustomUserClaims(uid, { clienteId, rol });
-  await adminDb().doc(`clientes/${clienteId}/usuarios/${uid}`).set({
-    nombre: uid,
-    username: uid.toLowerCase(),
-    email: emailDeLogin(uid, clienteId),
-    rol,
-    activo: true,
-  });
-}
-
-async function codigoError(promesa: Promise<unknown>): Promise<string> {
-  try {
-    await promesa;
-  } catch (e) {
-    return (e as { code: string }).code;
-  }
-  throw new Error('Se esperaba un error');
-}
-
-const comunidad = (uid: string) =>
-  adminDb().doc(`clientes/a/comunidades/${uid}`).get().then((d) => d.data()?.['asignados'] as string[]);
-
-/**
- * emulators:exec lanza los tests en cuanto los emuladores dicen estar listos,
- * pero el de Functions a veces registra las funciones un poco despues y,
- * mientras tanto, responde 404. Se espera a que crearUsuario exista.
- */
-async function esperarFunctions() {
-  const url = `http://127.0.0.1:5001/${PROYECTO}/europe-southwest1/crearUsuario`;
-  for (let i = 0; i < 60; i++) {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ data: {} }),
-    }).catch(() => null);
-    if (res && res.status !== 404) return;
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  throw new Error('El emulador de Functions no ha cargado las funciones');
-}
+const asignados = (c: string, id: string) =>
+  adminDb().doc(`clientes/${c}/comunidades/${id}`).get().then((d) => d.data()?.['asignados'] as string[]);
 
 beforeAll(async () => {
   await esperarFunctions();
-  for (const c of ['a', 'b']) {
-    await adminDb().doc(`clientes/${c}`).set({ nombre: c, activo: true });
-  }
-  for (const id of ['comA1', 'comA2']) {
-    await adminDb().doc(`clientes/a/comunidades/${id}`).set({
-      nombre: id,
-      codigo: id,
-      ubicacion: new AdminGeoPoint(40, -3),
-      asignados: [],
-      activa: true,
-    });
-  }
-  await crearDirecto('adminA', 'a', 'admin');
-  await crearDirecto('adminB', 'b', 'admin');
-  await crearDirecto('maqA', 'a', 'maquinista');
-});
+  await crearEmpresa('ua');
+  await crearEmpresa('ub');
+  await crearEmpresa('udemo', { demo: true });
+  await crearComunidad('ua', 'c1', []);
+  await crearComunidad('ua', 'c2', []);
+  await crearUsuarioDirecto('adminA', 'ua', 'admin');
+  await crearUsuarioDirecto('admin2A', 'ua', 'admin');
+  await crearUsuarioDirecto('maqA', 'ua', 'maquinista');
+  await crearUsuarioDirecto('adminBajaA', 'ua', 'admin', { activo: false });
+  await crearUsuarioDirecto('degradadoA', 'ua', 'admin', { perfilRol: 'maquinista' });
+  await crearUsuarioDirecto('adminB', 'ub', 'admin');
+  await crearEmpresa('uc');
+  await crearUsuarioDirecto('adminC1', 'uc', 'admin');
+  await crearUsuarioDirecto('adminC2', 'uc', 'admin');
+  await crearUsuarioDirecto('adminDemo', 'udemo', 'admin');
+  await crearUsuarioDirecto('trabDemo', 'udemo', 'maquinista');
+}, 120000);
 
 afterAll(async () => {
-  await deleteApp(app);
+  await deleteApp(sdk.app);
 });
 
 describe('crearUsuario', () => {
-  it('rechaza a quien no es admin', async () => {
-    await entrarComo('maqA', 'a');
-    expect(
-      await codigoError(llamar('crearUsuario', {
-        nombre: 'X', usuario: 'x', password: PASSWORD, rol: 'admin', comunidades: [],
-      })),
-    ).toBe('functions/permission-denied');
+  const base = { nombre: 'Juan Pérez', usuario: 'JPérez', password: CLAVE, rol: 'socorrista', comunidades: ['c1'] };
+
+  it('rechaza a quien no es admin activo, aunque su token diga admin', async () => {
+    for (const quien of ['maqA', 'adminBajaA', 'degradadoA']) {
+      await sdk.entrarComo(quien, 'ua');
+      expect(await codigoError(sdk.llamar('crearUsuario', { ...base, usuario: `x${quien}` }))).toBe('functions/permission-denied');
+    }
+    await sdk.salir();
+    expect(await codigoError(sdk.llamar('crearUsuario', base))).toBe('functions/unauthenticated');
   });
 
-  it('rechaza llamadas sin sesión', async () => {
-    await signOut(auth);
-    expect(
-      await codigoError(llamar('crearUsuario', {
-        nombre: 'X', usuario: 'x', password: PASSWORD, rol: 'admin', comunidades: [],
-      })),
-    ).toBe('functions/unauthenticated');
-  });
-
-  it('el admin crea un usuario con claims, perfil y comunidades', async () => {
-    await entrarComo('adminA', 'a');
-    const res = await llamar('crearUsuario', {
-      nombre: 'Juan Pérez',
-      usuario: 'JPérez',
-      password: PASSWORD,
-      rol: 'socorrista',
-      comunidades: ['comA1'],
-    });
-    const { uid } = res.data as { uid: string };
-
+  it('el admin crea un usuario con claims, perfil, comunidades y auditoría', async () => {
+    await sdk.entrarComo('adminA', 'ua');
+    const { uid } = await sdk.llamar<{ uid: string }>('crearUsuario', base);
     const user = await adminAuth().getUser(uid);
-    expect(user.email).toBe('jperez@a.timereport.invalid');
-    expect(user.customClaims).toEqual({ clienteId: 'a', rol: 'socorrista' });
-
-    const perfil = (await adminDb().doc(`clientes/a/usuarios/${uid}`).get()).data();
+    expect(user.email).toBe('jperez@ua.timereport.invalid');
+    expect(user.customClaims).toEqual({ clienteId: 'ua', rol: 'socorrista' });
+    const perfil = (await adminDb().doc(`clientes/ua/usuarios/${uid}`).get()).data();
     expect(perfil).toMatchObject({ nombre: 'Juan Pérez', username: 'jperez', rol: 'socorrista', activo: true });
-    expect(await comunidad('comA1')).toContain(uid);
-
-    // Puede entrar escribiendo su usuario como lo escribio el admin.
-    await entrarComo('JPérez', 'a');
-    expect(auth.currentUser?.uid).toBe(uid);
+    expect(await asignados('ua', 'c1')).toContain(uid);
+    const aud = await adminDb().collection('clientes/ua/auditoria').where('objetivo.id', '==', uid).get();
+    expect(aud.docs[0].get('accion')).toBe('usuario.crear');
+    await sdk.entrarComo('JPérez', 'ua', CLAVE);
   });
 
-  it('no permite usuarios repetidos', async () => {
-    await entrarComo('adminA', 'a');
-    expect(
-      await codigoError(llamar('crearUsuario', {
-        nombre: 'Otro', usuario: 'jperez', password: PASSWORD, rol: 'maquinista', comunidades: [],
-      })),
-    ).toBe('functions/already-exists');
+  it('no permite usuarios repetidos ni contraseñas cortas', async () => {
+    await sdk.entrarComo('adminA', 'ua');
+    expect(await codigoError(sdk.llamar('crearUsuario', { ...base, usuario: 'jperez' }))).toBe('functions/already-exists');
+    expect(await codigoError(sdk.llamar('crearUsuario', { ...base, usuario: 'otro', password: '1234567' }))).toBe('functions/invalid-argument');
   });
 
-  it('el mismo nombre de usuario puede existir en otro cliente', async () => {
-    await entrarComo('adminB', 'b');
-    await llamar('crearUsuario', {
-      nombre: 'Juan de B', usuario: 'jperez', password: PASSWORD, rol: 'maquinista', comunidades: [],
-    });
+  it('no admite emails: un admin no puede ocupar ni sondear usuarios de otra empresa', async () => {
+    await sdk.entrarComo('adminA', 'ua');
+    expect(await codigoError(sdk.llamar('crearUsuario', { ...base, usuario: 'adminb@ub.timereport.invalid' }))).toBe('functions/invalid-argument');
+    expect(await codigoError(sdk.llamar('crearUsuario', { ...base, usuario: 'alguien@gmail.com' }))).toBe('functions/invalid-argument');
   });
 
-  it('valida los datos', async () => {
-    await entrarComo('adminA', 'a');
-    const base = { nombre: 'Y', usuario: 'yy', password: PASSWORD, rol: 'maquinista', comunidades: [] };
-    expect(await codigoError(llamar('crearUsuario', { ...base, password: '123' }))).toBe('functions/invalid-argument');
-    expect(await codigoError(llamar('crearUsuario', { ...base, rol: 'jefe' }))).toBe('functions/invalid-argument');
-    expect(await codigoError(llamar('crearUsuario', { ...base, nombre: '' }))).toBe('functions/invalid-argument');
-    expect(await codigoError(llamar('crearUsuario', { ...base, comunidades: ['noExiste'] }))).toBe('functions/invalid-argument');
-    expect(await codigoError(llamar('crearUsuario', { ...base, usuario: '!!!' }))).toBe('functions/invalid-argument');
+  it('el mismo nombre de usuario puede existir en otra empresa', async () => {
+    await sdk.entrarComo('adminB', 'ub');
+    await sdk.llamar('crearUsuario', { ...base, comunidades: [] });
   });
 
-  it('un admin no puede asignar comunidades de otro cliente', async () => {
-    await entrarComo('adminB', 'b');
-    expect(
-      await codigoError(llamar('crearUsuario', {
-        nombre: 'Z', usuario: 'zz', password: PASSWORD, rol: 'maquinista', comunidades: ['comA1'],
-      })),
-    ).toBe('functions/invalid-argument');
+  it('valida los datos y las comunidades de su empresa', async () => {
+    await sdk.entrarComo('adminB', 'ub');
+    expect(await codigoError(sdk.llamar('crearUsuario', { ...base, usuario: 'yy', rol: 'jefe' }))).toBe('functions/invalid-argument');
+    expect(await codigoError(sdk.llamar('crearUsuario', { ...base, usuario: 'yy', nombre: '' }))).toBe('functions/invalid-argument');
+    expect(await codigoError(sdk.llamar('crearUsuario', { ...base, usuario: 'yy', comunidades: ['c1'] }))).toBe('functions/invalid-argument');
   });
 });
 
 describe('actualizarUsuario', () => {
-  async function uidDe(usuario: string, clienteId: string) {
-    return (await adminAuth().getUserByEmail(emailDeLogin(usuario, clienteId))).uid;
-  }
+  const uidDe = async (usuario: string, c: string) => (await adminAuth().getUserByEmail(emailDeLogin(usuario, c))).uid;
 
-  it('cambia rol, nombre de usuario y comunidades', async () => {
-    await entrarComo('adminA', 'a');
-    const uid = await uidDe('jperez', 'a');
-    await llamar('actualizarUsuario', {
-      uid,
-      nombre: 'Juan Pérez García',
-      usuario: 'juanpe',
-      rol: 'maquinista',
-      comunidades: ['comA2'],
-    });
-
+  it('cambia rol, nombre de usuario y comunidades, y cierra sus sesiones', async () => {
+    await sdk.entrarComo('adminA', 'ua');
+    const uid = await uidDe('jperez', 'ua');
+    const antes = (await adminAuth().getUser(uid)).tokensValidAfterTime;
+    await new Promise((r) => setTimeout(r, 1100));
+    await sdk.llamar('actualizarUsuario', { uid, nombre: 'Juan Pérez García', usuario: 'juanpe', rol: 'maquinista', comunidades: ['c2'] });
     const user = await adminAuth().getUser(uid);
-    expect(user.email).toBe('juanpe@a.timereport.invalid');
-    expect(user.customClaims).toEqual({ clienteId: 'a', rol: 'maquinista' });
-    expect(await comunidad('comA1')).not.toContain(uid);
-    expect(await comunidad('comA2')).toContain(uid);
-    const perfil = (await adminDb().doc(`clientes/a/usuarios/${uid}`).get()).data();
+    expect(user.email).toBe('juanpe@ua.timereport.invalid');
+    expect(user.customClaims).toEqual({ clienteId: 'ua', rol: 'maquinista' });
+    expect(user.tokensValidAfterTime).not.toBe(antes);
+    expect(await asignados('ua', 'c1')).not.toContain(uid);
+    expect(await asignados('ua', 'c2')).toContain(uid);
+    const perfil = (await adminDb().doc(`clientes/ua/usuarios/${uid}`).get()).data();
     expect(perfil).toMatchObject({ nombre: 'Juan Pérez García', username: 'juanpe', rol: 'maquinista' });
   });
 
-  it('un admin no puede editar usuarios de otro cliente', async () => {
-    await entrarComo('adminB', 'b');
-    const uid = await uidDe('juanpe', 'a');
-    expect(
-      await codigoError(llamar('actualizarUsuario', {
-        uid, nombre: 'Hack', usuario: 'hack', rol: 'admin', comunidades: [],
-      })),
-    ).toBe('functions/not-found');
+  it('un admin no puede editar usuarios de otra empresa', async () => {
+    await sdk.entrarComo('adminB', 'ub');
+    const uid = await uidDe('juanpe', 'ua');
+    expect(await codigoError(sdk.llamar('actualizarUsuario', { uid, nombre: 'X', usuario: 'hack', rol: 'admin', comunidades: [] }))).toBe('functions/not-found');
   });
 
-  it('un admin no puede quitarse el rol de administrador', async () => {
-    await entrarComo('adminA', 'a');
-    expect(
-      await codigoError(llamar('actualizarUsuario', {
-        uid: 'adminA', nombre: 'adminA', usuario: 'adminA', rol: 'maquinista', comunidades: [],
-      })),
-    ).toBe('functions/failed-precondition');
+  it('un admin no puede quitarse a sí mismo el rol', async () => {
+    await sdk.entrarComo('adminA', 'ua');
+    expect(await codigoError(sdk.llamar('actualizarUsuario', { uid: 'adminA', nombre: 'adminA', usuario: 'adminA', rol: 'maquinista', comunidades: [] }))).toBe('functions/failed-precondition');
+  });
+
+  it('nunca deja a la empresa sin administradores activos (dos admins desactivándose a la vez)', async () => {
+    await sdk.entrarComo('adminC1', 'uc');
+    const otro = clienteSdk('usuarios-otro');
+    await otro.entrarComo('adminC2', 'uc');
+    const resultados = await Promise.allSettled([
+      sdk.llamar('cambiarEstadoUsuario', { uid: 'adminC2', activo: false }),
+      otro.llamar('cambiarEstadoUsuario', { uid: 'adminC1', activo: false }),
+    ]);
+    await deleteApp(otro.app);
+    const activos = await adminDb().collection('clientes/uc/usuarios').where('rol', '==', 'admin').where('activo', '==', true).get();
+    expect(activos.size).toBeGreaterThanOrEqual(1);
+    expect(resultados.some((r) => r.status === 'rejected')).toBe(true);
   });
 });
 
 describe('cambiarEstadoUsuario y restablecerPassword', () => {
   it('desactivar impide entrar y reactivar lo permite', async () => {
-    await entrarComo('adminA', 'a');
-    await llamar('cambiarEstadoUsuario', { uid: 'maqA', activo: false });
+    await sdk.entrarComo('adminA', 'ua');
+    await sdk.llamar('cambiarEstadoUsuario', { uid: 'maqA', activo: false });
     expect((await adminAuth().getUser('maqA')).disabled).toBe(true);
-    expect((await adminDb().doc('clientes/a/usuarios/maqA').get()).data()?.['activo']).toBe(false);
-    expect(await codigoError(entrarComo('maqA', 'a'))).toBe('auth/user-disabled');
-
-    await entrarComo('adminA', 'a');
-    await llamar('cambiarEstadoUsuario', { uid: 'maqA', activo: true });
-    await entrarComo('maqA', 'a');
+    expect((await adminDb().doc('clientes/ua/usuarios/maqA').get()).get('activo')).toBe(false);
+    expect(await codigoError(sdk.entrarComo('maqA', 'ua'))).toBe('auth/user-disabled');
+    await sdk.entrarComo('adminA', 'ua');
+    await sdk.llamar('cambiarEstadoUsuario', { uid: 'maqA', activo: true });
+    await sdk.entrarComo('maqA', 'ua');
   });
 
   it('un admin no puede desactivarse a sí mismo', async () => {
-    await entrarComo('adminA', 'a');
-    expect(
-      await codigoError(llamar('cambiarEstadoUsuario', { uid: 'adminA', activo: false })),
-    ).toBe('functions/failed-precondition');
+    await sdk.entrarComo('adminA', 'ua');
+    expect(await codigoError(sdk.llamar('cambiarEstadoUsuario', { uid: 'adminA', activo: false }))).toBe('functions/failed-precondition');
   });
 
-  it('el admin restablece la contraseña', async () => {
-    await entrarComo('adminA', 'a');
-    await llamar('restablecerPassword', { uid: 'maqA', password: 'nueva-clave' });
-    // El emulador responde wrong-password; produccion, invalid-credential.
-    expect(['auth/invalid-credential', 'auth/wrong-password']).toContain(await codigoError(entrarComo('maqA', 'a')));
-    await entrarComo('maqA', 'a', 'nueva-clave');
+  it('el admin restablece la contraseña (mínimo 8 caracteres) y queda auditado', async () => {
+    await sdk.entrarComo('adminA', 'ua');
+    expect(await codigoError(sdk.llamar('restablecerPassword', { uid: 'maqA', password: 'corta' }))).toBe('functions/invalid-argument');
+    await sdk.llamar('restablecerPassword', { uid: 'maqA', password: 'nueva-clave' });
+    expect(['auth/invalid-credential', 'auth/wrong-password']).toContain(await codigoError(sdk.entrarComo('maqA', 'ua')));
+    await sdk.entrarComo('maqA', 'ua', 'nueva-clave');
+    const aud = await adminDb().collection('clientes/ua/auditoria').where('accion', '==', 'usuario.password').get();
+    expect(aud.size).toBeGreaterThan(0);
   });
 
-  it('no se puede restablecer la de otro cliente', async () => {
-    await entrarComo('adminB', 'b');
-    expect(
-      await codigoError(llamar('restablecerPassword', { uid: 'maqA', password: 'otra-clave' })),
-    ).toBe('functions/not-found');
+  it('no se puede tocar a usuarios de otra empresa', async () => {
+    await sdk.entrarComo('adminB', 'ub');
+    expect(await codigoError(sdk.llamar('restablecerPassword', { uid: 'maqA', password: 'otra-clave-1' }))).toBe('functions/not-found');
+  });
+
+  it('en la empresa demo no se cambian contraseñas ni se desactivan usuarios', async () => {
+    await sdk.entrarComo('adminDemo', 'udemo');
+    expect(await codigoError(sdk.llamar('restablecerPassword', { uid: 'trabDemo', password: 'otra-clave-1' }))).toBe('functions/failed-precondition');
+    expect(await codigoError(sdk.llamar('cambiarEstadoUsuario', { uid: 'trabDemo', activo: false }))).toBe('functions/failed-precondition');
+  });
+});
+
+describe('actualizarEmpresa', () => {
+  it('el admin cambia la marca y las reglas de fichaje', async () => {
+    await sdk.entrarComo('adminA', 'ua');
+    await sdk.llamar('actualizarEmpresa', { nombreApp: 'Mi App', colorPrimario: '#AA3300', radioFichajeM: 300, maxFichajesDia: 3 });
+    const c = (await adminDb().doc('clientes/ua').get()).data()!;
+    expect(c['branding']).toMatchObject({ nombreApp: 'Mi App', colorPrimario: '#aa3300' });
+    expect(c['config']).toMatchObject({ radioFichajeM: 300, maxFichajesDia: 3 });
+  });
+
+  it('valida los valores y el logo de su empresa', async () => {
+    await sdk.entrarComo('adminA', 'ua');
+    expect(await codigoError(sdk.llamar('actualizarEmpresa', { colorPrimario: 'rojo' }))).toBe('functions/invalid-argument');
+    expect(await codigoError(sdk.llamar('actualizarEmpresa', { radioFichajeM: 10 }))).toBe('functions/invalid-argument');
+    expect(await codigoError(sdk.llamar('actualizarEmpresa', { logoPath: 'clientes/ub/branding/logo-1.png' }))).toBe('functions/invalid-argument');
+    expect(await codigoError(sdk.llamar('actualizarEmpresa', {}))).toBe('functions/invalid-argument');
+  });
+
+  it('un trabajador no puede', async () => {
+    await sdk.entrarComo('maqA', 'ua', 'nueva-clave');
+    expect(await codigoError(sdk.llamar('actualizarEmpresa', { nombreApp: 'X' }))).toBe('functions/permission-denied');
   });
 });

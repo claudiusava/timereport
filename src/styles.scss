@@ -1,22 +1,17 @@
-// Estilos globales. Los colores de marca (--color-primario y
-// --color-secundario) los fija BrandingService segun el cliente.
+@use '@angular/material' as mat;
 
-:root {
-  --color-primario: #0e7490;
-  --color-secundario: #164e63;
-  --color-texto: #1f2933;
-  --color-texto-suave: #61707f;
-  --color-fondo: #f3f5f7;
-  --color-superficie: #ffffff;
-  --color-borde: #dde3e9;
-  --color-ok: #15803d;
-  --color-ok-suave: #e7f6ec;
-  --color-error: #c62828;
-  --color-error-suave: #fdecec;
-  --color-aviso-suave: #fff6e0;
-  --radio: 12px;
-  --sombra: 0 1px 3px rgba(16, 24, 40, 0.08), 0 4px 12px rgba(16, 24, 40, 0.05);
-  color-scheme: light;
+// Tema Material 3. Los colores de la marca de cada empresa se sobrescriben en
+// tiempo de ejecucion (src/app/core/tema.ts) sobre las variables --mat-sys-*.
+html {
+  color-scheme: light dark;
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$cyan-palette,
+    ),
+    typography: 'Roboto Flex Variable',
+    density: 0,
+  ));
 }
 
 * {
@@ -25,413 +20,215 @@
 
 html,
 body {
+  height: 100%;
   margin: 0;
-  min-height: 100%;
 }
 
 body {
-  background: var(--color-fondo);
-  color: var(--color-texto);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.45;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-large);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-  color: inherit;
-}
-
 a {
-  color: var(--color-primario);
+  color: var(--mat-sys-primary);
 }
 
-h1 {
-  font-size: 1.4rem;
-  margin: 0 0 1rem;
+h1,
+h2,
+h3 {
+  margin: 0;
 }
 
-h2 {
-  font-size: 1.1rem;
-  margin: 0 0 0.75rem;
-}
+// ---------- Cabecera de pagina ----------
 
-// ---------- Estructura ----------
-
-.contenedor {
-  width: 100%;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-.tarjeta {
-  background: var(--color-superficie);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio);
-  box-shadow: var(--sombra);
-  padding: 1rem;
-  margin-bottom: 1rem;
-
-  > :last-child {
-    margin-bottom: 0;
-  }
-}
-
-.cabecera-seccion {
+.cabecera-pagina {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  gap: 12px;
+  margin-bottom: 20px;
 
-  h1,
-  h2 {
-    margin: 0;
+  h1 {
+    font: var(--mat-sys-headline-small);
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: var(--mat-sys-on-surface-variant);
+    font: var(--mat-sys-body-medium);
   }
 }
 
-.fila {
+.acciones {
   display: flex;
-  gap: 0.75rem;
   flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+// ---------- Tarjetas ----------
+
+.tarjeta {
+  background: var(--mat-sys-surface-container-low);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+
+  > h2 {
+    font: var(--mat-sys-title-medium);
+    margin-bottom: 12px;
+  }
+}
+
+.rejilla {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+// ---------- Formularios ----------
+
+.ancho-completo {
+  width: 100%;
+}
+
+.fila-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
 
   > * {
     flex: 1 1 180px;
   }
 }
 
-.texto-suave {
-  color: var(--color-texto-suave);
-  font-size: 0.9rem;
+.error-formulario {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  font: var(--mat-sys-body-medium);
 }
 
-.vacio {
-  text-align: center;
-  color: var(--color-texto-suave);
-  padding: 2rem 1rem;
+.aviso-suave {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  font: var(--mat-sys-body-medium);
 }
 
 // ---------- Botones ----------
 
-.boton {
+.boton-peligro.mat-mdc-unelevated-button:not(:disabled) {
+  --mat-button-filled-container-color: var(--mat-sys-error);
+  --mat-button-filled-label-text-color: var(--mat-sys-on-error);
+}
+
+.boton-grande.mat-mdc-unelevated-button {
+  --mat-button-filled-container-height: 64px;
+  --mat-button-filled-container-shape: 20px;
+  --mat-button-filled-label-text-size: 1.15rem;
+  width: 100%;
+}
+
+// ---------- Etiquetas de estado ----------
+
+.chip {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  min-height: 44px;
-  padding: 0.55rem 1.1rem;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  background: var(--color-primario);
-  color: #fff;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: filter 0.15s, background 0.15s;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 8px;
+  font: var(--mat-sys-label-medium);
+  white-space: nowrap;
+  background: var(--mat-sys-surface-container-highest);
+  color: var(--mat-sys-on-surface-variant);
 
-  &:hover:not(:disabled) {
-    filter: brightness(0.92);
+  &.entrada {
+    background: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
   }
 
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
+  &.salida {
+    background: var(--mat-sys-tertiary-container);
+    color: var(--mat-sys-on-tertiary-container);
   }
 
-  &.secundario {
-    background: var(--color-superficie);
-    color: var(--color-texto);
-    border-color: var(--color-borde);
+  &.alerta,
+  &.anulado {
+    background: var(--mat-sys-error-container);
+    color: var(--mat-sys-on-error-container);
   }
 
-  &.peligro {
-    background: var(--color-error);
-  }
-
-  &.peligro-suave {
-    background: var(--color-superficie);
-    color: var(--color-error);
-    border-color: var(--color-borde);
-  }
-
-  &.grande {
-    width: 100%;
-    min-height: 64px;
-    font-size: 1.25rem;
-    border-radius: 14px;
-  }
-
-  &.pequeno {
-    min-height: 36px;
-    padding: 0.3rem 0.75rem;
-    font-size: 0.9rem;
-  }
-
-  &.bloque {
-    width: 100%;
+  &.manual {
+    background: var(--mat-sys-secondary-container);
+    color: var(--mat-sys-on-secondary-container);
   }
 }
 
-.acciones {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+.anulado-fila {
+  opacity: 0.55;
+  text-decoration: line-through;
 }
 
-// ---------- Formularios ----------
-
-.campo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-bottom: 0.9rem;
-
-  > span,
-  > label {
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-
-  small {
-    color: var(--color-texto-suave);
-  }
+.texto-suave {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
 }
 
-.control {
-  width: 100%;
-  min-height: 46px;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid var(--color-borde);
-  border-radius: 10px;
-  background: var(--color-superficie);
-  font-size: 1rem;
-
-  &:focus {
-    outline: 2px solid var(--color-primario);
-    outline-offset: 0;
-    border-color: transparent;
-  }
-
-  &.ng-invalid.ng-touched {
-    border-color: var(--color-error);
-  }
-}
-
-.casilla {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  min-height: 40px;
-  cursor: pointer;
-
-  input {
-    width: 20px;
-    height: 20px;
-    accent-color: var(--color-primario);
-  }
-}
-
-.error-formulario {
-  background: var(--color-error-suave);
-  color: var(--color-error);
-  border-radius: 10px;
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 0.9rem;
-  font-size: 0.95rem;
-}
-
-.alerta {
-  border-radius: 10px;
-  padding: 0.75rem 0.9rem;
-  margin-bottom: 1rem;
-  background: var(--color-aviso-suave);
-
-  &.error {
-    background: var(--color-error-suave);
-    color: var(--color-error);
-  }
-
-  &.ok {
-    background: var(--color-ok-suave);
-    color: var(--color-ok);
-  }
-}
-
-// ---------- Listas y tablas ----------
-
-.lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
-  > li {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--color-borde);
-
-    &:last-child {
-      border-bottom: 0;
-    }
-  }
-
-  .principal {
-    flex: 1;
-    min-width: 0;
-
-    strong {
-      display: block;
-      overflow-wrap: anywhere;
-    }
-  }
-}
+// ---------- Tablas ----------
 
 .tabla-scroll {
   overflow-x: auto;
-  margin: 0 -1rem;
-  padding: 0 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--mat-sys-outline-variant);
 }
 
-table.tabla {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.92rem;
+table.mat-mdc-table {
+  --mat-table-background-color: var(--mat-sys-surface-container-lowest);
+  min-width: 640px;
 
-  th,
-  td {
-    text-align: left;
-    padding: 0.55rem 0.5rem;
-    border-bottom: 1px solid var(--color-borde);
-    white-space: nowrap;
-  }
-
+  td,
   th {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--color-texto-suave);
+    white-space: nowrap;
   }
 
   td.ajustar {
     white-space: normal;
+    min-width: 160px;
   }
 }
 
-.etiqueta {
-  display: inline-block;
-  padding: 0.1rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  background: var(--color-fondo);
-  color: var(--color-texto-suave);
-  white-space: nowrap;
+// ---------- Avisos (snackbar) ----------
 
-  &.entrada {
-    background: var(--color-ok-suave);
-    color: var(--color-ok);
-  }
-
-  &.salida {
-    background: #eef2ff;
-    color: #3730a3;
-  }
-
-  &.inactivo {
-    background: var(--color-error-suave);
-    color: var(--color-error);
-  }
+.aviso-error {
+  --mat-snack-bar-container-color: var(--mat-sys-error-container);
+  --mat-snack-bar-supporting-text-color: var(--mat-sys-on-error-container);
+  --mat-snack-bar-button-color: var(--mat-sys-on-error-container);
 }
 
-.pestanas {
-  display: flex;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--color-borde);
-
-  button {
-    border: 0;
-    background: none;
-    padding: 0.7rem 1rem;
-    font-weight: 600;
-    color: var(--color-texto-suave);
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-
-    &.activa {
-      color: var(--color-primario);
-      border-bottom-color: var(--color-primario);
-    }
-  }
-}
-
-// ---------- Dialogos ----------
-
-.fondo-dialogo {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 50;
-
-  @media (min-width: 640px) {
-    align-items: center;
-  }
-}
-
-.dialogo {
-  background: var(--color-superficie);
-  width: 100%;
-  max-width: 560px;
-  max-height: 92vh;
-  overflow-y: auto;
-  border-radius: 16px 16px 0 0;
-  padding: 1.25rem 1rem calc(1rem + env(safe-area-inset-bottom));
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-
-  @media (min-width: 640px) {
-    border-radius: 16px;
-    padding: 1.5rem;
-  }
-
-  h2 {
-    margin-bottom: 1rem;
-  }
-
-  .acciones {
-    margin-top: 1rem;
-  }
-}
+// ---------- Carga ----------
 
 .cargando {
   display: flex;
   justify-content: center;
-  padding: 2rem;
-
-  &::after {
-    content: '';
-    width: 28px;
-    height: 28px;
-    border: 3px solid var(--color-borde);
-    border-top-color: var(--color-primario);
-    border-radius: 50%;
-    animation: girar 0.8s linear infinite;
-  }
+  padding: 48px 0;
 }
 
-@keyframes girar {
-  to {
-    transform: rotate(360deg);
-  }
+.error-texto {
+  color: var(--mat-sys-error);
 }

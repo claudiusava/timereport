@@ -1,0 +1,73 @@
+<div class="pantalla">
+  <div class="panel">
+    @if (cargandoEmpresa()) {
+      <div class="cargando"><mat-spinner diameter="40" /></div>
+    } @else {
+      <div class="marca">
+        <img [src]="empresa.logoUrl()" alt="" />
+        <h1>{{ empresa.nombreApp() }}</h1>
+        @if (!pedirEmpresa() && empresa.empresa(); as e) {
+          <p>
+            {{ e.nombre }} ·
+            <button type="button" class="enlace" (click)="cambiarEmpresa()">Otra empresa</button>
+          </p>
+        } @else {
+          <p>Inicia sesión con los datos que te ha dado tu empresa</p>
+        }
+      </div>
+
+      @if (error()) {
+        <div class="error-formulario" role="alert"><mat-icon svgIcon="error" />{{ error() }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="entrar()">
+        @if (pedirEmpresa()) {
+          <mat-form-field class="ancho-completo">
+            <mat-label>Código de empresa</mat-label>
+            <input matInput formControlName="empresa" autocapitalize="none" autocomplete="organization" spellcheck="false" />
+            <mat-icon matIconPrefix svgIcon="domain" />
+          </mat-form-field>
+        }
+        <mat-form-field class="ancho-completo">
+          <mat-label>Usuario</mat-label>
+          <input matInput formControlName="usuario" autocapitalize="none" autocomplete="username" spellcheck="false" />
+          <mat-icon matIconPrefix svgIcon="person" />
+          @if (form.controls.usuario.touched && form.controls.usuario.invalid) {
+            <mat-error>Escribe tu usuario.</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field class="ancho-completo">
+          <mat-label>Contraseña</mat-label>
+          <input matInput formControlName="password" [type]="verPassword() ? 'text' : 'password'" autocomplete="current-password" />
+          <mat-icon matIconPrefix svgIcon="key" />
+          <button mat-icon-button matIconSuffix type="button" (click)="verPassword.set(!verPassword())"
+                  [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            <mat-icon [svgIcon]="verPassword() ? 'visibility_off' : 'visibility'" />
+          </button>
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <mat-error>Escribe tu contraseña.</mat-error>
+          }
+        </mat-form-field>
+
+        <button mat-flat-button class="entrar" type="submit" [disabled]="enviando()">
+          {{ enviando() ? 'Entrando…' : 'Entrar' }}
+        </button>
+      </form>
+
+      @if (esDemo() && !pedirEmpresa()) {
+        <div class="demo">
+          <p><strong>Empresa de demostración.</strong> Elige con quién entrar (los datos son ficticios y se restauran cada pocas horas):</p>
+          <div class="usuarios-demo">
+            @for (u of demo.usuarios; track u.usuario) {
+              <button mat-stroked-button type="button" (click)="usarDemo(u.usuario)">
+                {{ u.rol }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <a class="volver" routerLink="/">¿Qué es TimeReport?</a>
+    }
+  </div>
+</div>

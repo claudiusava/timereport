@@ -1,0 +1,57 @@
+<div class="cabecera-pagina">
+  <h1>Mi perfil</h1>
+</div>
+
+@if (auth.sesion(); as s) {
+  <section class="tarjeta">
+    <h2>Tus datos</h2>
+    <dl class="datos">
+      <dt>Nombre</dt><dd>{{ s.nombre }}</dd>
+      <dt>Usuario</dt><dd>{{ s.username }}</dd>
+      <dt>Rol</dt><dd>{{ etiquetaRol(s.rol) }}</dd>
+      <dt>Empresa</dt><dd>{{ empresa.empresa()?.nombre }}</dd>
+    </dl>
+  </section>
+}
+
+<section class="tarjeta">
+  <h2>Apariencia</h2>
+  <mat-button-toggle-group [value]="empresa.modo()" (change)="cambiarModo($event.value)" aria-label="Tema">
+    <mat-button-toggle value="sistema"><mat-icon svgIcon="contrast" /> Sistema</mat-button-toggle>
+    <mat-button-toggle value="claro"><mat-icon svgIcon="light_mode" /> Claro</mat-button-toggle>
+    <mat-button-toggle value="oscuro"><mat-icon svgIcon="dark_mode" /> Oscuro</mat-button-toggle>
+  </mat-button-toggle-group>
+</section>
+
+<section class="tarjeta">
+  <h2>Cambiar contraseña</h2>
+  @if (empresa.esDemo()) {
+    <p class="texto-suave">En la empresa de demostración no se pueden cambiar las contraseñas.</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="cambiarPassword()">
+      @if (error()) {
+        <div class="error-formulario" role="alert"><mat-icon svgIcon="error" />{{ error() }}</div>
+      }
+      <mat-form-field>
+        <mat-label>Contraseña actual</mat-label>
+        <input matInput type="password" formControlName="actual" autocomplete="current-password" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Nueva contraseña</mat-label>
+        <input matInput type="password" formControlName="nueva" autocomplete="new-password" />
+        <mat-hint>Mínimo {{ minima }} caracteres.</mat-hint>
+        @if (form.controls.nueva.hasError('minlength')) {
+          <mat-error>Mínimo {{ minima }} caracteres.</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Repite la nueva contraseña</mat-label>
+        <input matInput type="password" formControlName="repetir" autocomplete="new-password" />
+        @if (form.hasError('distintas') && form.controls.repetir.touched) {
+          <mat-hint class="error-texto">No coincide con la nueva contraseña.</mat-hint>
+        }
+      </mat-form-field>
+      <button mat-flat-button type="submit" [disabled]="guardando()">Cambiar contraseña</button>
+    </form>
+  }
+</section>

@@ -1,0 +1,133 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Control del agua</h1>
+    <p>Valores de referencia: cloro libre {{ rangoCloro.min }}–{{ rangoCloro.max }} mg/l · pH {{ rangoPh.min }}–{{ rangoPh.max }}</p>
+  </div>
+</div>
+
+@if (cargando()) {
+  <div class="cargando"><mat-spinner diameter="40" /></div>
+} @else {
+  @if (pendiente(); as p) {
+    <div class="aviso-suave pendiente">
+      <mat-icon svgIcon="cloud_upload" />
+      <span>{{ p.message }}</span>
+      <button mat-flat-button (click)="reintentarFoto()" [disabled]="guardando()">Reintentar subida</button>
+    </div>
+  }
+
+  @if (comunidades().length === 0 && !error()) {
+    <app-estado-vacio icono="pool" titulo="No tienes comunidades asignadas" texto="Avisa al administrador." />
+  } @else {
+    <form class="tarjeta" [formGroup]="form" (ngSubmit)="guardar()">
+      <mat-form-field class="ancho-completo">
+        <mat-label>Piscina / comunidad</mat-label>
+        <mat-select formControlName="comunidadId">
+          @for (c of comunidades(); track c.id) {
+            <mat-option [value]="c.id">{{ c.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-icon matIconPrefix svgIcon="pool" />
+      </mat-form-field>
+
+      <div class="fila-campos">
+        <mat-form-field>
+          <mat-label>Cloro libre (mg/l)</mat-label>
+          <mat-select formControlName="cloro">
+            @for (n of nivelesCloro; track n) {
+              <mat-option [value]="n">{{ n.toFixed(1) }}{{ fueraDeRango(n, rangoCloro) ? '  ⚠' : '' }}</mat-option>
+            }
+          </mat-select>
+          @if (valores().cloro != null && fueraDeRango(valores().cloro!, rangoCloro)) {
+            <mat-hint class="fuera">Fuera del rango recomendado</mat-hint>
+          }
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>pH</mat-label>
+          <mat-select formControlName="ph">
+            @for (n of nivelesPh; track n) {
+              <mat-option [value]="n">{{ n.toFixed(1) }}{{ fueraDeRango(n, rangoPh) ? '  ⚠' : '' }}</mat-option>
+            }
+          </mat-select>
+          @if (valores().ph != null && fueraDeRango(valores().ph!, rangoPh)) {
+            <mat-hint class="fuera">Fuera del rango recomendado</mat-hint>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="fila-campos">
+        <mat-form-field>
+          <mat-label>Bañistas</mat-label>
+          <input matInput type="number" inputmode="numeric" formControlName="banistas" min="0" step="1" />
+          @if (form.controls.banistas.invalid) {
+            <mat-error>Número entero (0 o más)</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Nivel de rebosadero</mat-label>
+          <input matInput type="number" inputmode="numeric" formControlName="rebosadero" min="0" step="1" />
+          @if (form.controls.rebosadero.invalid) {
+            <mat-error>Número entero (0 o más)</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Agua depurada</mat-label>
+          <input matInput type="number" inputmode="decimal" formControlName="aguaDepurada" min="0" />
+          <span matTextSuffix>m³</span>
+          @if (form.controls.aguaDepurada.invalid) {
+            <mat-error>Indica los m³ (0 o más)</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <label class="selector-foto" [class.con-foto]="vistaPrevia()">
+        @if (vistaPrevia(); as src) {
+          <img [src]="src" alt="Vista previa de la foto" />
+          <span class="texto-suave">Toca para cambiar la foto</span>
+        } @else {
+          <mat-icon svgIcon="photo_camera" />
+          <span>Hacer foto</span>
+        }
+        <input type="file" accept="image/*" capture="environment" (change)="elegirFoto($event)" />
+      </label>
+
+      @if (error()) {
+        <div class="error-formulario" role="alert"><mat-icon svgIcon="warning" />{{ error() }}</div>
+      }
+
+      <button mat-flat-button class="boton-grande" type="submit" [disabled]="guardando()">
+        @if (guardando()) {
+          <mat-spinner diameter="24" /> Guardando…
+        } @else {
+          Guardar control
+        }
+      </button>
+    </form>
+  }
+
+  <section class="tarjeta">
+    <h2>Mis controles del último mes</h2>
+    @if (recientes().length) {
+      <ul class="lista">
+        @for (c of recientes(); track c.id) {
+          <li [class.anulado-fila]="c.anulado">
+            <app-foto-control [path]="c.fotoPath" [etiqueta]="c.comunidadNombre" />
+            <div class="principal">
+              <strong>{{ c.comunidadNombre }}</strong>
+              <span class="texto-suave">{{ fechaHora(c.fecha) }} · {{ c.banistas }} bañistas</span>
+            </div>
+            <div class="valores">
+              <span class="chip" [class.alerta]="fueraDeRango(c.cloro, rangoCloro)">Cl {{ c.cloro }}</span>
+              <span class="chip" [class.alerta]="fueraDeRango(c.ph, rangoPh)">pH {{ c.ph }}</span>
+              @if (c.anulado) {
+                <span class="chip anulado">Anulado</span>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="texto-suave">Todavía no has registrado controles este mes.</p>
+    }
+  </section>
+}

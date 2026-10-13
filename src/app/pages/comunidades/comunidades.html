@@ -1,0 +1,61 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Comunidades</h1>
+    <p>Las piscinas donde trabaja tu equipo. Para fichar hay que estar cerca de su ubicación.</p>
+  </div>
+  <div class="acciones">
+    <button mat-stroked-button (click)="exportar()" [disabled]="!filtradas().length"><mat-icon svgIcon="download" />Excel</button>
+    <button mat-flat-button (click)="abrir(null)"><mat-icon svgIcon="add" />Nueva comunidad</button>
+  </div>
+</div>
+
+<mat-form-field class="ancho-completo">
+  <mat-label>Buscar por nombre o código</mat-label>
+  <input matInput [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" />
+  <mat-icon matIconPrefix svgIcon="search" />
+</mat-form-field>
+
+@if (cargando()) {
+  <div class="cargando"><mat-spinner diameter="40" /></div>
+} @else if (error()) {
+  <app-estado-vacio icono="wifi_off" titulo="No se han podido cargar las comunidades" [texto]="error()">
+    <button mat-stroked-button (click)="cargar()"><mat-icon svgIcon="refresh" />Reintentar</button>
+  </app-estado-vacio>
+} @else {
+  <div class="lista">
+    @for (c of filtradas(); track c.id) {
+      <article class="comunidad" [class.inactiva]="!c.activa">
+        <span class="icono"><mat-icon svgIcon="pool" /></span>
+        <div class="principal">
+          <strong>{{ c.nombre }}</strong>
+          <span class="texto-suave">Código {{ c.codigo }}</span>
+          <span class="texto-suave">{{ trabajadores(c) || 'Sin trabajadores asignados' }}</span>
+          <div class="etiquetas">
+            @if (!c.activa) {
+              <span class="chip anulado">Inactiva</span>
+            }
+            @if (!c.ubicacion) {
+              <span class="chip alerta">Sin ubicación</span>
+            }
+          </div>
+        </div>
+        <button mat-icon-button [matMenuTriggerFor]="menu" [attr.aria-label]="'Opciones de ' + c.nombre">
+          <mat-icon svgIcon="more_vert" />
+        </button>
+        <mat-menu #menu="matMenu" xPosition="before">
+          <button mat-menu-item (click)="abrir(c)"><mat-icon svgIcon="edit" />Editar</button>
+          @if (mapa(c); as url) {
+            <a mat-menu-item [href]="url" target="_blank" rel="noopener"><mat-icon svgIcon="map" />Ver en el mapa</a>
+          }
+          <button mat-menu-item (click)="eliminar(c)"><mat-icon svgIcon="delete" />Eliminar</button>
+        </mat-menu>
+      </article>
+    } @empty {
+      <app-estado-vacio icono="apartment" [titulo]="busqueda() ? 'Ninguna comunidad coincide con la búsqueda' : 'Todavía no hay comunidades'">
+        @if (!busqueda()) {
+          <button mat-flat-button (click)="abrir(null)"><mat-icon svgIcon="add" />Crear la primera</button>
+        }
+      </app-estado-vacio>
+    }
+  </div>
+}

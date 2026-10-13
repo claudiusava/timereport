@@ -1,5 +1,5 @@
 // Copia de src/app/shared/email-usuario.ts: si cambias una, cambia la otra (lo
-// comprueba tests/functions/email-usuario.test.ts).
+// comprueba tests/unit/copias.test.ts).
 //
 // Los trabajadores entran con nombre de usuario, no con email. Firebase Auth
 // solo admite email, asi que cada usuario tiene un email sintetico que nunca

@@ -1,0 +1,59 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Mi historial</h1>
+    <p>Tus fichajes y las horas de cada día.</p>
+  </div>
+  <button mat-stroked-button (click)="exportar()" [disabled]="cargando() || !datos().length">
+    <mat-icon svgIcon="download" />Exportar a Excel
+  </button>
+</div>
+
+<div class="selector-mes">
+  <button mat-icon-button (click)="cambiarMes(-1)" aria-label="Mes anterior"><mat-icon svgIcon="chevron_left" /></button>
+  <span>{{ mes(mesActual()) }}</span>
+  <button mat-icon-button (click)="cambiarMes(1)" [disabled]="esMesActual()" aria-label="Mes siguiente"><mat-icon svgIcon="chevron_right" /></button>
+</div>
+
+@if (cargando()) {
+  <div class="cargando"><mat-spinner diameter="40" /></div>
+} @else if (error()) {
+  <app-estado-vacio icono="wifi_off" titulo="No se ha podido cargar" [texto]="error()">
+    <button mat-stroked-button (click)="cargar()"><mat-icon svgIcon="refresh" />Reintentar</button>
+  </app-estado-vacio>
+} @else if (!jornadas().length) {
+  <app-estado-vacio icono="calendar_month" titulo="Sin fichajes este mes" />
+} @else {
+  <div class="resumen">
+    <div><strong>{{ horasDecimal(totalMinutos()) }}</strong><span>trabajadas</span></div>
+    <div><strong>{{ diasTrabajados() }}</strong><span>días</span></div>
+  </div>
+
+  @for (j of jornadas(); track j.dia.getTime()) {
+    <article class="dia">
+      <header>
+        <h2>{{ diaLargo(j.dia) }}</h2>
+        <span class="horas">{{ j.minutos ? duracion(j.minutos) : '' }}</span>
+      </header>
+      @for (i of j.incidencias; track $index) {
+        <span class="chip alerta"><mat-icon svgIcon="warning" />{{ i }}</span>
+      }
+      <ul>
+        @for (f of j.fichajes; track f.id) {
+          <li [class.anulado-fila]="f.anulado" [matTooltip]="f.anulado ? 'Anulado: ' + f.anulado.motivo : (f.motivo ?? '')">
+            <span class="chip" [class.entrada]="f.tipo === 'entrada'" [class.salida]="f.tipo === 'salida'">
+              {{ f.tipo === 'entrada' ? 'Entrada' : 'Salida' }}
+            </span>
+            <strong>{{ hora(f.fecha) }}</strong>
+            <span class="texto-suave">{{ f.comunidadNombre }}</span>
+            @if (f.origen === 'manual') {
+              <span class="chip manual">Corregido</span>
+            }
+            @if (f.anulado) {
+              <span class="chip anulado">Anulado</span>
+            }
+          </li>
+        }
+      </ul>
+    </article>
+  }
+}

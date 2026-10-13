@@ -1,0 +1,125 @@
+:host {
+  display: block;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.fichar {
+  padding: 28px 20px 24px;
+  margin-bottom: 16px;
+  border-radius: 28px;
+  background: var(--mat-sys-surface-container-low);
+  border: 1px solid var(--mat-sys-outline-variant);
+  text-align: center;
+
+  mat-form-field {
+    text-align: left;
+  }
+}
+
+.dia,
+.reloj,
+.estado,
+.nota {
+  margin: 0;
+}
+
+.dia {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-title-small);
+}
+
+.reloj {
+  margin: 4px 0 8px;
+  font: var(--mat-sys-display-large);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+
+  small {
+    font: var(--mat-sys-headline-small);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.estado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}
+
+.punto {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--mat-sys-outline);
+
+  &.en-curso {
+    background: var(--mat-sys-primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--mat-sys-primary) 25%, transparent);
+  }
+}
+
+.boton-grande {
+  mat-icon,
+  mat-spinner {
+    margin-right: 8px;
+  }
+
+  mat-spinner {
+    display: inline-block;
+    vertical-align: middle;
+    --mat-progress-spinner-active-indicator-color: currentColor;
+  }
+
+  &.salida:not(:disabled) {
+    --mat-button-filled-container-color: var(--mat-sys-tertiary);
+    --mat-button-filled-label-text-color: var(--mat-sys-on-tertiary);
+  }
+}
+
+.nota {
+  margin-top: 12px;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.cabecera-seccion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  h2 {
+    font: var(--mat-sys-title-medium);
+  }
+}
+
+.linea-tiempo {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--mat-sys-outline-variant);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.contenido-boton {
+  display: inline-flex;
+  align-items: center;
+}
+
+.boton-grande {
+  margin-top: 8px;
+}

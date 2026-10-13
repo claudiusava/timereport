@@ -1,0 +1,123 @@
+.metricas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metrica {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+    margin-bottom: 8px;
+  }
+
+  strong {
+    font: var(--mat-sys-display-small);
+    font-weight: 600;
+
+    small {
+      font: var(--mat-sys-title-medium);
+      color: var(--mat-sys-on-surface-variant);
+    }
+  }
+
+  span {
+    color: var(--mat-sys-on-surface-variant);
+    font: var(--mat-sys-body-medium);
+  }
+
+  &.principal {
+    background: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+
+    mat-icon,
+    span {
+      color: inherit;
+    }
+  }
+
+  &.alerta {
+    background: var(--mat-sys-error-container);
+    color: var(--mat-sys-on-error-container);
+
+    mat-icon,
+    span {
+      color: inherit;
+    }
+  }
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.avisos li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  font: var(--mat-sys-body-medium);
+
+  > span {
+    flex: 1;
+  }
+
+  > mat-icon {
+    color: var(--mat-sys-error);
+  }
+}
+
+.equipo li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+.avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--mat-sys-surface-container-highest);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-title-medium);
+
+  &.trabajando {
+    background: var(--mat-sys-primary);
+    color: var(--mat-sys-on-primary);
+  }
+
+  &.terminado {
+    background: var(--mat-sys-tertiary-container);
+    color: var(--mat-sys-on-tertiary-container);
+  }
+}
+
+.principal {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.horas {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-primary);
+  white-space: nowrap;
+}

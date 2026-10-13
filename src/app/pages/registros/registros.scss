@@ -1,0 +1,26 @@
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+
+  mat-form-field {
+    flex: 1 1 200px;
+  }
+}
+
+mat-progress-bar {
+  margin-bottom: 8px;
+}
+
+.tabla-scroll {
+  margin-top: 16px;
+}
+
+.nota {
+  margin-top: 12px;
+}
+
+.anulado-fila app-foto-control {
+  text-decoration: none;
+}

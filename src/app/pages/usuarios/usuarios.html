@@ -1,0 +1,65 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Usuarios</h1>
+    <p>Quién puede entrar en la app, con qué rol y en qué comunidades.</p>
+  </div>
+  <button mat-flat-button (click)="abrir(null)"><mat-icon svgIcon="person_add" />Nuevo usuario</button>
+</div>
+
+<div class="barra-filtros">
+  <mat-form-field class="buscar">
+    <mat-label>Buscar por nombre o usuario</mat-label>
+    <input matInput [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" />
+    <mat-icon matIconPrefix svgIcon="search" />
+  </mat-form-field>
+  @if (inactivos()) {
+    <mat-slide-toggle [checked]="verInactivos()" (change)="verInactivos.set($event.checked)">
+      Mostrar desactivados ({{ inactivos() }})
+    </mat-slide-toggle>
+  }
+</div>
+
+@if (cargando()) {
+  <div class="cargando"><mat-spinner diameter="40" /></div>
+} @else if (error()) {
+  <app-estado-vacio icono="wifi_off" titulo="No se han podido cargar los usuarios" [texto]="error()">
+    <button mat-stroked-button (click)="cargar()"><mat-icon svgIcon="refresh" />Reintentar</button>
+  </app-estado-vacio>
+} @else {
+  <div class="lista">
+    @for (u of filtrados(); track u.uid) {
+      <article class="usuario" [class.inactivo]="!u.activo">
+        <span class="avatar">{{ u.nombre.charAt(0) }}</span>
+        <div class="principal">
+          <strong>{{ u.nombre }} @if (u.uid === miUid()) { <span class="texto-suave">(tú)</span> }</strong>
+          <span class="texto-suave">{{ u.username }}</span>
+          <div class="etiquetas">
+            <span class="chip" [class.entrada]="u.rol === 'admin'">{{ etiquetaRol(u.rol) }}</span>
+            @if (u.rol !== 'admin') {
+              <span class="chip">{{ asignadas(u).length }} comunidades</span>
+            }
+            @if (!u.activo) {
+              <span class="chip anulado">Desactivado</span>
+            }
+          </div>
+        </div>
+        <button mat-icon-button [matMenuTriggerFor]="menu" [attr.aria-label]="'Opciones de ' + u.nombre">
+          <mat-icon svgIcon="more_vert" />
+        </button>
+        <mat-menu #menu="matMenu" xPosition="before">
+          <button mat-menu-item (click)="abrir(u)"><mat-icon svgIcon="edit" />Editar</button>
+          @if (!empresa.esDemo()) {
+            <button mat-menu-item (click)="cambiarPassword(u)"><mat-icon svgIcon="key" />Cambiar contraseña</button>
+            @if (u.uid !== miUid()) {
+              <button mat-menu-item (click)="cambiarEstado(u)">
+                <mat-icon [svgIcon]="u.activo ? 'person_off' : 'how_to_reg'" />{{ u.activo ? 'Desactivar' : 'Reactivar' }}
+              </button>
+            }
+          }
+        </mat-menu>
+      </article>
+    } @empty {
+      <app-estado-vacio icono="group" [titulo]="busqueda() ? 'Ningún usuario coincide con la búsqueda' : 'Todavía no hay usuarios'" />
+    }
+  </div>
+}

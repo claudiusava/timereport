@@ -1,0 +1,206 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Registros</h1>
+    <p>Fichajes, horas y controles de agua de todo el equipo.</p>
+  </div>
+  <div class="acciones">
+    <button mat-stroked-button (click)="fichajeManual()"><mat-icon svgIcon="edit_note" />Fichaje manual</button>
+    <button mat-flat-button (click)="exportar()" [disabled]="exportando() || cargando()">
+      <mat-icon svgIcon="download" />{{ exportando() ? 'Generando…' : 'Exportar a Excel' }}
+    </button>
+  </div>
+</div>
+
+<form class="filtros tarjeta" [formGroup]="filtros" (ngSubmit)="buscar()">
+  <mat-form-field>
+    <mat-label>Periodo</mat-label>
+    <mat-date-range-input [rangePicker]="rango">
+      <input matStartDate formControlName="desde" placeholder="Desde" />
+      <input matEndDate formControlName="hasta" placeholder="Hasta" />
+    </mat-date-range-input>
+    <mat-datepicker-toggle matIconSuffix [for]="rango" />
+    <mat-date-range-picker #rango />
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Trabajador</mat-label>
+    <mat-select formControlName="uid">
+      <mat-option value="">Todos</mat-option>
+      @for (u of usuarios(); track u.uid) {
+        <mat-option [value]="u.uid">{{ u.nombre }}{{ u.activo ? '' : ' (desactivado)' }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Comunidad</mat-label>
+    <mat-select formControlName="comunidadId">
+      <mat-option value="">Todas</mat-option>
+      @for (c of comunidades(); track c.id) {
+        <mat-option [value]="c.id">{{ c.nombre }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-slide-toggle formControlName="anulados">Mostrar anulados</mat-slide-toggle>
+  <button mat-flat-button type="submit" [disabled]="cargando()"><mat-icon svgIcon="search" />Buscar</button>
+</form>
+
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+@if (error()) {
+  <div class="error-formulario" role="alert"><mat-icon svgIcon="error" />{{ error() }}</div>
+}
+@if (truncado()) {
+  <div class="aviso-suave"><mat-icon svgIcon="warning" />Se muestran los {{ max }} registros más recientes. Acota el periodo para verlos todos.</div>
+}
+
+<mat-tab-group [selectedIndex]="pestana()" (selectedIndexChange)="pestana.set($event)" animationDuration="150ms">
+  <mat-tab [label]="'Fichajes (' + fichajesFiltrados().length + ')'">
+    @if (fichajesFiltrados().length) {
+      <div class="tabla-scroll">
+        <table mat-table [dataSource]="tablaFichajes" matSort #ordenFichajes="matSort" matSortActive="fecha" matSortDirection="desc">
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
+            <td mat-cell *matCellDef="let f">{{ fechaHora(f.fecha) }}</td>
+          </ng-container>
+          <ng-container matColumnDef="usuarioNombre">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Trabajador</th>
+            <td mat-cell *matCellDef="let f">{{ f.usuarioNombre }}</td>
+          </ng-container>
+          <ng-container matColumnDef="tipo">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+            <td mat-cell *matCellDef="let f">
+              <span class="chip" [class.entrada]="f.tipo === 'entrada'" [class.salida]="f.tipo === 'salida'">{{ f.tipo === 'entrada' ? 'Entrada' : 'Salida' }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="comunidadNombre">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Comunidad</th>
+            <td mat-cell *matCellDef="let f" class="ajustar">{{ f.comunidadNombre }}</td>
+          </ng-container>
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let f">
+              @if (f.anulado) {
+                <span class="chip anulado" [matTooltip]="'Anulado por ' + f.anulado.por.nombre + ': ' + f.anulado.motivo">Anulado</span>
+              } @else if (f.origen === 'manual') {
+                <span class="chip manual" [matTooltip]="'Registrado por ' + f.registradoPor?.nombre + ': ' + f.motivo">Manual</span>
+              } @else if (f.distanciaM != null) {
+                <span class="texto-suave">a {{ f.distanciaM }} m</span>
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let f">
+              @if (!f.anulado) {
+                <button mat-icon-button (click)="anularFichaje(f)" matTooltip="Anular" [attr.aria-label]="'Anular fichaje de ' + f.usuarioNombre + ' del ' + fechaHora(f.fecha)">
+                  <mat-icon svgIcon="block" />
+                </button>
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="columnasFichajes; sticky: true"></tr>
+          <tr mat-row *matRowDef="let f; columns: columnasFichajes" [class.anulado-fila]="f.anulado"></tr>
+        </table>
+      </div>
+      <mat-paginator #paginaFichajes [pageSizeOptions]="[25, 50, 100]" [pageSize]="50" showFirstLastButtons />
+    } @else if (!cargando()) {
+      <app-estado-vacio icono="schedule" titulo="No hay fichajes en este periodo" />
+    }
+  </mat-tab>
+
+  <mat-tab [label]="'Horas (' + resumen().length + ')'">
+    @if (resumen().length) {
+      <div class="tabla-scroll">
+        <table mat-table [dataSource]="resumen()">
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>Trabajador</th>
+            <td mat-cell *matCellDef="let r">{{ r.nombre }}</td>
+          </ng-container>
+          <ng-container matColumnDef="dias">
+            <th mat-header-cell *matHeaderCellDef>Días trabajados</th>
+            <td mat-cell *matCellDef="let r">{{ r.dias }}</td>
+          </ng-container>
+          <ng-container matColumnDef="horas">
+            <th mat-header-cell *matHeaderCellDef>Horas</th>
+            <td mat-cell *matCellDef="let r"><strong>{{ horasDecimal(r.minutos) }}</strong> <span class="texto-suave">({{ duracion(r.minutos) }})</span></td>
+          </ng-container>
+          <ng-container matColumnDef="incidencias">
+            <th mat-header-cell *matHeaderCellDef>Incidencias</th>
+            <td mat-cell *matCellDef="let r">
+              @if (r.incidencias) {
+                <span class="chip alerta">{{ r.incidencias }}</span>
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="columnasResumen"></tr>
+          <tr mat-row *matRowDef="let r; columns: columnasResumen"></tr>
+        </table>
+      </div>
+      <p class="texto-suave nota">Las horas se calculan emparejando cada entrada con su salida (también si la salida es al día siguiente). Las incidencias son entradas sin salida o salidas sin entrada: corrígelas con un fichaje manual. El detalle por día está en el Excel.</p>
+    } @else if (!cargando()) {
+      <app-estado-vacio icono="timer" titulo="No hay horas en este periodo" />
+    }
+  </mat-tab>
+
+  <mat-tab [label]="'Control de agua (' + controlesFiltrados().length + ')'">
+    @if (controlesFiltrados().length) {
+      <div class="tabla-scroll">
+        <table mat-table [dataSource]="tablaControles" matSort #ordenControles="matSort" matSortActive="fecha" matSortDirection="desc">
+          <ng-container matColumnDef="foto">
+            <th mat-header-cell *matHeaderCellDef>Foto</th>
+            <td mat-cell *matCellDef="let c"><app-foto-control [path]="c.fotoPath" [etiqueta]="c.comunidadNombre" /></td>
+          </ng-container>
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
+            <td mat-cell *matCellDef="let c">{{ fechaHora(c.fecha) }}</td>
+          </ng-container>
+          <ng-container matColumnDef="usuarioNombre">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Trabajador</th>
+            <td mat-cell *matCellDef="let c">{{ c.usuarioNombre }}</td>
+          </ng-container>
+          <ng-container matColumnDef="comunidadNombre">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Piscina</th>
+            <td mat-cell *matCellDef="let c" class="ajustar">{{ c.comunidadNombre }}</td>
+          </ng-container>
+          <ng-container matColumnDef="cloro">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Cloro</th>
+            <td mat-cell *matCellDef="let c"><span class="chip" [class.alerta]="fueraDeRango(c.cloro, rangoCloro)">{{ c.cloro }}</span></td>
+          </ng-container>
+          <ng-container matColumnDef="ph">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>pH</th>
+            <td mat-cell *matCellDef="let c"><span class="chip" [class.alerta]="fueraDeRango(c.ph, rangoPh)">{{ c.ph }}</span></td>
+          </ng-container>
+          <ng-container matColumnDef="banistas">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Bañistas</th>
+            <td mat-cell *matCellDef="let c">{{ c.banistas }}</td>
+          </ng-container>
+          <ng-container matColumnDef="rebosadero">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Rebosadero</th>
+            <td mat-cell *matCellDef="let c">{{ c.rebosadero }}</td>
+          </ng-container>
+          <ng-container matColumnDef="aguaDepurada">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Depurada (m³)</th>
+            <td mat-cell *matCellDef="let c">{{ c.aguaDepurada }}</td>
+          </ng-container>
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let c">
+              @if (c.anulado) {
+                <span class="chip anulado" [matTooltip]="'Anulado por ' + c.anulado.por.nombre + ': ' + c.anulado.motivo">Anulado</span>
+              } @else {
+                <button mat-icon-button (click)="anularControl(c)" matTooltip="Anular" [attr.aria-label]="'Anular control de ' + c.usuarioNombre + ' del ' + fechaHora(c.fecha)">
+                  <mat-icon svgIcon="block" />
+                </button>
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="columnasControles; sticky: true"></tr>
+          <tr mat-row *matRowDef="let c; columns: columnasControles" [class.anulado-fila]="c.anulado"></tr>
+        </table>
+      </div>
+      <mat-paginator #paginaControles [pageSizeOptions]="[25, 50, 100]" [pageSize]="50" showFirstLastButtons />
+    } @else if (!cargando()) {
+      <app-estado-vacio icono="water_drop" titulo="No hay controles de agua en este periodo" />
+    }
+  </mat-tab>
+</mat-tab-group>

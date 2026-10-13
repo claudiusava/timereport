@@ -1,0 +1,55 @@
+<header class="cabecera">
+  <a class="marca" routerLink="/">
+    <img src="logo-timereport.svg" alt="" />
+    <span>TimeReport</span>
+  </a>
+  <a mat-button routerLink="/acceso"><mat-icon svgIcon="login" />Acceso clientes</a>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-texto">
+      <span class="etiqueta">Para empresas de mantenimiento de piscinas y comunidades</span>
+      <h1>El registro de jornada y el control del agua, en el móvil de tu equipo</h1>
+      <p>
+        Tus socorristas y maquinistas fichan en la comunidad donde trabajan y registran los análisis del agua con foto.
+        Tú lo ves todo al momento y exportas los informes en un clic.
+      </p>
+      <div class="acciones">
+        <a mat-flat-button [routerLink]="['/c', demo]">
+          Probar la demo <mat-icon iconPositionEnd svgIcon="arrow_forward" />
+        </a>
+        <a mat-stroked-button routerLink="/acceso">Ya soy cliente</a>
+      </div>
+    </div>
+
+    <div class="maqueta" aria-hidden="true">
+      <div class="telefono">
+        <p class="dia">Lunes, 13 de octubre</p>
+        <p class="reloj">08:02</p>
+        <p class="lugar"><mat-icon svgIcon="location_on" />Residencial Los Álamos · a 35 m</p>
+        <div class="boton-maqueta">Fichar entrada</div>
+        <div class="linea"><span class="chip entrada">Entrada</span> 08:02 <span class="texto-suave">Los Álamos</span></div>
+        <div class="linea"><span class="chip salida">Salida</span> 14:31 <span class="texto-suave">Los Álamos</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ventajas">
+    @for (v of ventajas; track v.titulo) {
+      <article>
+        <span class="icono"><mat-icon [svgIcon]="v.icono" /></span>
+        <h2>{{ v.titulo }}</h2>
+        <p>{{ v.texto }}</p>
+      </article>
+    }
+  </section>
+
+  <section class="llamada">
+    <h2>Pruébala ahora, sin registrarte</h2>
+    <p>Entra en la empresa de demostración con datos de ejemplo como administrador, socorrista o maquinista.</p>
+    <a mat-flat-button [routerLink]="['/c', demo]">Abrir la demo</a>
+  </section>
+</main>
+
+<footer>TimeReport · Registro de jornada y control de calidad del agua</footer>

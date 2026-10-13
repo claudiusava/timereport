@@ -1,0 +1,99 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Panel</h1>
+    <p>{{ hoy }}</p>
+  </div>
+  <div class="acciones">
+    <button mat-icon-button (click)="cargar()" aria-label="Actualizar" [disabled]="cargando()"><mat-icon svgIcon="refresh" /></button>
+    <a mat-stroked-button routerLink="/app/registros"><mat-icon svgIcon="table_view" />Registros</a>
+  </div>
+</div>
+
+@if (cargando()) {
+  <div class="cargando"><mat-spinner diameter="40" /></div>
+} @else if (error()) {
+  <app-estado-vacio icono="wifi_off" titulo="No se ha podido cargar el panel" [texto]="error()">
+    <button mat-stroked-button (click)="cargar()"><mat-icon svgIcon="refresh" />Reintentar</button>
+  </app-estado-vacio>
+} @else {
+  @if (empresa.esDemo()) {
+    <div class="aviso-suave"><mat-icon svgIcon="info" />Estás en la empresa de demostración: los datos son ficticios y se restauran cada pocas horas.</div>
+  }
+
+  <div class="metricas">
+    <div class="metrica principal">
+      <mat-icon svgIcon="schedule" />
+      <strong>{{ trabajando() }}</strong>
+      <span>trabajando ahora</span>
+    </div>
+    <div class="metrica">
+      <mat-icon svgIcon="task_alt" />
+      <strong>{{ fichadoHoy() }}<small> / {{ equipo().length }}</small></strong>
+      <span>han fichado hoy</span>
+    </div>
+    <div class="metrica">
+      <mat-icon svgIcon="water_drop" />
+      <strong>{{ controles().length }}</strong>
+      <span>controles de agua hoy</span>
+    </div>
+    <div class="metrica" [class.alerta]="olvidos().length || controlesFuera().length">
+      <mat-icon svgIcon="warning" />
+      <strong>{{ olvidos().length + controlesFuera().length }}</strong>
+      <span>avisos</span>
+    </div>
+  </div>
+
+  @if (olvidos().length || controlesFuera().length) {
+    <section class="tarjeta avisos">
+      <h2>Avisos</h2>
+      <ul>
+        @for (f of olvidos(); track f.id) {
+          <li>
+            <mat-icon svgIcon="hourglass_top" />
+            <span><strong>{{ f.usuarioNombre }}</strong> fichó la entrada el {{ fechaHora(f.fecha) }} en {{ f.comunidadNombre }} y no fichó la salida.</span>
+            <a mat-button routerLink="/app/registros">Revisar</a>
+          </li>
+        }
+        @for (c of controlesFuera(); track c.id) {
+          <li>
+            <app-foto-control [path]="c.fotoPath" [etiqueta]="c.comunidadNombre" />
+            <span>
+              <strong>{{ c.comunidadNombre }}</strong> ({{ hora(c.fecha) }}, {{ c.usuarioNombre }}):
+              cloro {{ c.cloro }}{{ fueraDeRango(c.cloro, rangoCloro) ? ' ⚠' : '' }} · pH {{ c.ph }}{{ fueraDeRango(c.ph, rangoPh) ? ' ⚠' : '' }}
+            </span>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
+  <section class="tarjeta">
+    <h2>El equipo hoy</h2>
+    @if (equipo().length) {
+      <ul class="equipo">
+        @for (f of equipo(); track f.usuario.uid) {
+          <li>
+            <span class="avatar" [class]="f.estado">{{ f.usuario.nombre.charAt(0) }}</span>
+            <div class="principal">
+              <strong>{{ f.usuario.nombre }}</strong>
+              <span class="texto-suave">
+                @switch (f.estado) {
+                  @case ('trabajando') { Desde las {{ hora(f.ultimo!.fecha) }} en {{ f.ultimo!.comunidadNombre }} }
+                  @case ('terminado') { Salida a las {{ hora(f.ultimo!.fecha) }} · {{ f.ultimo!.comunidadNombre }} }
+                  @default { Sin fichar hoy }
+                }
+              </span>
+            </div>
+            @if (f.minutosHoy > 0) {
+              <span class="horas">{{ duracion(f.minutosHoy) }}</span>
+            }
+          </li>
+        }
+      </ul>
+    } @else {
+      <app-estado-vacio icono="group" titulo="Todavía no hay trabajadores">
+        <a mat-flat-button routerLink="/app/usuarios"><mat-icon svgIcon="person_add" />Añadir trabajadores</a>
+      </app-estado-vacio>
+    }
+  </section>
+}

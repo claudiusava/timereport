@@ -1,0 +1,6 @@
+/* Solo para comprobar tipos de los scripts (se ejecutan con tsx). */
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "noEmit": true, "rootDir": ".." },
+  "include": ["*.ts", "../src"]
+}

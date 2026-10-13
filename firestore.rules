@@ -1,15 +1,18 @@
 rules_version = '2';
 
-// Modelo multi-cliente: todo cuelga de clientes/{clienteId}. Cada usuario
-// lleva en su token los custom claims { clienteId, rol } que SOLO ponen las
-// Cloud Functions (functions/src/usuarios.ts) o los scripts de administracion.
+// Modelo multi-empresa: todo cuelga de clientes/{clienteId}. Cada usuario
+// lleva en su token los custom claims { clienteId, rol } que solo ponen las
+// Cloud Functions. Para los permisos de administrador NO basta el token: se
+// comprueba ademas el perfil en Firestore (rol y activo), asi un admin
+// desactivado o degradado pierde el acceso al instante aunque su token siga
+// vivo hasta 1 h.
 //
-// - Nadie lee ni escribe datos de otro cliente.
-// - Trabajadores (socorrista, maquinista): solo sus propios registros y las
-//   comunidades que tienen asignadas.
-// - Admin: todo lo de su cliente.
-// - Los fichajes y controles no se pueden modificar; solo el admin los borra.
-// - La fecha de fichajes y controles la pone el servidor (== request.time).
+// - Nadie lee ni escribe datos de otra empresa.
+// - Trabajadores: solo sus propios registros y las comunidades asignadas.
+// - Admin: todo lo de su empresa.
+// - Registro de jornada (RD-ley 8/2019): los fichajes solo los crean las
+//   Cloud Functions y nadie los modifica ni borra; se anulan con motivo y
+//   queda en la auditoria. Lo mismo con los controles de agua.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -22,12 +25,19 @@ service cloud.firestore {
       return autenticado() && request.auth.token.clienteId == c;
     }
 
-    function esAdmin(c) {
-      return delCliente(c) && request.auth.token.rol == 'admin';
+    function perfil(c) {
+      return get(/databases/$(database)/documents/clientes/$(c)/usuarios/$(request.auth.uid)).data;
     }
 
-    function puedeControlAgua(c) {
-      return delCliente(c) && request.auth.token.rol in ['admin', 'socorrista'];
+    function clienteActivo(c) {
+      return get(/databases/$(database)/documents/clientes/$(c)).data.activo == true;
+    }
+
+    function esAdmin(c) {
+      return delCliente(c)
+        && request.auth.token.rol == 'admin'
+        && perfil(c).rol == 'admin'
+        && perfil(c).activo == true;
     }
 
     function textoValido(valor, min, max) {
@@ -42,25 +52,6 @@ service cloud.firestore {
       return valor is int && valor >= min && valor <= max;
     }
 
-    // El documento del propio usuario existe, esta activo y el nombre que
-    // se guarda en el registro es el suyo.
-    function autorValido(c, data) {
-      let perfil = get(/databases/$(database)/documents/clientes/$(c)/usuarios/$(request.auth.uid));
-      return data.uid == request.auth.uid
-        && perfil.data.activo == true
-        && data.usuarioNombre == perfil.data.nombre;
-    }
-
-    // La comunidad existe, el nombre guardado coincide y el trabajador la
-    // tiene asignada (el admin puede usar cualquiera).
-    function comunidadValida(c, data) {
-      let ruta = /databases/$(database)/documents/clientes/$(c)/comunidades/$(data.comunidadId);
-      return data.comunidadId is string
-        && exists(ruta)
-        && get(ruta).data.nombre == data.comunidadNombre
-        && (esAdmin(c) || request.auth.uid in get(ruta).data.asignados);
-    }
-
     function comunidadBienFormada(data) {
       return textoValido(data.nombre, 1, 200)
         && textoValido(data.codigo, 1, 45)
@@ -70,9 +61,9 @@ service cloud.firestore {
     }
 
     match /clientes/{c} {
-      // Marca y configuracion del cliente: se leen ANTES del login para
-      // pintar el logo y los colores. No contiene nada sensible. No se
-      // permite listar, para no exponer que clientes existen.
+      // Marca y configuracion: se leen ANTES del login para pintar el logo y
+      // los colores. No contiene nada sensible. No se permite listar.
+      // Solo se modifica con la Cloud Function actualizarEmpresa.
       allow get: if true;
       allow list: if false;
       allow write: if false;
@@ -91,8 +82,9 @@ service cloud.firestore {
           || (delCliente(c) && request.auth.uid in resource.data.asignados);
 
         // Las asignaciones (asignados) las gestionan las Cloud Functions al
-        // editar usuarios: el cliente crea la comunidad vacia y no las toca.
+        // editar usuarios: aqui se crea vacia y no se toca.
         allow create: if esAdmin(c)
+          && clienteActivo(c)
           && request.resource.data.keys().hasOnly(
             ['nombre', 'codigo', 'ubicacion', 'asignados', 'activa', 'createdAt'])
           && request.resource.data.keys().hasAll(
@@ -106,6 +98,8 @@ service cloud.firestore {
             .hasOnly(['nombre', 'codigo', 'ubicacion', 'activa'])
           && comunidadBienFormada(request.resource.data);
 
+        // Los fichajes y controles guardan el nombre de la comunidad, asi que
+        // borrarla no pierde informacion.
         allow delete: if esAdmin(c);
       }
 
@@ -113,52 +107,59 @@ service cloud.firestore {
         // Las consultas del trabajador deben filtrar por where('uid', '==', uid).
         allow read: if esAdmin(c)
           || (delCliente(c) && resource.data.uid == request.auth.uid);
-
-        allow create: if delCliente(c)
-          && request.resource.data.keys().hasOnly(
-            ['uid', 'usuarioNombre', 'comunidadId', 'comunidadNombre', 'tipo', 'fecha'])
-          && request.resource.data.keys().hasAll(
-            ['uid', 'usuarioNombre', 'comunidadId', 'comunidadNombre', 'tipo', 'fecha'])
-          && request.resource.data.tipo in ['entrada', 'salida']
-          && request.resource.data.fecha == request.time
-          && textoValido(request.resource.data.usuarioNombre, 1, 100)
-          && textoValido(request.resource.data.comunidadNombre, 1, 200)
-          && autorValido(c, request.resource.data)
-          && comunidadValida(c, request.resource.data);
-
-        allow update: if false;
-        allow delete: if esAdmin(c);
+        // Solo Cloud Functions: fichar, registrarFichajeManual, anularRegistro.
+        allow write: if false;
       }
 
       match /controlesAgua/{id} {
         allow read: if esAdmin(c)
           || (delCliente(c) && resource.data.uid == request.auth.uid);
 
-        allow create: if puedeControlAgua(c)
+        // El socorrista crea el control (con la hora del servidor) y despues
+        // sube la foto a la ruta que indica fotoPath (ver storage.rules).
+        allow create: if delCliente(c)
+          && clienteActivo(c)
+          && perfil(c).activo == true
+          && perfil(c).rol in ['admin', 'socorrista']
           && request.resource.data.keys().hasOnly(
             ['uid', 'usuarioNombre', 'comunidadId', 'comunidadNombre', 'cloro', 'ph',
-             'banistas', 'rebosadero', 'aguaDepurada', 'fotoPath', 'fecha'])
+             'banistas', 'rebosadero', 'aguaDepurada', 'fotoPath', 'fecha', 'anulado'])
           && request.resource.data.keys().hasAll(
             ['uid', 'usuarioNombre', 'comunidadId', 'comunidadNombre', 'cloro', 'ph',
-             'banistas', 'rebosadero', 'aguaDepurada', 'fotoPath', 'fecha'])
+             'banistas', 'rebosadero', 'aguaDepurada', 'fotoPath', 'fecha', 'anulado'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.usuarioNombre == perfil(c).nombre
           && request.resource.data.fecha == request.time
+          && request.resource.data.anulado == null
           && numeroEntre(request.resource.data.cloro, 0, 20)
           && numeroEntre(request.resource.data.ph, 0, 14)
           && enteroEntre(request.resource.data.banistas, 0, 10000)
           && enteroEntre(request.resource.data.rebosadero, 0, 100000)
           && numeroEntre(request.resource.data.aguaDepurada, 0, 1000000)
-          // La foto va en la carpeta del propio usuario y con el id de este
-          // documento (ver storage.rules).
           && request.resource.data.fotoPath ==
             'clientes/' + c + '/controlesAgua/' + request.auth.uid + '/' + id + '.jpg'
-          && textoValido(request.resource.data.usuarioNombre, 1, 100)
-          && textoValido(request.resource.data.comunidadNombre, 1, 200)
-          && autorValido(c, request.resource.data)
           && comunidadValida(c, request.resource.data);
 
-        allow update: if false;
-        allow delete: if esAdmin(c);
+        // Solo Cloud Functions (anularRegistro).
+        allow update, delete: if false;
       }
+
+      // Registro de auditoria: solo lo escriben las Cloud Functions.
+      match /auditoria/{id} {
+        allow read: if esAdmin(c);
+        allow write: if false;
+      }
+    }
+
+    // La comunidad existe, esta activa, el nombre guardado coincide y el
+    // trabajador la tiene asignada (el admin puede usar cualquiera).
+    function comunidadValida(c, data) {
+      let ruta = /databases/$(database)/documents/clientes/$(c)/comunidades/$(data.comunidadId);
+      return data.comunidadId is string
+        && exists(ruta)
+        && get(ruta).data.activa == true
+        && get(ruta).data.nombre == data.comunidadNombre
+        && (perfil(c).rol == 'admin' || request.auth.uid in get(ruta).data.asignados);
     }
 
     // Cualquier otra ruta: denegada.
