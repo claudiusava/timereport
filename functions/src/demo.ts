@@ -296,7 +296,9 @@ export async function sembrarDemo(restablecerPasswords = true): Promise<{ fichaj
 }
 
 export const restablecerDemo = onSchedule(
-  { schedule: "0 */3 * * *", timeZone: ZONA, timeoutSeconds: 540, memory: "512MiB" },
+  // Cloud Scheduler no existe en europe-southwest1 (Madrid): la tarea va en
+  // Belgica (los datos siguen en Madrid).
+  { schedule: "0 */3 * * *", timeZone: ZONA, region: "europe-west1", timeoutSeconds: 540, memory: "512MiB" },
   async (evento) => {
     const hora = Number(new Intl.DateTimeFormat("es-ES", { timeZone: ZONA, hour: "numeric", hourCycle: "h23" }).format(new Date(evento.scheduleTime)));
     await sembrarDemo(hora === 3);
