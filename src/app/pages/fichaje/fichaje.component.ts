@@ -154,7 +154,9 @@ export class FichajeComponent implements OnInit, OnDestroy {
 }
 
 function formatearDistancia(m: number): string {
-  return m >= 1000 ? `${(m / 1000).toFixed(1).replace('.', ',')} km` : `${Math.round(m)} m`;
+  if (m < 1000) return `${Math.round(m)} m`;
+  const km = Math.round(m / 100) / 10;
+  return `${Number.isInteger(km) ? km : km.toFixed(1).replace('.', ',')} km`;
 }
 
 function leerUltimaComunidad(): string | null {

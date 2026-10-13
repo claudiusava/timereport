@@ -49,3 +49,6 @@ Thumbs.db
 # Material privado (datos personales, exportaciones de la BD, informes de
 # migracion): solo en local
 docs/privado/
+
+# Configuracion local de Claude Code
+.claude/

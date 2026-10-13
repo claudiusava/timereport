@@ -103,9 +103,10 @@ export class ControlAguaComponent implements OnInit, OnDestroy {
         foto: this.foto,
       });
       this.avisos.ok('Control guardado');
+      // Se mantiene la comunidad: lo normal es registrar varias seguidas.
       const comunidadId = this.form.comunidadId;
-      ngForm.resetForm();
       this.form = { ...this.formularioVacio(), comunidadId };
+      ngForm.resetForm({ ...this.form, comunidad: comunidadId });
       this.foto = null;
       this.limpiarVistaPrevia();
       await this.cargarControles();

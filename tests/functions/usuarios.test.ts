@@ -58,7 +58,27 @@ async function codigoError(promesa: Promise<unknown>): Promise<string> {
 const comunidad = (uid: string) =>
   adminDb().doc(`clientes/a/comunidades/${uid}`).get().then((d) => d.data()?.['asignados'] as string[]);
 
+/**
+ * emulators:exec lanza los tests en cuanto los emuladores dicen estar listos,
+ * pero el de Functions a veces registra las funciones un poco despues y,
+ * mientras tanto, responde 404. Se espera a que crearUsuario exista.
+ */
+async function esperarFunctions() {
+  const url = `http://127.0.0.1:5001/${PROYECTO}/europe-southwest1/crearUsuario`;
+  for (let i = 0; i < 60; i++) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ data: {} }),
+    }).catch(() => null);
+    if (res && res.status !== 404) return;
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  throw new Error('El emulador de Functions no ha cargado las funciones');
+}
+
 beforeAll(async () => {
+  await esperarFunctions();
   for (const c of ['a', 'b']) {
     await adminDb().doc(`clientes/${c}`).set({ nombre: c, activo: true });
   }
