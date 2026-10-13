@@ -30,10 +30,6 @@ service cloud.firestore {
       return delCliente(c) && request.auth.token.rol in ['admin', 'socorrista'];
     }
 
-    function rutaCliente(c) {
-      return /databases/$(database)/documents/clientes/$(c);
-    }
-
     function textoValido(valor, min, max) {
       return valor is string && valor.size() >= min && valor.size() <= max;
     }

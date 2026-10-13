@@ -6,13 +6,13 @@ export const environment = {
   production: true,
   useEmulators: false,
   firebase: {
-    apiKey: 'REEMPLAZAR',
-    authDomain: 'REEMPLAZAR.firebaseapp.com',
-    projectId: 'REEMPLAZAR',
-    storageBucket: 'REEMPLAZAR.firebasestorage.app',
-    messagingSenderId: 'REEMPLAZAR',
-    appId: 'REEMPLAZAR',
+    apiKey: 'AIzaSyD7NmRnW0zT69ViPKjRV4uq6Hyhiu5Onvw',
+    authDomain: 'timereport-app.firebaseapp.com',
+    projectId: 'timereport-app',
+    storageBucket: 'timereport-app.firebasestorage.app',
+    messagingSenderId: '4688823749',
+    appId: '1:4688823749:web:e1b0031104e133464ab7ac',
   },
-  // Debe coincidir con la region de functions/src/config.ts.
+  // Debe coincidir con la region de functions/src/index.ts.
   functionsRegion: 'europe-southwest1',
 };
