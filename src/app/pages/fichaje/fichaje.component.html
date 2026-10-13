@@ -1,0 +1,66 @@
+<div class="contenedor">
+  @if (cargando()) {
+    <div class="cargando"></div>
+  } @else {
+    <section class="tarjeta fichar">
+      <p class="dia">{{ diaLargo(ahora()) }}</p>
+      <p class="reloj">{{ hora(ahora()) }}<small>:{{ ahora().getSeconds().toString().padStart(2, '0') }}</small></p>
+
+      @if (comunidades().length === 0) {
+        <div class="alerta">No tienes ninguna comunidad asignada. Avisa al administrador.</div>
+      } @else if (limiteAlcanzado()) {
+        <div class="alerta">Has alcanzado el máximo de fichajes de hoy.</div>
+      } @else {
+        <label class="campo">
+          <span>Comunidad</span>
+          <select class="control" [(ngModel)]="comunidadId" name="comunidad">
+            <option value="" disabled>Elige la comunidad…</option>
+            @for (c of comunidades(); track c.id) {
+              <option [value]="c.id">{{ c.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        @if (errorUbicacion()) {
+          <div class="alerta error" role="alert">{{ errorUbicacion() }}</div>
+        }
+
+        <button type="button" class="boton grande" [class.salida]="siguienteTipo() === 'salida'"
+                [disabled]="fichando() || !comunidadId" (click)="fichar()">
+          @if (fichando()) {
+            Obteniendo ubicación…
+          } @else {
+            {{ siguienteTipo() === 'entrada' ? 'Fichar entrada' : 'Fichar salida' }}
+          }
+        </button>
+      }
+    </section>
+
+    <section class="tarjeta">
+      <h2>Mis fichajes</h2>
+      @for (dia of dias(); track dia.dia.getTime()) {
+        <div class="dia-historial">
+          <div class="cabecera-dia">
+            <strong>{{ diaLargo(dia.dia) }}</strong>
+            @if (dia.minutos > 0) {
+              <span class="texto-suave">{{ (dia.minutos / 60).toFixed(1).replace('.', ',') }} h{{ dia.abierto ? ' (en curso)' : '' }}</span>
+            }
+          </div>
+          <ul class="lista">
+            @for (f of dia.fichajes; track f.id) {
+              <li>
+                <span class="etiqueta" [class.entrada]="f.tipo === 'entrada'" [class.salida]="f.tipo === 'salida'">
+                  {{ f.tipo === 'entrada' ? 'Entrada' : 'Salida' }}
+                </span>
+                <span class="hora">{{ hora(f.fecha.toDate()) }}</span>
+                <span class="principal texto-suave">{{ f.comunidadNombre }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      } @empty {
+        <p class="vacio">No tienes fichajes en el último mes.</p>
+      }
+    </section>
+  }
+</div>

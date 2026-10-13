@@ -1,0 +1,150 @@
+<div class="contenedor">
+  <div class="cabecera-seccion">
+    <h1>Usuarios</h1>
+    <button type="button" class="boton" (click)="nuevo()">Nuevo usuario</button>
+  </div>
+
+  <section class="tarjeta">
+    <div class="fila filtros">
+      <input class="control" type="search" placeholder="Buscar por nombre o usuario"
+             [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
+      <label class="casilla">
+        <input type="checkbox" [ngModel]="verInactivos()" (ngModelChange)="verInactivos.set($event)" />
+        Mostrar desactivados
+      </label>
+    </div>
+
+    @if (cargando()) {
+      <div class="cargando"></div>
+    } @else {
+      <ul class="lista">
+        @for (u of filtrados(); track u.uid) {
+          <li>
+            <div class="principal">
+              <strong>
+                {{ u.nombre }}
+                @if (!u.activo) { <span class="etiqueta inactivo">Desactivado</span> }
+              </strong>
+              <span class="texto-suave">
+                {{ u.username || u.email }} · {{ etiquetaRol(u.rol) }}
+                @if (u.rol !== 'admin') { · {{ numComunidades(u) }} comunidades }
+              </span>
+            </div>
+            <div class="acciones">
+              <button type="button" class="boton secundario pequeno" (click)="editar(u)">Editar</button>
+              <button type="button" class="boton secundario pequeno" (click)="abrirCambioPassword(u)">Contraseña</button>
+              @if (u.uid !== miUid()) {
+                <button type="button" class="boton pequeno" [class.peligro-suave]="u.activo"
+                        [class.secundario]="!u.activo" (click)="cambiarEstado(u)">
+                  {{ u.activo ? 'Desactivar' : 'Reactivar' }}
+                </button>
+              }
+            </div>
+          </li>
+        } @empty {
+          <li class="vacio">No hay usuarios{{ busqueda() ? ' que coincidan con la búsqueda' : '' }}.</li>
+        }
+      </ul>
+    }
+  </section>
+</div>
+
+@if (edicion(); as e) {
+  <div class="fondo-dialogo" (click)="edicion.set(null)">
+    <form class="dialogo" (click)="$event.stopPropagation()" (ngSubmit)="guardar(e)" novalidate>
+      <h2>{{ e.uid ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+
+      @if (errorDialogo()) {
+        <div class="error-formulario" role="alert">{{ errorDialogo() }}</div>
+      }
+
+      <label class="campo">
+        <span>Nombre completo</span>
+        <input class="control" name="nombre" [(ngModel)]="e.nombre" maxlength="100" />
+      </label>
+      <label class="campo">
+        <span>Usuario</span>
+        <input class="control" name="usuario" [(ngModel)]="e.usuario" autocapitalize="none"
+               spellcheck="false" maxlength="100" />
+        <small>Un nombre de usuario (p. ej. "jgarcia") o un email.</small>
+      </label>
+      @if (!e.uid) {
+        <label class="campo">
+          <span>Contraseña</span>
+          <input class="control" name="password" [(ngModel)]="e.password" type="text"
+                 autocomplete="new-password" />
+          <small>Mínimo {{ passwordMinima }} caracteres. Comunícasela al trabajador.</small>
+        </label>
+      }
+
+      <div class="campo">
+        <span>Rol</span>
+        @for (r of roles; track r.valor) {
+          <label class="casilla">
+            <input type="radio" name="rol" [value]="r.valor" [(ngModel)]="e.rol" />
+            {{ r.etiqueta }}
+            <span class="texto-suave">
+              @switch (r.valor) {
+                @case ('maquinista') { — solo fichaje }
+                @case ('socorrista') { — fichaje y control de agua }
+                @case ('admin') { — todo, en todas las comunidades }
+              }
+            </span>
+          </label>
+        }
+      </div>
+
+      @if (e.rol !== 'admin') {
+        <div class="campo">
+          <span>Comunidades asignadas ({{ e.comunidades.size }})</span>
+          <input class="control" type="search" placeholder="Filtrar comunidades"
+                 [ngModel]="busquedaComunidad()" (ngModelChange)="busquedaComunidad.set($event)"
+                 [ngModelOptions]="{ standalone: true }" />
+          <div class="acciones izquierda">
+            <button type="button" class="boton secundario pequeno" (click)="marcarTodas(e, true)">Marcar visibles</button>
+            <button type="button" class="boton secundario pequeno" (click)="marcarTodas(e, false)">Desmarcar visibles</button>
+          </div>
+          <div class="lista-comunidades">
+            @for (c of comunidadesFiltradas(); track c.id) {
+              <label class="casilla">
+                <input type="checkbox" [checked]="e.comunidades.has(c.id)"
+                       (change)="alternarComunidad(e, c.id, $any($event.target).checked)" />
+                {{ c.nombre }} <span class="texto-suave">({{ c.codigo }})</span>
+              </label>
+            } @empty {
+              <p class="texto-suave">No hay comunidades.</p>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="acciones">
+        <button type="button" class="boton secundario" (click)="edicion.set(null)">Cancelar</button>
+        <button type="submit" class="boton" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (cambioPassword(); as cp) {
+  <div class="fondo-dialogo" (click)="cambioPassword.set(null)">
+    <form class="dialogo" (click)="$event.stopPropagation()" (ngSubmit)="guardarPassword(cp)" novalidate>
+      <h2>Nueva contraseña para {{ cp.usuario.nombre }}</h2>
+      @if (errorDialogo()) {
+        <div class="error-formulario" role="alert">{{ errorDialogo() }}</div>
+      }
+      <label class="campo">
+        <span>Contraseña</span>
+        <input class="control" name="password" [(ngModel)]="cp.password" type="text"
+               autocomplete="new-password" />
+        <small>Mínimo {{ passwordMinima }} caracteres.</small>
+      </label>
+      <div class="acciones">
+        <button type="button" class="boton secundario" (click)="cambioPassword.set(null)">Cancelar</button>
+        <button type="submit" class="boton" [disabled]="guardando()">Cambiar contraseña</button>
+      </div>
+    </form>
+  </div>
+}

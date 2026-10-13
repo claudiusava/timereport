@@ -1,0 +1,82 @@
+<div class="contenedor">
+  <div class="cabecera-seccion">
+    <h1>Comunidades</h1>
+    <div class="acciones">
+      <button type="button" class="boton secundario" (click)="exportar()" [disabled]="!filtradas().length">
+        Exportar a Excel
+      </button>
+      <button type="button" class="boton" (click)="nueva()">Nueva comunidad</button>
+    </div>
+  </div>
+
+  <section class="tarjeta">
+    <input class="control" type="search" placeholder="Buscar por nombre o código"
+           [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
+
+    @if (cargando()) {
+      <div class="cargando"></div>
+    } @else {
+      <ul class="lista">
+        @for (c of filtradas(); track c.id) {
+          <li>
+            <div class="principal">
+              <strong>{{ c.nombre }}</strong>
+              <span class="texto-suave">
+                Código {{ c.codigo }} ·
+                @if (mapa(c); as url) {
+                  <a [href]="url" target="_blank" rel="noopener">{{ coordenadas(c) }}</a>
+                } @else {
+                  <span class="etiqueta inactivo">Sin ubicación</span>
+                }
+                · {{ c.asignados.length || 0 }} asignados
+              </span>
+            </div>
+            <div class="acciones">
+              <button type="button" class="boton secundario pequeno" (click)="editar(c)">Editar</button>
+              <button type="button" class="boton peligro-suave pequeno" (click)="eliminar(c)">Eliminar</button>
+            </div>
+          </li>
+        } @empty {
+          <li class="vacio">No hay comunidades{{ busqueda() ? ' que coincidan con la búsqueda' : '' }}.</li>
+        }
+      </ul>
+    }
+  </section>
+</div>
+
+@if (edicion(); as e) {
+  <div class="fondo-dialogo" (click)="edicion.set(null)">
+    <form class="dialogo" (click)="$event.stopPropagation()" (ngSubmit)="guardar(e)" novalidate>
+      <h2>{{ e.id ? 'Editar comunidad' : 'Nueva comunidad' }}</h2>
+
+      @if (errorEdicion()) {
+        <div class="error-formulario" role="alert">{{ errorEdicion() }}</div>
+      }
+
+      <label class="campo">
+        <span>Nombre</span>
+        <input class="control" name="nombre" [(ngModel)]="e.nombre" maxlength="200" />
+      </label>
+      <label class="campo">
+        <span>Código</span>
+        <input class="control" name="codigo" [(ngModel)]="e.codigo" maxlength="45" />
+      </label>
+      <label class="campo">
+        <span>Coordenadas (latitud, longitud)</span>
+        <input class="control" name="coordenadas" [(ngModel)]="e.coordenadas"
+               placeholder="40.416775, -3.703790" inputmode="decimal" />
+        <small>Cópialas de Google Maps (clic derecho sobre el punto) o, si estás allí, usa tu ubicación.</small>
+      </label>
+      <button type="button" class="boton secundario pequeno" (click)="usarMiUbicacion(e)">
+        Usar mi ubicación actual
+      </button>
+
+      <div class="acciones">
+        <button type="button" class="boton secundario" (click)="edicion.set(null)">Cancelar</button>
+        <button type="submit" class="boton" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

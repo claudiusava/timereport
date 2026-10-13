@@ -1,0 +1,47 @@
+.fichar {
+  text-align: center;
+
+  .campo {
+    text-align: left;
+  }
+}
+
+.dia {
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
+.reloj {
+  margin: 0.25rem 0 1.25rem;
+  font-size: 3rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+
+  small {
+    font-size: 1.4rem;
+    color: var(--color-texto-suave);
+  }
+}
+
+.boton.salida {
+  background: var(--color-secundario);
+}
+
+.dia-historial + .dia-historial {
+  margin-top: 1rem;
+}
+
+.cabecera-dia {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid var(--color-borde);
+}
+
+.hora {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}

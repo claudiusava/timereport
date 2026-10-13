@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Mismo modelo que firestore.rules: los custom claims { clienteId, rol } del
+// token deciden el acceso.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function delCliente(c) {
+      return request.auth != null && request.auth.token.clienteId == c;
+    }
+
+    function esAdmin(c) {
+      return delCliente(c) && request.auth.token.rol == 'admin';
+    }
+
+    // Fotos de los controles de agua: clientes/{c}/controlesAgua/{uid}/{controlId}.jpg
+    match /clientes/{c}/controlesAgua/{uid}/{archivo} {
+      allow read: if esAdmin(c) || (delCliente(c) && request.auth.uid == uid);
+
+      // Solo el propio socorrista (o admin) en su carpeta, una vez (no se
+      // sobrescribe), JPEG de hasta 5 MB. El nombre es el id del documento
+      // de Firestore (20 caracteres alfanumericos).
+      allow create: if delCliente(c)
+        && resource == null
+        && request.auth.uid == uid
+        && request.auth.token.rol in ['admin', 'socorrista']
+        && archivo.matches('^[A-Za-z0-9]{20}[.]jpg$')
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType == 'image/jpeg';
+
+      allow update: if false;
+      allow delete: if esAdmin(c);
+    }
+
+    // Logo del cliente: publico (se muestra en el login). Se sube con el
+    // script scripts/crear-cliente.ts.
+    match /clientes/{c}/branding/{archivo} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

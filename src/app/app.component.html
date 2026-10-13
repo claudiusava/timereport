@@ -1,0 +1,55 @@
+@if (auth.sesion(); as sesion) {
+  <header class="barra">
+    <a class="marca" routerLink="/fichaje">
+      <img [src]="branding.logoUrl()" alt="" />
+      <span>{{ branding.nombreApp() }}</span>
+    </a>
+    <div class="usuario">
+      <span class="nombre">{{ sesion.nombre }}</span>
+      <button type="button" class="boton secundario pequeno" (click)="salir()">Salir</button>
+    </div>
+  </header>
+
+  <nav class="menu" aria-label="Secciones">
+    <a routerLink="/fichaje" routerLinkActive="activo">Fichaje</a>
+    @if (auth.puedeControlAgua()) {
+      <a routerLink="/control-agua" routerLinkActive="activo">Control agua</a>
+    }
+    @if (auth.esAdmin()) {
+      <a routerLink="/admin/registros" routerLinkActive="activo">Registros</a>
+      <a routerLink="/admin/usuarios" routerLinkActive="activo">Usuarios</a>
+      <a routerLink="/admin/comunidades" routerLinkActive="activo">Comunidades</a>
+    }
+  </nav>
+}
+
+<main>
+  @if (auth.sesion() === undefined) {
+    <div class="cargando" aria-label="Cargando"></div>
+  } @else {
+    <router-outlet />
+  }
+</main>
+
+<div class="avisos" aria-live="polite">
+  @for (aviso of avisos.avisos(); track aviso.id) {
+    <div class="aviso" [class.error]="aviso.tipo === 'error'" (click)="avisos.quitar(aviso.id)">
+      {{ aviso.texto }}
+    </div>
+  }
+</div>
+
+@if (avisos.confirmacion(); as c) {
+  <div class="fondo-dialogo" (click)="c.responder(false)">
+    <div class="dialogo" role="alertdialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <h2>{{ c.titulo }}</h2>
+      <p>{{ c.texto }}</p>
+      <div class="acciones">
+        <button type="button" class="boton secundario" (click)="c.responder(false)">Cancelar</button>
+        <button type="button" class="boton" [class.peligro]="c.peligro" (click)="c.responder(true)">
+          {{ c.aceptar }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

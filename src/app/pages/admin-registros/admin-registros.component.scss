@@ -1,0 +1,18 @@
+.ancho {
+  max-width: 1200px;
+}
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0 0.75rem;
+  align-items: end;
+}
+
+.boton-buscar .boton {
+  width: 100%;
+}
+
+.acciones {
+  margin-bottom: 0.5rem;
+}

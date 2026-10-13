@@ -1,0 +1,173 @@
+rules_version = '2';
+
+// Modelo multi-cliente: todo cuelga de clientes/{clienteId}. Cada usuario
+// lleva en su token los custom claims { clienteId, rol } que SOLO ponen las
+// Cloud Functions (functions/src/usuarios.ts) o los scripts de administracion.
+//
+// - Nadie lee ni escribe datos de otro cliente.
+// - Trabajadores (socorrista, maquinista): solo sus propios registros y las
+//   comunidades que tienen asignadas.
+// - Admin: todo lo de su cliente.
+// - Los fichajes y controles no se pueden modificar; solo el admin los borra.
+// - La fecha de fichajes y controles la pone el servidor (== request.time).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function delCliente(c) {
+      return autenticado() && request.auth.token.clienteId == c;
+    }
+
+    function esAdmin(c) {
+      return delCliente(c) && request.auth.token.rol == 'admin';
+    }
+
+    function puedeControlAgua(c) {
+      return delCliente(c) && request.auth.token.rol in ['admin', 'socorrista'];
+    }
+
+    function rutaCliente(c) {
+      return /databases/$(database)/documents/clientes/$(c);
+    }
+
+    function textoValido(valor, min, max) {
+      return valor is string && valor.size() >= min && valor.size() <= max;
+    }
+
+    function numeroEntre(valor, min, max) {
+      return valor is number && valor >= min && valor <= max;
+    }
+
+    function enteroEntre(valor, min, max) {
+      return valor is int && valor >= min && valor <= max;
+    }
+
+    // El documento del propio usuario existe, esta activo y el nombre que
+    // se guarda en el registro es el suyo.
+    function autorValido(c, data) {
+      let perfil = get(/databases/$(database)/documents/clientes/$(c)/usuarios/$(request.auth.uid));
+      return data.uid == request.auth.uid
+        && perfil.data.activo == true
+        && data.usuarioNombre == perfil.data.nombre;
+    }
+
+    // La comunidad existe, el nombre guardado coincide y el trabajador la
+    // tiene asignada (el admin puede usar cualquiera).
+    function comunidadValida(c, data) {
+      let ruta = /databases/$(database)/documents/clientes/$(c)/comunidades/$(data.comunidadId);
+      return data.comunidadId is string
+        && exists(ruta)
+        && get(ruta).data.nombre == data.comunidadNombre
+        && (esAdmin(c) || request.auth.uid in get(ruta).data.asignados);
+    }
+
+    function comunidadBienFormada(data) {
+      return textoValido(data.nombre, 1, 200)
+        && textoValido(data.codigo, 1, 45)
+        && data.ubicacion is latlng
+        && data.asignados is list
+        && data.activa is bool;
+    }
+
+    match /clientes/{c} {
+      // Marca y configuracion del cliente: se leen ANTES del login para
+      // pintar el logo y los colores. No contiene nada sensible. No se
+      // permite listar, para no exponer que clientes existen.
+      allow get: if true;
+      allow list: if false;
+      allow write: if false;
+
+      match /usuarios/{uid} {
+        allow get: if esAdmin(c) || (delCliente(c) && request.auth.uid == uid);
+        allow list: if esAdmin(c);
+        // Solo Cloud Functions (sincronizan Auth, claims y este documento).
+        allow write: if false;
+      }
+
+      match /comunidades/{comunidadId} {
+        // La consulta del trabajador debe filtrar por
+        // where('asignados', 'array-contains', uid) para que la regla se cumpla.
+        allow read: if esAdmin(c)
+          || (delCliente(c) && request.auth.uid in resource.data.asignados);
+
+        // Las asignaciones (asignados) las gestionan las Cloud Functions al
+        // editar usuarios: el cliente crea la comunidad vacia y no las toca.
+        allow create: if esAdmin(c)
+          && request.resource.data.keys().hasOnly(
+            ['nombre', 'codigo', 'ubicacion', 'asignados', 'activa', 'createdAt'])
+          && request.resource.data.keys().hasAll(
+            ['nombre', 'codigo', 'ubicacion', 'asignados', 'activa', 'createdAt'])
+          && comunidadBienFormada(request.resource.data)
+          && request.resource.data.asignados.size() == 0
+          && request.resource.data.createdAt == request.time;
+
+        allow update: if esAdmin(c)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['nombre', 'codigo', 'ubicacion', 'activa'])
+          && comunidadBienFormada(request.resource.data);
+
+        allow delete: if esAdmin(c);
+      }
+
+      match /imputaciones/{id} {
+        // Las consultas del trabajador deben filtrar por where('uid', '==', uid).
+        allow read: if esAdmin(c)
+          || (delCliente(c) && resource.data.uid == request.auth.uid);
+
+        allow create: if delCliente(c)
+          && request.resource.data.keys().hasOnly(
+            ['uid', 'usuarioNombre', 'comunidadId', 'comunidadNombre', 'tipo', 'fecha'])
+          && request.resource.data.keys().hasAll(
+            ['uid', 'usuarioNombre', 'comunidadId', 'comunidadNombre', 'tipo', 'fecha'])
+          && request.resource.data.tipo in ['entrada', 'salida']
+          && request.resource.data.fecha == request.time
+          && textoValido(request.resource.data.usuarioNombre, 1, 100)
+          && textoValido(request.resource.data.comunidadNombre, 1, 200)
+          && autorValido(c, request.resource.data)
+          && comunidadValida(c, request.resource.data);
+
+        allow update: if false;
+        allow delete: if esAdmin(c);
+      }
+
+      match /controlesAgua/{id} {
+        allow read: if esAdmin(c)
+          || (delCliente(c) && resource.data.uid == request.auth.uid);
+
+        allow create: if puedeControlAgua(c)
+          && request.resource.data.keys().hasOnly(
+            ['uid', 'usuarioNombre', 'comunidadId', 'comunidadNombre', 'cloro', 'ph',
+             'banistas', 'rebosadero', 'aguaDepurada', 'fotoPath', 'fecha'])
+          && request.resource.data.keys().hasAll(
+            ['uid', 'usuarioNombre', 'comunidadId', 'comunidadNombre', 'cloro', 'ph',
+             'banistas', 'rebosadero', 'aguaDepurada', 'fotoPath', 'fecha'])
+          && request.resource.data.fecha == request.time
+          && numeroEntre(request.resource.data.cloro, 0, 20)
+          && numeroEntre(request.resource.data.ph, 0, 14)
+          && enteroEntre(request.resource.data.banistas, 0, 10000)
+          && enteroEntre(request.resource.data.rebosadero, 0, 100000)
+          && numeroEntre(request.resource.data.aguaDepurada, 0, 1000000)
+          // La foto va en la carpeta del propio usuario y con el id de este
+          // documento (ver storage.rules).
+          && request.resource.data.fotoPath ==
+            'clientes/' + c + '/controlesAgua/' + request.auth.uid + '/' + id + '.jpg'
+          && textoValido(request.resource.data.usuarioNombre, 1, 100)
+          && textoValido(request.resource.data.comunidadNombre, 1, 200)
+          && autorValido(c, request.resource.data)
+          && comunidadValida(c, request.resource.data);
+
+        allow update: if false;
+        allow delete: if esAdmin(c);
+      }
+    }
+
+    // Cualquier otra ruta: denegada.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

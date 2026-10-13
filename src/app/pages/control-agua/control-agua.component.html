@@ -1,0 +1,101 @@
+<div class="contenedor">
+  @if (cargando()) {
+    <div class="cargando"></div>
+  } @else {
+    <form class="tarjeta" #f="ngForm" (ngSubmit)="guardar(f)" novalidate>
+      <h1>Control de calidad del agua</h1>
+
+      @if (comunidades().length === 0) {
+        <div class="alerta">No tienes ninguna comunidad asignada. Avisa al administrador.</div>
+      } @else {
+        <label class="campo">
+          <span>Piscina / comunidad</span>
+          <select class="control" name="comunidad" [(ngModel)]="form.comunidadId" required>
+            <option value="" disabled>Elige la comunidad…</option>
+            @for (c of comunidades(); track c.id) {
+              <option [value]="c.id">{{ c.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="fila">
+          <label class="campo">
+            <span>Cloro libre (mg/l)</span>
+            <select class="control" name="cloro" [(ngModel)]="form.cloro" required
+                    [style.background-color]="colorCloro(form.cloro)">
+              <option [ngValue]="null" disabled>Elige…</option>
+              @for (n of nivelesCloro; track n.valor) {
+                <option [ngValue]="n.valor" [style.background-color]="n.color">{{ n.valor.toFixed(1) }}</option>
+              }
+            </select>
+          </label>
+          <label class="campo">
+            <span>pH</span>
+            <select class="control" name="ph" [(ngModel)]="form.ph" required
+                    [style.background-color]="colorPh(form.ph)">
+              <option [ngValue]="null" disabled>Elige…</option>
+              @for (n of nivelesPh; track n.valor) {
+                <option [ngValue]="n.valor" [style.background-color]="n.color">{{ n.valor.toFixed(1) }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div class="fila">
+          <label class="campo">
+            <span>Bañistas</span>
+            <input class="control" type="number" inputmode="numeric" name="banistas"
+                   [(ngModel)]="form.banistas" required min="0" max="10000" step="1" />
+          </label>
+          <label class="campo">
+            <span>Nivel de rebosadero</span>
+            <input class="control" type="number" inputmode="numeric" name="rebosadero"
+                   [(ngModel)]="form.rebosadero" required min="0" max="100000" step="1" />
+          </label>
+          <label class="campo">
+            <span>Agua depurada (m³)</span>
+            <input class="control" type="number" inputmode="decimal" name="aguaDepurada"
+                   [(ngModel)]="form.aguaDepurada" required min="0" max="1000000" />
+          </label>
+        </div>
+
+        <div class="campo">
+          <span>Foto</span>
+          <label class="selector-foto">
+            @if (vistaPrevia(); as src) {
+              <img [src]="src" alt="Vista previa" />
+              <span class="texto-suave">Pulsa para cambiar la foto</span>
+            } @else {
+              <span class="icono" aria-hidden="true">📷</span>
+              <span>Hacer foto</span>
+            }
+            <input type="file" accept="image/*" capture="environment" (change)="elegirFoto($event)" />
+          </label>
+        </div>
+
+        <button class="boton bloque" type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar control' }}
+        </button>
+      }
+    </form>
+
+    <section class="tarjeta">
+      <h2>Mis controles (último mes)</h2>
+      <ul class="lista">
+        @for (c of controles(); track c.id) {
+          <li>
+            <app-foto-control [path]="c.fotoPath" />
+            <div class="principal">
+              <strong>{{ c.comunidadNombre }}</strong>
+              <span class="texto-suave">
+                {{ fechaHora(c.fecha) }} · Cloro {{ c.cloro }} · pH {{ c.ph }} · {{ c.banistas }} bañistas
+              </span>
+            </div>
+          </li>
+        } @empty {
+          <li class="vacio">Todavía no has registrado controles este mes.</li>
+        }
+      </ul>
+    </section>
+  }
+</div>
