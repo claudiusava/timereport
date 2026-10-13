@@ -58,3 +58,6 @@ typings/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Material privado (datos personales y comerciales), solo en local
+docs/privado/
