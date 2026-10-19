@@ -9,7 +9,7 @@
   </div>
 </div>
 
-<mat-form-field class="ancho-completo">
+<mat-form-field class="buscador" subscriptSizing="dynamic">
   <mat-label>Buscar por nombre o código</mat-label>
   <input matInput [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" />
   <mat-icon matIconPrefix svgIcon="search" />

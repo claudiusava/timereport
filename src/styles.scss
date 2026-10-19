@@ -97,14 +97,112 @@ h3 {
   width: 100%;
 }
 
+// Formulario en columna: los campos reservan el hueco de la ayuda/error
+// (subscriptSizing "fixed" por defecto), asi que el ritmo vertical es regular.
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  > .mat-mdc-form-field {
+    width: 100%;
+  }
+}
+
+// Campos en rejilla: varias columnas en escritorio, que se pliegan en movil.
 .fila-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 8px 16px;
+
+  &.dos-columnas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+// Etiqueta de un grupo de opciones que no es un mat-form-field.
+.etiqueta-campo {
+  display: block;
+  margin: 12px 0 8px;
+  font: var(--mat-sys-title-small);
+  color: var(--mat-sys-on-surface);
+
+  small {
+    margin-left: 6px;
+    font: var(--mat-sys-body-small);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+// Grupo de radios presentado como tarjetas (titulo + descripcion).
+.opciones-tarjeta {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .mat-mdc-radio-button {
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: 12px;
+    transition: background-color 120ms, border-color 120ms;
+
+    .mdc-form-field {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .mdc-label {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 12px 10px 0;
+      cursor: pointer;
+    }
+
+    small {
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    &.mat-mdc-radio-checked {
+      border-color: var(--mat-sys-primary);
+      background: var(--mat-sys-secondary-container);
+    }
+  }
+}
+
+.mat-button-toggle-group.ancho-completo {
+  display: flex;
+
+  .mat-button-toggle {
+    flex: 1;
+  }
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+    vertical-align: -3px;
+  }
+}
+
+// Los campos outline necesitan aire arriba para que la etiqueta no se corte.
+.mat-mdc-dialog-content {
+  padding-top: 8px !important;
+}
+
+// Buscador encima de una lista.
+.buscador {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.acciones-formulario {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 12px;
-
-  > * {
-    flex: 1 1 180px;
-  }
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
 .error-formulario {
@@ -196,20 +294,115 @@ h3 {
   overflow-x: auto;
   border-radius: 16px;
   border: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container-lowest);
 }
 
 table.mat-mdc-table {
   --mat-table-background-color: var(--mat-sys-surface-container-lowest);
-  min-width: 640px;
+  --mat-table-header-container-height: 48px;
+  --mat-table-row-item-container-height: 52px;
+  --mat-table-header-headline-color: var(--mat-sys-on-surface-variant);
+  width: 100%;
 
   td,
   th {
     white-space: nowrap;
   }
 
+  th {
+    font: var(--mat-sys-label-large);
+  }
+
   td.ajustar {
     white-space: normal;
     min-width: 160px;
+  }
+
+  td.numero,
+  th.numero {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  tr.mat-mdc-row:hover {
+    background: var(--mat-sys-surface-container-low);
+  }
+}
+
+// En movil las tablas se sustituyen por listas de tarjetas.
+.lista-movil {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fila-movil {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--mat-sys-surface-container-low);
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  .principal {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-top: 4px;
+  }
+}
+
+// ---------- Dialogos ----------
+
+// En movil los dialogos de formulario ocupan toda la pantalla.
+.dialogo-adaptable {
+  @media (max-width: 600px) {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh;
+    max-height: 100dvh !important;
+
+    .mat-mdc-dialog-surface {
+      border-radius: 0 !important;
+    }
+
+    .mat-mdc-dialog-content {
+      max-height: none;
+      flex: 1;
+    }
+
+    .mat-mdc-dialog-container .mat-mdc-dialog-inner-container {
+      height: 100%;
+    }
+
+    // El formulario ocupa el hueco bajo el titulo: el contenido hace scroll y
+    // los botones quedan siempre visibles abajo.
+    .mat-mdc-dialog-surface > * > form {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mat-mdc-dialog-content {
+      min-height: 0;
+    }
   }
 }
 

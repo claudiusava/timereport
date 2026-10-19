@@ -16,10 +16,10 @@
 
 <section class="tarjeta">
   <h2>Apariencia</h2>
-  <mat-button-toggle-group [value]="empresa.modo()" (change)="cambiarModo($event.value)" aria-label="Tema">
-    <mat-button-toggle value="sistema"><mat-icon svgIcon="contrast" /> Sistema</mat-button-toggle>
-    <mat-button-toggle value="claro"><mat-icon svgIcon="light_mode" /> Claro</mat-button-toggle>
-    <mat-button-toggle value="oscuro"><mat-icon svgIcon="dark_mode" /> Oscuro</mat-button-toggle>
+  <mat-button-toggle-group [value]="empresa.modo()" (change)="cambiarModo($event.value)" aria-label="Tema" class="ancho-completo">
+    <mat-button-toggle value="sistema"><mat-icon svgIcon="contrast" />Sistema</mat-button-toggle>
+    <mat-button-toggle value="claro"><mat-icon svgIcon="light_mode" />Claro</mat-button-toggle>
+    <mat-button-toggle value="oscuro"><mat-icon svgIcon="dark_mode" />Oscuro</mat-button-toggle>
   </mat-button-toggle-group>
 </section>
 

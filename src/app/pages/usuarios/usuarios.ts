@@ -89,6 +89,7 @@ export class Usuarios implements OnInit {
       width: '560px',
       maxHeight: '92vh',
       disableClose: true,
+      panelClass: 'dialogo-adaptable',
     });
     if (await firstValueFrom(ref.afterClosed())) {
       this.avisos.ok(usuario ? 'Usuario actualizado' : 'Usuario creado');

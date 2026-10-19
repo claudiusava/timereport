@@ -7,7 +7,7 @@
 </div>
 
 <div class="barra-filtros">
-  <mat-form-field class="buscar">
+  <mat-form-field class="buscar" subscriptSizing="dynamic">
     <mat-label>Buscar por nombre o usuario</mat-label>
     <input matInput [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" />
     <mat-icon matIconPrefix svgIcon="search" />

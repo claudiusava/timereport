@@ -32,10 +32,12 @@ const normalizar = (t: string) => t.toLowerCase().normalize('NFD').replace(/[̀-
   ],
   templateUrl: './dialogo-usuario.html',
   styles: `
-    .roles { display: flex; flex-direction: column; margin-bottom: 16px; }
     .rol-descripcion { color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); margin-left: 4px; }
-    .lista-comunidades { max-height: 260px; overflow-y: auto; border: 1px solid var(--mat-sys-outline-variant); border-radius: 12px; }
-    .cabecera-comunidades { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; font: var(--mat-sys-title-small); }
+    .lista-comunidades { max-height: 280px; overflow-y: auto; margin-top: 8px; border: 1px solid var(--mat-sys-outline-variant); border-radius: 12px; }
+    .cabecera-comunidades { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px; margin-top: 16px; }
+    .cabecera-comunidades .etiqueta-campo { margin: 0; }
+    .marcar { display: flex; margin-right: -12px; }
+    .sin-comunidades { padding: 12px 16px; margin: 0; }
   `,
 })
 export class DialogoUsuario {

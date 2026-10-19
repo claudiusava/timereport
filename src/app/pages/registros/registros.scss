@@ -1,24 +1,108 @@
 .filtros {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(260px, 1.4fr) 1fr 1fr auto;
   align-items: center;
-  gap: 8px 16px;
+  gap: 16px;
+  padding: 16px 20px;
 
-  mat-form-field {
-    flex: 1 1 200px;
+  @media (max-width: 840px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px;
+
+    .periodo,
+    mat-slide-toggle {
+      grid-column: 1 / -1;
+    }
   }
 }
 
-mat-progress-bar {
+// Hueco fijo para la barra de progreso: la pagina no salta al buscar.
+.estado-carga {
+  height: 4px;
   margin-bottom: 8px;
 }
 
-.tabla-scroll {
+.contador {
+  margin-left: 8px;
+  padding: 0 8px;
+  min-width: 24px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container-highest);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-medium);
+  line-height: 20px;
+  text-align: center;
+}
+
+// En movil las tres pestañas caben sin flechas de desplazamiento.
+@media (max-width: 840px) {
+  mat-tab-group ::ng-deep .mat-mdc-tab {
+    padding: 0 12px;
+    min-width: 0;
+  }
+}
+
+.mdc-tab--active .contador {
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+
+.tabla-scroll,
+.lista-movil {
   margin-top: 16px;
 }
 
+.tabla-scroll {
+  max-height: calc(100dvh - 220px);
+}
+
+.acciones-celda {
+  width: 1%;
+  text-align: right;
+}
+
+.detalle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  white-space: normal;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+tr.mat-mdc-footer-row td {
+  font: var(--mat-sys-title-small);
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  border-bottom: none;
+}
+
+.chip mat-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.fila-movil .total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  strong {
+    font: var(--mat-sys-title-medium);
+  }
+}
+
+mat-paginator {
+  background: transparent;
+}
+
 .nota {
-  margin-top: 12px;
+  margin-top: 16px;
+
+  mat-icon {
+    flex: none;
+  }
 }
 
 .anulado-fila app-foto-control {

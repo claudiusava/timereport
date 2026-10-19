@@ -1,5 +1,6 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, OnInit, computed, effect, inject, signal, viewChild } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -16,10 +17,11 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { firstValueFrom } from 'rxjs';
+import { debounceTime, distinctUntilChanged, firstValueFrom, map } from 'rxjs';
 
 import { AvisosService } from '../../core/avisos.service';
 import { mensajeDeError } from '../../core/errores';
+import { pantallaMovil } from '../../core/pantalla';
 import { ComunidadesService } from '../../data/comunidades.service';
 import { ControlesAguaService } from '../../data/controles-agua.service';
 import { ExcelService, FORMATO_FECHA, FORMATO_FECHA_HORA, Hoja } from '../../data/excel.service';
@@ -28,6 +30,7 @@ import { Comunidad, ControlAgua, Fichaje, RANGO_CLORO, RANGO_PH, Usuario, fueraD
 import { UsuariosService } from '../../data/usuarios.service';
 import { duracion, fechaHora, horasDecimal, inicioDelMes, isoDia, sumarDias } from '../../shared/fechas';
 import { Jornada, calcularJornadas, porTrabajador } from '../../shared/jornada';
+import { decimal } from '../../shared/numeros';
 import { EstadoVacio } from '../../ui/estado-vacio';
 import { FotoControl } from '../../ui/foto-control';
 import { DialogoFichajeManual } from './dialogo-fichaje-manual';
@@ -55,7 +58,7 @@ export class PaginadorEs extends MatPaginatorIntl {
 @Component({
   selector: 'app-registros',
   imports: [
-    ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatDatepickerModule, MatButtonModule,
+    NgTemplateOutlet, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatDatepickerModule, MatButtonModule,
     MatIconModule, MatTableModule, MatSortModule, MatPaginatorModule, MatTabsModule, MatSlideToggleModule, MatMenuModule,
     MatTooltipModule, MatProgressBarModule, FotoControl, EstadoVacio,
   ],
@@ -75,6 +78,8 @@ export class Registros implements OnInit {
   readonly fechaHora = fechaHora;
   readonly duracion = duracion;
   readonly horasDecimal = horasDecimal;
+  readonly decimal = decimal;
+  readonly movil = pantallaMovil();
   readonly fueraDeRango = fueraDeRango;
   readonly rangoCloro = RANGO_CLORO;
   readonly rangoPh = RANGO_PH;
@@ -121,10 +126,20 @@ export class Registros implements OnInit {
 
   readonly columnasFichajes = ['fecha', 'usuarioNombre', 'tipo', 'comunidadNombre', 'estado', 'acciones'];
   readonly columnasControles = ['foto', 'fecha', 'usuarioNombre', 'comunidadNombre', 'cloro', 'ph', 'banistas', 'rebosadero', 'aguaDepurada', 'acciones'];
-  readonly columnasResumen = ['nombre', 'dias', 'horas', 'incidencias'];
+  readonly columnasResumen = ['nombre', 'dias', 'media', 'horas', 'incidencias'];
+  readonly totales = computed(() =>
+    this.resumen().reduce((t, r) => ({ dias: t.dias + r.dias, minutos: t.minutos + r.minutos, incidencias: t.incidencias + r.incidencias }), {
+      dias: 0,
+      minutos: 0,
+      incidencias: 0,
+    }),
+  );
 
   readonly tablaFichajes = new MatTableDataSource<Fichaje>([]);
   readonly tablaControles = new MatTableDataSource<ControlAgua>([]);
+  /** Pagina visible de cada lista (en movil se pinta como tarjetas en lugar de tabla). */
+  readonly paginaFichajesMovil = toSignal(this.tablaFichajes.connect(), { initialValue: [] });
+  readonly paginaControlesMovil = toSignal(this.tablaControles.connect(), { initialValue: [] });
   private readonly ordenFichajes = viewChild('ordenFichajes', { read: MatSort });
   private readonly paginaFichajes = viewChild('paginaFichajes', { read: MatPaginator });
   private readonly ordenControles = viewChild('ordenControles', { read: MatSort });
@@ -143,6 +158,15 @@ export class Registros implements OnInit {
       this.tablaControles.sort = this.ordenControles() ?? null;
       this.tablaControles.paginator = this.paginaControles() ?? null;
     });
+    // El periodo y el trabajador se consultan en Firestore: se vuelve a buscar en cuanto cambian.
+    this.filtros.valueChanges
+      .pipe(
+        map(({ desde, hasta, uid }) => `${desde?.getTime()}|${hasta?.getTime()}|${uid}`),
+        distinctUntilChanged(),
+        debounceTime(300),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => void this.buscar());
   }
 
   async ngOnInit() {
@@ -158,8 +182,10 @@ export class Registros implements OnInit {
 
   async buscar() {
     const { desde, hasta } = this.filtros.getRawValue();
-    if (!desde || !hasta || desde > hasta) {
-      this.error.set('Revisa las fechas.');
+    // Mientras se elige el rango en el calendario, la fecha final esta vacia.
+    if (!desde || !hasta) return;
+    if (desde > hasta) {
+      this.error.set('La fecha de inicio es posterior a la final.');
       return;
     }
     this.error.set('');
@@ -178,6 +204,10 @@ export class Registros implements OnInit {
     }
   }
 
+  media(r: ResumenHoras) {
+    return r.dias ? Math.round(r.minutos / r.dias) : 0;
+  }
+
   /** Filtros que se aplican en el navegador (comunidad y anulados). */
   private filtrar<T extends { comunidadId: string; anulado: unknown }>(lista: T[]): T[] {
     const { comunidadId, anulados } = this.valoresFiltro();
@@ -188,6 +218,7 @@ export class Registros implements OnInit {
     const ref = this.dialog.open(DialogoFichajeManual, {
       data: { usuarios: this.usuarios(), comunidades: this.comunidades() },
       width: '520px',
+      panelClass: 'dialogo-adaptable',
     });
     if (await firstValueFrom(ref.afterClosed())) {
       this.avisos.ok('Fichaje registrado');

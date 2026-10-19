@@ -1,7 +1,7 @@
 <div class="cabecera-pagina">
   <div>
     <h1>Control del agua</h1>
-    <p>Valores de referencia: cloro libre {{ rangoCloro.min }}–{{ rangoCloro.max }} mg/l · pH {{ rangoPh.min }}–{{ rangoPh.max }}</p>
+    <p>Registra las mediciones de la piscina con una foto del analizador.</p>
   </div>
 </div>
 
@@ -19,8 +19,8 @@
   @if (comunidades().length === 0 && !error()) {
     <app-estado-vacio icono="pool" titulo="No tienes comunidades asignadas" texto="Avisa al administrador." />
   } @else {
-    <form class="tarjeta" [formGroup]="form" (ngSubmit)="guardar()">
-      <mat-form-field class="ancho-completo">
+    <form class="tarjeta formulario" [formGroup]="form" (ngSubmit)="guardar()">
+      <mat-form-field>
         <mat-label>Piscina / comunidad</mat-label>
         <mat-select formControlName="comunidadId">
           @for (c of comunidades(); track c.id) {
@@ -28,32 +28,30 @@
           }
         </mat-select>
         <mat-icon matIconPrefix svgIcon="pool" />
+        @if (form.controls.comunidadId.invalid) {
+          <mat-error>Elige la piscina</mat-error>
+        }
       </mat-form-field>
 
-      <div class="fila-campos">
-        <mat-form-field>
-          <mat-label>Cloro libre (mg/l)</mat-label>
-          <mat-select formControlName="cloro">
-            @for (n of nivelesCloro; track n) {
-              <mat-option [value]="n">{{ n.toFixed(1) }}{{ fueraDeRango(n, rangoCloro) ? '  ⚠' : '' }}</mat-option>
-            }
-          </mat-select>
-          @if (valores().cloro != null && fueraDeRango(valores().cloro!, rangoCloro)) {
-            <mat-hint class="fuera">Fuera del rango recomendado</mat-hint>
+      <section class="grupo">
+        <span class="etiqueta-campo">Cloro libre <small>mg/l · recomendado {{ decimal(rangoCloro.min) }}–{{ decimal(rangoCloro.max) }}</small></span>
+        <mat-chip-listbox formControlName="cloro" aria-label="Cloro libre" class="niveles" hideSingleSelectionIndicator>
+          @for (n of nivelesCloro; track n) {
+            <mat-chip-option [value]="n" [class.fuera-rango]="fueraDeRango(n, rangoCloro)">{{ decimal(n) }}</mat-chip-option>
           }
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>pH</mat-label>
-          <mat-select formControlName="ph">
-            @for (n of nivelesPh; track n) {
-              <mat-option [value]="n">{{ n.toFixed(1) }}{{ fueraDeRango(n, rangoPh) ? '  ⚠' : '' }}</mat-option>
-            }
-          </mat-select>
-          @if (valores().ph != null && fueraDeRango(valores().ph!, rangoPh)) {
-            <mat-hint class="fuera">Fuera del rango recomendado</mat-hint>
+        </mat-chip-listbox>
+        <span class="ayuda" [class.error-texto]="avisoCloro()">{{ avisoCloro() || ' ' }}</span>
+      </section>
+
+      <section class="grupo">
+        <span class="etiqueta-campo">pH <small>recomendado {{ decimal(rangoPh.min) }}–{{ decimal(rangoPh.max) }}</small></span>
+        <mat-chip-listbox formControlName="ph" aria-label="pH" class="niveles" hideSingleSelectionIndicator>
+          @for (n of nivelesPh; track n) {
+            <mat-chip-option [value]="n" [class.fuera-rango]="fueraDeRango(n, rangoPh)">{{ decimal(n) }}</mat-chip-option>
           }
-        </mat-form-field>
-      </div>
+        </mat-chip-listbox>
+        <span class="ayuda" [class.error-texto]="avisoPh()">{{ avisoPh() || ' ' }}</span>
+      </section>
 
       <div class="fila-campos">
         <mat-form-field>
@@ -80,6 +78,7 @@
         </mat-form-field>
       </div>
 
+      <span class="etiqueta-campo">Foto del analizador</span>
       <label class="selector-foto" [class.con-foto]="vistaPrevia()">
         @if (vistaPrevia(); as src) {
           <img [src]="src" alt="Vista previa de la foto" />
@@ -117,8 +116,8 @@
               <span class="texto-suave">{{ fechaHora(c.fecha) }} · {{ c.banistas }} bañistas</span>
             </div>
             <div class="valores">
-              <span class="chip" [class.alerta]="fueraDeRango(c.cloro, rangoCloro)">Cl {{ c.cloro }}</span>
-              <span class="chip" [class.alerta]="fueraDeRango(c.ph, rangoPh)">pH {{ c.ph }}</span>
+              <span class="chip" [class.alerta]="fueraDeRango(c.cloro, rangoCloro)">Cl {{ decimal(c.cloro) }}</span>
+              <span class="chip" [class.alerta]="fueraDeRango(c.ph, rangoPh)">pH {{ decimal(c.ph) }}</span>
               @if (c.anulado) {
                 <span class="chip anulado">Anulado</span>
               }

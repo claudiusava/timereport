@@ -185,6 +185,16 @@ export async function sembrarDemo(restablecerPasswords = true): Promise<{ fichaj
     fichajes++;
   };
 
+  // Los olvidos de la demo caen siempre en dias laborables (si no, un lunes no se veria el de "ayer").
+  const laborableDesde = (d: number) => {
+    while ([0, 6].includes(diaSemana(hoy, d))) d++;
+    return d;
+  };
+  const olvidoDavid = laborableDesde(1);
+  const olvidoAna = laborableDesde(3);
+  const esOlvido = (uid: string, d: number) =>
+    (uid === "demo_dsanchez" && d === olvidoDavid) || (uid === "demo_maquinista" && d === olvidoAna);
+
   for (const u of trabajadores) {
     const suyas = comunidadesDe(u.uid);
     if (!suyas.length) continue;
@@ -193,10 +203,10 @@ export async function sembrarDemo(restablecerPasswords = true): Promise<{ fichaj
     for (let d = DIAS; d >= desde; d--) {
       const semana = diaSemana(hoy, d);
       const trabaja = u.rol === "socorrista" ? semana !== 0 : semana !== 0 && semana !== 6;
-      if (!trabaja || rnd() < 0.06) continue;
+      if (!trabaja || (rnd() < 0.06 && !esOlvido(u.uid, d))) continue;
       const c = elegir(suyas);
 
-      if (u.rol === "maquinista" && rnd() < 0.35 && !(u.uid === "demo_dsanchez" && d === 1)) {
+      if (u.rol === "maquinista" && rnd() < 0.35 && !esOlvido(u.uid, d)) {
         // Jornada partida
         fichaje(u, c, "entrada", diaHora(hoy, d, 8, entre(0, 10)));
         fichaje(u, c, "salida", diaHora(hoy, d, 12, entre(55, 59)));
@@ -206,8 +216,8 @@ export async function sembrarDemo(restablecerPasswords = true): Promise<{ fichaj
       } else {
         const entrada = diaHora(hoy, d, u.rol === "socorrista" ? 11 : 8, entre(0, 12));
         fichaje(u, c, "entrada", entrada);
-        // Ana olvido fichar la salida hace 3 dias; el admin la registro a mano.
-        if (u.uid === "demo_maquinista" && d === 3) {
+        // Ana olvido fichar la salida hace unos dias; el admin la registro a mano.
+        if (u.uid === "demo_maquinista" && d === olvidoAna) {
           lote.set(cliente.collection("imputaciones").doc(), {
             uid: u.uid,
             usuarioNombre: u.nombre,
@@ -224,8 +234,8 @@ export async function sembrarDemo(restablecerPasswords = true): Promise<{ fichaj
           });
           fichajes++;
           auditoria("fichaje.manual", `Registra una salida manual de ${u.nombre} el día de su olvido en ${c.nombre}`, diaHora(hoy, d - 1, 9, 30), "Olvidó fichar la salida; confirmado con la trabajadora.");
-        } else if (!(u.uid === "demo_dsanchez" && d === 1)) {
-          // (David olvido fichar ayer la salida: aparece como aviso en el panel.)
+        } else if (!esOlvido(u.uid, d)) {
+          // (David olvido fichar la salida el ultimo dia laborable: aparece como aviso en el panel.)
           fichaje(u, c, "salida", diaHora(hoy, d, u.rol === "socorrista" ? 19 : 15, entre(0, 20)));
         }
         // Un fichaje duplicado por error, anulado por el admin.

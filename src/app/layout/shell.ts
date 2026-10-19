@@ -1,6 +1,4 @@
-import { BreakpointObserver } from '@angular/cdk/layout';
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,10 +8,10 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { map } from 'rxjs';
 
 import { AuthService } from '../core/auth.service';
 import { EmpresaService } from '../core/empresa.service';
+import { pantallaMovil } from '../core/pantalla';
 import { etiquetaRol } from '../data/modelos';
 
 interface Enlace {
@@ -36,10 +34,7 @@ export class Shell {
   readonly empresa = inject(EmpresaService);
   private readonly router = inject(Router);
 
-  readonly movil = toSignal(
-    inject(BreakpointObserver).observe('(max-width: 840px)').pipe(map((r) => r.matches)),
-    { initialValue: false },
-  );
+  readonly movil = pantallaMovil();
   readonly sinConexion = signal(!navigator.onLine);
   readonly etiquetaRol = etiquetaRol;
 

@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>{{ datos.usuario ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
 <form [formGroup]="form" (ngSubmit)="guardar()">
-  <mat-dialog-content>
+  <mat-dialog-content class="formulario">
     @if (error()) {
       <div class="error-formulario" role="alert"><mat-icon svgIcon="error" />{{ error() }}</div>
     }
@@ -11,7 +11,7 @@
         <mat-error>Escribe el nombre.</mat-error>
       }
     </mat-form-field>
-    <mat-form-field class="ancho-completo">
+    <mat-form-field class="ancho-completo" subscriptSizing="dynamic">
       <mat-label>Nombre de usuario</mat-label>
       <input matInput formControlName="usuario" autocapitalize="none" spellcheck="false" />
       <mat-hint>Con lo que entrará en la app, p. ej. "jgarcia".</mat-hint>
@@ -20,7 +20,7 @@
       }
     </mat-form-field>
     @if (!datos.usuario) {
-      <mat-form-field class="ancho-completo">
+      <mat-form-field class="ancho-completo" subscriptSizing="dynamic">
         <mat-label>Contraseña inicial</mat-label>
         <input matInput formControlName="password" autocomplete="new-password" />
         <mat-hint>Mínimo {{ minima }} caracteres. Podrá cambiarla desde Mi perfil.</mat-hint>
@@ -30,11 +30,12 @@
       </mat-form-field>
     }
 
-    <p class="cabecera-comunidades">Rol</p>
-    <mat-radio-group formControlName="rol" class="roles">
+    <span class="etiqueta-campo">Rol</span>
+    <mat-radio-group formControlName="rol" class="opciones-tarjeta" aria-label="Rol">
       @for (r of roles; track r.valor) {
         <mat-radio-button [value]="r.valor">
-          {{ r.etiqueta }} <span class="rol-descripcion">— {{ r.descripcion }}</span>
+          <strong>{{ r.etiqueta }}</strong>
+          <small>{{ r.descripcion }}</small>
         </mat-radio-button>
       }
     </mat-radio-group>
@@ -44,14 +45,14 @@
 
     @if (rol() !== 'admin') {
       <div class="cabecera-comunidades">
-        <span>Comunidades asignadas ({{ seleccion().size }})</span>
-        <span>
-          <button mat-button type="button" (click)="marcarVisibles(true)">Todas</button>
+        <span class="etiqueta-campo">Comunidades asignadas <small>{{ seleccion().size }} de {{ datos.comunidades.length }}</small></span>
+        <span class="marcar">
+          <button mat-button type="button" (click)="marcarVisibles(true)">Marcar todas</button>
           <button mat-button type="button" (click)="marcarVisibles(false)">Ninguna</button>
         </span>
       </div>
       @if (datos.comunidades.length > 8) {
-        <mat-form-field class="ancho-completo">
+        <mat-form-field class="ancho-completo" subscriptSizing="dynamic">
           <mat-label>Buscar comunidad</mat-label>
           <input matInput [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" />
           <mat-icon matIconPrefix svgIcon="search" />
@@ -63,7 +64,7 @@
             {{ c.nombre }} <span class="rol-descripcion">({{ c.codigo }}){{ c.activa ? '' : ' · inactiva' }}</span>
           </mat-list-option>
         } @empty {
-          <p class="texto-suave" style="padding: 12px">No hay comunidades.</p>
+          <p class="texto-suave sin-comunidades">No hay comunidades.</p>
         }
       </mat-selection-list>
     }

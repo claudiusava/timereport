@@ -36,12 +36,12 @@ export interface DatosDialogoComunidad {
           <mat-label>Nombre</mat-label>
           <input matInput formControlName="nombre" maxlength="200" cdkFocusInitial />
         </mat-form-field>
-        <mat-form-field class="ancho-completo">
+        <mat-form-field class="ancho-completo" subscriptSizing="dynamic">
           <mat-label>Código</mat-label>
           <input matInput formControlName="codigo" maxlength="45" />
           <mat-hint>Vuestra referencia interna (número de cliente, contrato…).</mat-hint>
         </mat-form-field>
-        <mat-form-field class="ancho-completo">
+        <mat-form-field class="ancho-completo" subscriptSizing="dynamic">
           <mat-label>Ubicación (latitud, longitud)</mat-label>
           <input matInput formControlName="coordenadas" placeholder="40.416775, -3.703790" />
           <mat-icon matIconPrefix svgIcon="location_on" />

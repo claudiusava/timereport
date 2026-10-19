@@ -4,8 +4,37 @@
   margin: 0 auto;
 }
 
-.fuera {
-  color: var(--mat-sys-error);
+.niveles {
+  --mat-chip-container-height: 40px;
+  --mat-chip-label-text-size: 1rem;
+
+  mat-chip-option {
+    min-width: 56px;
+    justify-content: center;
+  }
+
+  // Los valores fuera de rango se distinguen tambien antes de elegirlos.
+  .fuera-rango:not(.mat-mdc-chip-selected) {
+    --mat-chip-label-text-color: var(--mat-sys-error);
+  }
+
+  .fuera-rango.mat-mdc-chip-selected {
+    --mat-chip-elevated-selected-container-color: var(--mat-sys-error-container);
+    --mat-chip-selected-label-text-color: var(--mat-sys-on-error-container);
+    --mat-chip-with-icon-selected-icon-color: var(--mat-sys-on-error-container);
+  }
+}
+
+.ayuda {
+  display: block;
+  min-height: 16px;
+  margin-top: 4px;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+
+  &.error-texto {
+    color: var(--mat-sys-error);
+  }
 }
 
 .pendiente {

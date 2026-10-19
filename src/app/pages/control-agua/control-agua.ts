@@ -1,7 +1,8 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -22,6 +23,7 @@ import {
   fueraDeRango,
 } from '../../data/modelos';
 import { fechaHora, inicioDelDia, sumarDias } from '../../shared/fechas';
+import { decimal } from '../../shared/numeros';
 import { EstadoVacio } from '../../ui/estado-vacio';
 import { FotoControl } from '../../ui/foto-control';
 
@@ -30,7 +32,7 @@ const ENTERO = Validators.pattern(/^\d+$/);
 @Component({
   selector: 'app-control-agua',
   imports: [
-    ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule,
+    ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatChipsModule, MatButtonModule, MatIconModule,
     MatProgressSpinnerModule, FotoControl, EstadoVacio,
   ],
   templateUrl: './control-agua.html',
@@ -47,6 +49,7 @@ export class ControlAguaPagina implements OnInit, OnDestroy {
   readonly rangoPh = RANGO_PH;
   readonly fueraDeRango = fueraDeRango;
   readonly fechaHora = fechaHora;
+  readonly decimal = decimal;
 
   readonly cargando = signal(true);
   readonly guardando = signal(false);
@@ -66,6 +69,15 @@ export class ControlAguaPagina implements OnInit, OnDestroy {
     aguaDepurada: [null as number | null, [Validators.required, Validators.min(0), Validators.max(1000000)]],
   });
   readonly valores = toSignal(this.form.valueChanges, { initialValue: this.form.value });
+  private readonly enviado = signal(false);
+
+  readonly avisoCloro = computed(() => this.aviso(this.valores().cloro, RANGO_CLORO, 'Elige el nivel de cloro'));
+  readonly avisoPh = computed(() => this.aviso(this.valores().ph, RANGO_PH, 'Elige el nivel de pH'));
+
+  private aviso(valor: number | null | undefined, rango: { min: number; max: number }, falta: string) {
+    if (valor == null) return this.enviado() ? falta : '';
+    return fueraDeRango(valor, rango) ? 'Fuera del rango recomendado' : '';
+  }
 
   async ngOnInit() {
     try {
@@ -101,6 +113,7 @@ export class ControlAguaPagina implements OnInit, OnDestroy {
 
   async guardar() {
     this.error.set('');
+    this.enviado.set(true);
     this.form.markAllAsTouched();
     const comunidad = this.comunidades().find((c) => c.id === this.form.value.comunidadId);
     if (this.form.invalid || !comunidad) {
@@ -160,6 +173,7 @@ export class ControlAguaPagina implements OnInit, OnDestroy {
     // Se mantiene la comunidad: lo normal es registrar varios controles seguidos.
     const comunidadId = this.form.value.comunidadId ?? '';
     this.form.reset({ comunidadId });
+    this.enviado.set(false);
     this.foto = null;
     this.quitarVistaPrevia();
   }

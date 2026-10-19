@@ -20,7 +20,7 @@ export interface DatosMotivo {
     <form (submit)="$event.preventDefault(); aceptar()">
       <mat-dialog-content>
         <p>{{ datos.texto }}</p>
-        <mat-form-field class="ancho-completo">
+        <mat-form-field class="ancho-completo" subscriptSizing="dynamic">
           <mat-label>Motivo</mat-label>
           <textarea matInput [formControl]="motivo" rows="3" maxlength="500" cdkFocusInitial></textarea>
           <mat-hint>Queda registrado en la auditoría junto con tu nombre y la fecha.</mat-hint>

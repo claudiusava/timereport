@@ -49,9 +49,9 @@ export interface DatosFichajeManual {
             }
           </mat-select>
         </mat-form-field>
-        <mat-button-toggle-group formControlName="tipo" class="tipo" aria-label="Tipo de fichaje">
-          <mat-button-toggle value="entrada">Entrada</mat-button-toggle>
-          <mat-button-toggle value="salida">Salida</mat-button-toggle>
+        <mat-button-toggle-group formControlName="tipo" class="tipo ancho-completo" aria-label="Tipo de fichaje">
+          <mat-button-toggle value="entrada"><mat-icon svgIcon="login" />Entrada</mat-button-toggle>
+          <mat-button-toggle value="salida"><mat-icon svgIcon="logout" />Salida</mat-button-toggle>
         </mat-button-toggle-group>
         <div class="fila-campos">
           <mat-form-field>
@@ -79,7 +79,7 @@ export interface DatosFichajeManual {
       </mat-dialog-actions>
     </form>
   `,
-  styles: `.tipo { margin-bottom: 16px; }`,
+  styles: `.tipo { margin: 4px 0 20px; }`,
 })
 export class DialogoFichajeManual {
   readonly datos = inject<DatosFichajeManual>(MAT_DIALOG_DATA);

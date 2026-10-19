@@ -23,13 +23,13 @@
     </div>
     <p class="texto-suave">PNG, JPG o WebP de hasta 1 MB. Mejor con fondo transparente.</p>
 
-    <mat-form-field class="ancho-completo">
+    <mat-form-field class="ancho-completo" subscriptSizing="dynamic">
       <mat-label>Nombre de la aplicación</mat-label>
       <input matInput formControlName="nombreApp" maxlength="40" />
       <mat-hint>Aparece en la cabecera y en la pantalla de acceso.</mat-hint>
     </mat-form-field>
 
-    <p class="etiqueta-campo">Color principal</p>
+    <span class="etiqueta-campo">Color principal</span>
     <div class="colores">
       @for (c of colores; track c) {
         <button type="button" class="color" [style.background]="c" [class.elegido]="form.controls.colorPrimario.value === c"
@@ -43,20 +43,22 @@
 
     <h2 class="separado">Fichaje</h2>
     <div class="fila-campos">
-      <mat-form-field>
-        <mat-label>Distancia máxima a la comunidad</mat-label>
+      <mat-form-field subscriptSizing="dynamic">
+        <mat-label>Radio de fichaje</mat-label>
         <input matInput type="number" formControlName="radioFichajeM" min="50" max="5000" step="50" />
         <span matTextSuffix>m</span>
-        <mat-hint>Entre 50 y 5.000 m.</mat-hint>
+        <mat-hint>Distancia máxima a la comunidad (50–5.000 m).</mat-hint>
       </mat-form-field>
-      <mat-form-field>
-        <mat-label>Entradas máximas al día</mat-label>
+      <mat-form-field subscriptSizing="dynamic">
+        <mat-label>Entradas al día</mat-label>
         <input matInput type="number" formControlName="maxFichajesDia" min="1" max="10" />
-        <mat-hint>2 permite jornada partida.</mat-hint>
+        <mat-hint>Máximo por trabajador. Con 2 hay jornada partida.</mat-hint>
       </mat-form-field>
     </div>
 
-    <button mat-flat-button type="submit" [disabled]="guardando()">{{ guardando() ? 'Guardando…' : 'Guardar cambios' }}</button>
+    <div class="acciones-formulario">
+      <button mat-flat-button type="submit" [disabled]="guardando()">{{ guardando() ? 'Guardando…' : 'Guardar cambios' }}</button>
+    </div>
   </form>
 
   <section class="tarjeta">

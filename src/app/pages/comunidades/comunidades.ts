@@ -77,7 +77,7 @@ export class Comunidades implements OnInit {
   }
 
   async abrir(comunidad: Comunidad | null) {
-    const ref = this.dialog.open(DialogoComunidad, { data: { comunidad, todas: this.comunidades() }, width: '520px', disableClose: true });
+    const ref = this.dialog.open(DialogoComunidad, { data: { comunidad, todas: this.comunidades() }, width: '520px', disableClose: true, panelClass: 'dialogo-adaptable' });
     if (await firstValueFrom(ref.afterClosed())) {
       this.avisos.ok(comunidad ? 'Comunidad actualizada' : 'Comunidad creada');
       await this.cargar();

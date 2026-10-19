@@ -11,8 +11,8 @@
   </div>
 </div>
 
-<form class="filtros tarjeta" [formGroup]="filtros" (ngSubmit)="buscar()">
-  <mat-form-field>
+<form class="filtros tarjeta" [formGroup]="filtros" (submit)="$event.preventDefault()">
+  <mat-form-field class="periodo" subscriptSizing="dynamic">
     <mat-label>Periodo</mat-label>
     <mat-date-range-input [rangePicker]="rango">
       <input matStartDate formControlName="desde" placeholder="Desde" />
@@ -21,7 +21,7 @@
     <mat-datepicker-toggle matIconSuffix [for]="rango" />
     <mat-date-range-picker #rango />
   </mat-form-field>
-  <mat-form-field>
+  <mat-form-field subscriptSizing="dynamic">
     <mat-label>Trabajador</mat-label>
     <mat-select formControlName="uid">
       <mat-option value="">Todos</mat-option>
@@ -30,7 +30,7 @@
       }
     </mat-select>
   </mat-form-field>
-  <mat-form-field>
+  <mat-form-field subscriptSizing="dynamic">
     <mat-label>Comunidad</mat-label>
     <mat-select formControlName="comunidadId">
       <mat-option value="">Todas</mat-option>
@@ -39,13 +39,14 @@
       }
     </mat-select>
   </mat-form-field>
-  <mat-slide-toggle formControlName="anulados">Mostrar anulados</mat-slide-toggle>
-  <button mat-flat-button type="submit" [disabled]="cargando()"><mat-icon svgIcon="search" />Buscar</button>
+  <mat-slide-toggle formControlName="anulados">Ver anulados</mat-slide-toggle>
 </form>
 
-@if (cargando()) {
-  <mat-progress-bar mode="indeterminate" />
-}
+<div class="estado-carga">
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
 @if (error()) {
   <div class="error-formulario" role="alert"><mat-icon svgIcon="error" />{{ error() }}</div>
 }
@@ -53,154 +54,247 @@
   <div class="aviso-suave"><mat-icon svgIcon="warning" />Se muestran los {{ max }} registros más recientes. Acota el periodo para verlos todos.</div>
 }
 
-<mat-tab-group [selectedIndex]="pestana()" (selectedIndexChange)="pestana.set($event)" animationDuration="150ms">
-  <mat-tab [label]="'Fichajes (' + fichajesFiltrados().length + ')'">
+<mat-tab-group [selectedIndex]="pestana()" (selectedIndexChange)="pestana.set($event)" animationDuration="150ms" [mat-stretch-tabs]="movil()" mat-align-tabs="start">
+  <mat-tab>
+    <ng-template mat-tab-label>Fichajes <span class="contador">{{ fichajesFiltrados().length }}</span></ng-template>
     @if (fichajesFiltrados().length) {
-      <div class="tabla-scroll">
-        <table mat-table [dataSource]="tablaFichajes" matSort #ordenFichajes="matSort" matSortActive="fecha" matSortDirection="desc">
-          <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
-            <td mat-cell *matCellDef="let f">{{ fechaHora(f.fecha) }}</td>
-          </ng-container>
-          <ng-container matColumnDef="usuarioNombre">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Trabajador</th>
-            <td mat-cell *matCellDef="let f">{{ f.usuarioNombre }}</td>
-          </ng-container>
-          <ng-container matColumnDef="tipo">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
-            <td mat-cell *matCellDef="let f">
-              <span class="chip" [class.entrada]="f.tipo === 'entrada'" [class.salida]="f.tipo === 'salida'">{{ f.tipo === 'entrada' ? 'Entrada' : 'Salida' }}</span>
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="comunidadNombre">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Comunidad</th>
-            <td mat-cell *matCellDef="let f" class="ajustar">{{ f.comunidadNombre }}</td>
-          </ng-container>
-          <ng-container matColumnDef="estado">
-            <th mat-header-cell *matHeaderCellDef>Estado</th>
-            <td mat-cell *matCellDef="let f">
-              @if (f.anulado) {
-                <span class="chip anulado" [matTooltip]="'Anulado por ' + f.anulado.por.nombre + ': ' + f.anulado.motivo">Anulado</span>
-              } @else if (f.origen === 'manual') {
-                <span class="chip manual" [matTooltip]="'Registrado por ' + f.registradoPor?.nombre + ': ' + f.motivo">Manual</span>
-              } @else if (f.distanciaM != null) {
-                <span class="texto-suave">a {{ f.distanciaM }} m</span>
-              }
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let f">
+      @if (movil()) {
+        <div class="lista-movil">
+          @for (f of paginaFichajesMovil(); track f.id) {
+            <article class="fila-movil" [class.anulado-fila]="f.anulado">
+              <div class="principal">
+                <strong>{{ f.usuarioNombre }}</strong>
+                <span class="texto-suave">{{ fechaHora(f.fecha) }} · {{ f.comunidadNombre }}</span>
+                <span class="meta">
+                  <span class="chip" [class.entrada]="f.tipo === 'entrada'" [class.salida]="f.tipo === 'salida'">{{ f.tipo === 'entrada' ? 'Entrada' : 'Salida' }}</span>
+                  <ng-container *ngTemplateOutlet="detalleFichaje; context: { $implicit: f }" />
+                </span>
+              </div>
               @if (!f.anulado) {
-                <button mat-icon-button (click)="anularFichaje(f)" matTooltip="Anular" [attr.aria-label]="'Anular fichaje de ' + f.usuarioNombre + ' del ' + fechaHora(f.fecha)">
+                <button mat-icon-button (click)="anularFichaje(f)" [attr.aria-label]="'Anular fichaje de ' + f.usuarioNombre + ' del ' + fechaHora(f.fecha)">
                   <mat-icon svgIcon="block" />
                 </button>
               }
-            </td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="columnasFichajes; sticky: true"></tr>
-          <tr mat-row *matRowDef="let f; columns: columnasFichajes" [class.anulado-fila]="f.anulado"></tr>
-        </table>
-      </div>
-      <mat-paginator #paginaFichajes [pageSizeOptions]="[25, 50, 100]" [pageSize]="50" showFirstLastButtons />
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="tabla-scroll">
+          <table mat-table [dataSource]="tablaFichajes" matSort #ordenFichajes="matSort" matSortActive="fecha" matSortDirection="desc">
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha y hora</th>
+              <td mat-cell *matCellDef="let f">{{ fechaHora(f.fecha) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="usuarioNombre">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Trabajador</th>
+              <td mat-cell *matCellDef="let f">{{ f.usuarioNombre }}</td>
+            </ng-container>
+            <ng-container matColumnDef="tipo">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+              <td mat-cell *matCellDef="let f">
+                <span class="chip" [class.entrada]="f.tipo === 'entrada'" [class.salida]="f.tipo === 'salida'">{{ f.tipo === 'entrada' ? 'Entrada' : 'Salida' }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="comunidadNombre">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Comunidad</th>
+              <td mat-cell *matCellDef="let f" class="ajustar">{{ f.comunidadNombre }}</td>
+            </ng-container>
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef>Detalles</th>
+              <td mat-cell *matCellDef="let f" class="ajustar"><ng-container *ngTemplateOutlet="detalleFichaje; context: { $implicit: f }" /></td>
+            </ng-container>
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+              <td mat-cell *matCellDef="let f" class="acciones-celda">
+                @if (!f.anulado) {
+                  <button mat-icon-button (click)="anularFichaje(f)" matTooltip="Anular" [attr.aria-label]="'Anular fichaje de ' + f.usuarioNombre + ' del ' + fechaHora(f.fecha)">
+                    <mat-icon svgIcon="block" />
+                  </button>
+                }
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasFichajes; sticky: true"></tr>
+            <tr mat-row *matRowDef="let f; columns: columnasFichajes" [class.anulado-fila]="f.anulado"></tr>
+          </table>
+        </div>
+      }
+      <mat-paginator #paginaFichajes [pageSizeOptions]="[25, 50, 100]" [pageSize]="movil() ? 25 : 50" [hidePageSize]="movil()" showFirstLastButtons />
     } @else if (!cargando()) {
-      <app-estado-vacio icono="schedule" titulo="No hay fichajes en este periodo" />
+      <app-estado-vacio icono="schedule" titulo="No hay fichajes en este periodo" texto="Cambia el periodo o los filtros." />
     }
   </mat-tab>
 
-  <mat-tab [label]="'Horas (' + resumen().length + ')'">
+  <mat-tab>
+    <ng-template mat-tab-label>Horas <span class="contador">{{ resumen().length }}</span></ng-template>
     @if (resumen().length) {
-      <div class="tabla-scroll">
-        <table mat-table [dataSource]="resumen()">
-          <ng-container matColumnDef="nombre">
-            <th mat-header-cell *matHeaderCellDef>Trabajador</th>
-            <td mat-cell *matCellDef="let r">{{ r.nombre }}</td>
-          </ng-container>
-          <ng-container matColumnDef="dias">
-            <th mat-header-cell *matHeaderCellDef>Días trabajados</th>
-            <td mat-cell *matCellDef="let r">{{ r.dias }}</td>
-          </ng-container>
-          <ng-container matColumnDef="horas">
-            <th mat-header-cell *matHeaderCellDef>Horas</th>
-            <td mat-cell *matCellDef="let r"><strong>{{ horasDecimal(r.minutos) }}</strong> <span class="texto-suave">({{ duracion(r.minutos) }})</span></td>
-          </ng-container>
-          <ng-container matColumnDef="incidencias">
-            <th mat-header-cell *matHeaderCellDef>Incidencias</th>
-            <td mat-cell *matCellDef="let r">
-              @if (r.incidencias) {
-                <span class="chip alerta">{{ r.incidencias }}</span>
-              }
-            </td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="columnasResumen"></tr>
-          <tr mat-row *matRowDef="let r; columns: columnasResumen"></tr>
-        </table>
-      </div>
-      <p class="texto-suave nota">Las horas se calculan emparejando cada entrada con su salida (también si la salida es al día siguiente). Las incidencias son entradas sin salida o salidas sin entrada: corrígelas con un fichaje manual. El detalle por día está en el Excel.</p>
+      @if (movil()) {
+        <div class="lista-movil">
+          @for (r of resumen(); track r.uid) {
+            <article class="fila-movil">
+              <div class="principal">
+                <strong>{{ r.nombre }}</strong>
+                <span class="texto-suave">{{ r.dias }} {{ r.dias === 1 ? 'día' : 'días' }} · media {{ duracion(media(r)) }}/día</span>
+                @if (r.incidencias) {
+                  <span class="meta"><span class="chip alerta">{{ r.incidencias }} {{ r.incidencias === 1 ? 'incidencia' : 'incidencias' }}</span></span>
+                }
+              </div>
+              <div class="total">
+                <strong>{{ horasDecimal(r.minutos) }}</strong>
+                <span class="texto-suave">{{ duracion(r.minutos) }}</span>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="tabla-scroll">
+          <table mat-table [dataSource]="resumen()">
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef>Trabajador</th>
+              <td mat-cell *matCellDef="let r">{{ r.nombre }}</td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+            <ng-container matColumnDef="dias">
+              <th mat-header-cell *matHeaderCellDef class="numero">Días trabajados</th>
+              <td mat-cell *matCellDef="let r" class="numero">{{ r.dias }}</td>
+              <td mat-footer-cell *matFooterCellDef class="numero">{{ totales().dias }}</td>
+            </ng-container>
+            <ng-container matColumnDef="media">
+              <th mat-header-cell *matHeaderCellDef class="numero">Media por día</th>
+              <td mat-cell *matCellDef="let r" class="numero">{{ duracion(media(r)) }}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+            <ng-container matColumnDef="horas">
+              <th mat-header-cell *matHeaderCellDef class="numero">Horas</th>
+              <td mat-cell *matCellDef="let r" class="numero"><strong>{{ horasDecimal(r.minutos) }}</strong><span class="texto-suave"> ({{ duracion(r.minutos) }})</span></td>
+              <td mat-footer-cell *matFooterCellDef class="numero"><strong>{{ horasDecimal(totales().minutos) }}</strong></td>
+            </ng-container>
+            <ng-container matColumnDef="incidencias">
+              <th mat-header-cell *matHeaderCellDef>Incidencias</th>
+              <td mat-cell *matCellDef="let r">
+                @if (r.incidencias) {
+                  <span class="chip alerta"><mat-icon svgIcon="warning" />{{ r.incidencias }} {{ r.incidencias === 1 ? 'incidencia' : 'incidencias' }}</span>
+                } @else {
+                  <span class="chip entrada">Sin incidencias</span>
+                }
+              </td>
+              <td mat-footer-cell *matFooterCellDef>
+                @if (totales().incidencias) {
+                  {{ totales().incidencias }} en total
+                }
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasResumen"></tr>
+            <tr mat-row *matRowDef="let r; columns: columnasResumen"></tr>
+            <tr mat-footer-row *matFooterRowDef="columnasResumen"></tr>
+          </table>
+        </div>
+      }
+      <p class="aviso-suave nota">
+        <mat-icon svgIcon="info" />
+        <span>Las horas se calculan emparejando cada entrada con su salida (también si la salida es al día siguiente). Las incidencias son entradas sin salida o salidas sin entrada: corrígelas con un fichaje manual. El detalle por día está en el Excel.</span>
+      </p>
     } @else if (!cargando()) {
-      <app-estado-vacio icono="timer" titulo="No hay horas en este periodo" />
+      <app-estado-vacio icono="timer" titulo="No hay horas en este periodo" texto="Cambia el periodo o los filtros." />
     }
   </mat-tab>
 
-  <mat-tab [label]="'Control de agua (' + controlesFiltrados().length + ')'">
+  <mat-tab>
+    <ng-template mat-tab-label>{{ movil() ? 'Agua' : 'Control de agua' }} <span class="contador">{{ controlesFiltrados().length }}</span></ng-template>
     @if (controlesFiltrados().length) {
-      <div class="tabla-scroll">
-        <table mat-table [dataSource]="tablaControles" matSort #ordenControles="matSort" matSortActive="fecha" matSortDirection="desc">
-          <ng-container matColumnDef="foto">
-            <th mat-header-cell *matHeaderCellDef>Foto</th>
-            <td mat-cell *matCellDef="let c"><app-foto-control [path]="c.fotoPath" [etiqueta]="c.comunidadNombre" /></td>
-          </ng-container>
-          <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
-            <td mat-cell *matCellDef="let c">{{ fechaHora(c.fecha) }}</td>
-          </ng-container>
-          <ng-container matColumnDef="usuarioNombre">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Trabajador</th>
-            <td mat-cell *matCellDef="let c">{{ c.usuarioNombre }}</td>
-          </ng-container>
-          <ng-container matColumnDef="comunidadNombre">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Piscina</th>
-            <td mat-cell *matCellDef="let c" class="ajustar">{{ c.comunidadNombre }}</td>
-          </ng-container>
-          <ng-container matColumnDef="cloro">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Cloro</th>
-            <td mat-cell *matCellDef="let c"><span class="chip" [class.alerta]="fueraDeRango(c.cloro, rangoCloro)">{{ c.cloro }}</span></td>
-          </ng-container>
-          <ng-container matColumnDef="ph">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>pH</th>
-            <td mat-cell *matCellDef="let c"><span class="chip" [class.alerta]="fueraDeRango(c.ph, rangoPh)">{{ c.ph }}</span></td>
-          </ng-container>
-          <ng-container matColumnDef="banistas">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Bañistas</th>
-            <td mat-cell *matCellDef="let c">{{ c.banistas }}</td>
-          </ng-container>
-          <ng-container matColumnDef="rebosadero">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Rebosadero</th>
-            <td mat-cell *matCellDef="let c">{{ c.rebosadero }}</td>
-          </ng-container>
-          <ng-container matColumnDef="aguaDepurada">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Depurada (m³)</th>
-            <td mat-cell *matCellDef="let c">{{ c.aguaDepurada }}</td>
-          </ng-container>
-          <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let c">
-              @if (c.anulado) {
-                <span class="chip anulado" [matTooltip]="'Anulado por ' + c.anulado.por.nombre + ': ' + c.anulado.motivo">Anulado</span>
-              } @else {
-                <button mat-icon-button (click)="anularControl(c)" matTooltip="Anular" [attr.aria-label]="'Anular control de ' + c.usuarioNombre + ' del ' + fechaHora(c.fecha)">
+      @if (movil()) {
+        <div class="lista-movil">
+          @for (c of paginaControlesMovil(); track c.id) {
+            <article class="fila-movil" [class.anulado-fila]="c.anulado">
+              <app-foto-control [path]="c.fotoPath" [etiqueta]="c.comunidadNombre" />
+              <div class="principal">
+                <strong>{{ c.comunidadNombre }}</strong>
+                <span class="texto-suave">{{ fechaHora(c.fecha) }} · {{ c.usuarioNombre }}</span>
+                <span class="meta">
+                  <span class="chip" [class.alerta]="fueraDeRango(c.cloro, rangoCloro)">Cl {{ decimal(c.cloro) }}</span>
+                  <span class="chip" [class.alerta]="fueraDeRango(c.ph, rangoPh)">pH {{ decimal(c.ph) }}</span>
+                  <span class="texto-suave">{{ c.banistas }} bañistas</span>
+                  @if (c.anulado) {
+                    <span class="chip anulado">Anulado</span>
+                  }
+                </span>
+              </div>
+              @if (!c.anulado) {
+                <button mat-icon-button (click)="anularControl(c)" [attr.aria-label]="'Anular control de ' + c.usuarioNombre + ' del ' + fechaHora(c.fecha)">
                   <mat-icon svgIcon="block" />
                 </button>
               }
-            </td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="columnasControles; sticky: true"></tr>
-          <tr mat-row *matRowDef="let c; columns: columnasControles" [class.anulado-fila]="c.anulado"></tr>
-        </table>
-      </div>
-      <mat-paginator #paginaControles [pageSizeOptions]="[25, 50, 100]" [pageSize]="50" showFirstLastButtons />
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="tabla-scroll">
+          <table mat-table [dataSource]="tablaControles" matSort #ordenControles="matSort" matSortActive="fecha" matSortDirection="desc">
+            <ng-container matColumnDef="foto">
+              <th mat-header-cell *matHeaderCellDef>Foto</th>
+              <td mat-cell *matCellDef="let c"><app-foto-control [path]="c.fotoPath" [etiqueta]="c.comunidadNombre" /></td>
+            </ng-container>
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha y hora</th>
+              <td mat-cell *matCellDef="let c">{{ fechaHora(c.fecha) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="usuarioNombre">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Trabajador</th>
+              <td mat-cell *matCellDef="let c">{{ c.usuarioNombre }}</td>
+            </ng-container>
+            <ng-container matColumnDef="comunidadNombre">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Piscina</th>
+              <td mat-cell *matCellDef="let c" class="ajustar">{{ c.comunidadNombre }}</td>
+            </ng-container>
+            <ng-container matColumnDef="cloro">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Cloro</th>
+              <td mat-cell *matCellDef="let c"><span class="chip" [class.alerta]="fueraDeRango(c.cloro, rangoCloro)">{{ decimal(c.cloro) }}</span></td>
+            </ng-container>
+            <ng-container matColumnDef="ph">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>pH</th>
+              <td mat-cell *matCellDef="let c"><span class="chip" [class.alerta]="fueraDeRango(c.ph, rangoPh)">{{ decimal(c.ph) }}</span></td>
+            </ng-container>
+            <ng-container matColumnDef="banistas">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="numero">Bañistas</th>
+              <td mat-cell *matCellDef="let c" class="numero">{{ c.banistas }}</td>
+            </ng-container>
+            <ng-container matColumnDef="rebosadero">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="numero">Rebosadero</th>
+              <td mat-cell *matCellDef="let c" class="numero">{{ c.rebosadero }}</td>
+            </ng-container>
+            <ng-container matColumnDef="aguaDepurada">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="numero">Depurada (m³)</th>
+              <td mat-cell *matCellDef="let c" class="numero">{{ c.aguaDepurada }}</td>
+            </ng-container>
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef><span class="cdk-visually-hidden">Acciones</span></th>
+              <td mat-cell *matCellDef="let c" class="acciones-celda">
+                @if (c.anulado) {
+                  <span class="chip anulado" [matTooltip]="'Anulado por ' + c.anulado.por.nombre + ': ' + c.anulado.motivo">Anulado</span>
+                } @else {
+                  <button mat-icon-button (click)="anularControl(c)" matTooltip="Anular" [attr.aria-label]="'Anular control de ' + c.usuarioNombre + ' del ' + fechaHora(c.fecha)">
+                    <mat-icon svgIcon="block" />
+                  </button>
+                }
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnasControles; sticky: true"></tr>
+            <tr mat-row *matRowDef="let c; columns: columnasControles" [class.anulado-fila]="c.anulado"></tr>
+          </table>
+        </div>
+      }
+      <mat-paginator #paginaControles [pageSizeOptions]="[25, 50, 100]" [pageSize]="movil() ? 25 : 50" [hidePageSize]="movil()" showFirstLastButtons />
     } @else if (!cargando()) {
-      <app-estado-vacio icono="water_drop" titulo="No hay controles de agua en este periodo" />
+      <app-estado-vacio icono="water_drop" titulo="No hay controles de agua en este periodo" texto="Cambia el periodo o los filtros." />
     }
   </mat-tab>
 </mat-tab-group>
+
+<ng-template #detalleFichaje let-f>
+  @if (f.anulado) {
+    <span class="detalle"><span class="chip anulado">Anulado</span> {{ f.anulado.por.nombre }}: {{ f.anulado.motivo }}</span>
+  } @else if (f.origen === 'manual') {
+    <span class="detalle"><span class="chip manual">Manual</span> {{ f.registradoPor?.nombre }}: {{ f.motivo }}</span>
+  } @else if (f.distanciaM != null) {
+    <span class="texto-suave">A {{ f.distanciaM }} m de la comunidad</span>
+  }
+</ng-template>
