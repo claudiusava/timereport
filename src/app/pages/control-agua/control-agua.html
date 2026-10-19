@@ -42,7 +42,7 @@
               <mat-option [value]="n" [style.--color-nivel]="coloresCloro[n]">
                 {{ decimal(n) }}
                 @if (fueraDeRango(n, rangoCloro)) {
-                  <span class="fuera-rango">fuera de rango</span>
+                  <span class="fuera-rango" aria-label="Fuera del rango recomendado">⚠</span>
                 }
               </mat-option>
             }
@@ -62,7 +62,7 @@
               <mat-option [value]="n" [style.--color-nivel]="coloresPh[n]">
                 {{ decimal(n) }}
                 @if (fueraDeRango(n, rangoPh)) {
-                  <span class="fuera-rango">fuera de rango</span>
+                  <span class="fuera-rango" aria-label="Fuera del rango recomendado">⚠</span>
                 }
               </mat-option>
             }
