@@ -102,7 +102,7 @@ h3 {
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
 
   > .mat-mdc-form-field {
     width: 100%;
@@ -113,7 +113,7 @@ h3 {
 .fila-campos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-  gap: 8px 16px;
+  gap: 14px 16px;
 
   &.dos-columnas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -403,6 +403,38 @@ table.mat-mdc-table {
     .mat-mdc-dialog-content {
       min-height: 0;
     }
+  }
+}
+
+// ---------- Desplegables de cloro y pH ----------
+
+// Cada opcion tiene de fondo el color de su nivel en el medidor fisico.
+.panel-niveles .mat-mdc-option.mdc-list-item {
+  --mat-option-label-text-color: #1d1b20;
+  --mat-option-selected-state-label-text-color: #1d1b20;
+  // background-image: Material usa background-color para hover/foco y lo pisaria.
+  background-image: linear-gradient(var(--color-nivel), var(--color-nivel));
+  font-weight: 500;
+
+  // Texto oscuro siempre: los colores del medidor son claros tambien en modo oscuro.
+  &,
+  .mdc-list-item__primary-text {
+    color: #1d1b20;
+  }
+
+  &:hover,
+  &.mat-mdc-option-active {
+    filter: brightness(0.93);
+  }
+
+  &.mdc-list-item--selected {
+    box-shadow: inset 4px 0 0 #1d1b20;
+  }
+
+  .fuera-rango {
+    margin-left: 10px;
+    font: var(--mat-sys-label-small);
+    color: #8c1d18;
   }
 }
 

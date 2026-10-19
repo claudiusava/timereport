@@ -101,5 +101,14 @@ export const RANGO_PH = { min: 7.2, max: 8.0 };
 export const NIVELES_CLORO = [0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0];
 export const NIVELES_PH = [6.8, 7.0, 7.2, 7.4, 7.6, 7.8, 8.0, 8.2];
 
+// Colores de la escala del medidor fisico (DPD rosa para el cloro, rojo fenol
+// naranja para el pH), los mismos que tenia la primera version de la app.
+export const COLORES_CLORO: Record<number, string> = {
+  0.2: '#FEF7F9', 0.5: '#FDEFF3', 1.0: '#FBC8D9', 1.5: '#F89CBF', 2.0: '#F570A5', 3.0: '#F3448B', 5.0: '#F11971',
+};
+export const COLORES_PH: Record<number, string> = {
+  6.8: '#FFB366', 7.0: '#FFA74D', 7.2: '#FF9933', 7.4: '#FF8C1A', 7.6: '#FF8000', 7.8: '#FF7A00', 8.0: '#FF7300', 8.2: '#FF6600',
+};
+
 export const fueraDeRango = (valor: number, rango: { min: number; max: number }) =>
   valor < rango.min || valor > rango.max;

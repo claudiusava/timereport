@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -15,6 +14,8 @@ import { ComunidadesService } from '../../data/comunidades.service';
 import { ControlesAguaService, FotoPendiente } from '../../data/controles-agua.service';
 import {
   Comunidad,
+  COLORES_CLORO,
+  COLORES_PH,
   ControlAgua,
   NIVELES_CLORO,
   NIVELES_PH,
@@ -32,7 +33,7 @@ const ENTERO = Validators.pattern(/^\d+$/);
 @Component({
   selector: 'app-control-agua',
   imports: [
-    ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatChipsModule, MatButtonModule, MatIconModule,
+    ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule,
     MatProgressSpinnerModule, FotoControl, EstadoVacio,
   ],
   templateUrl: './control-agua.html',
@@ -47,6 +48,8 @@ export class ControlAguaPagina implements OnInit, OnDestroy {
   readonly nivelesPh = NIVELES_PH;
   readonly rangoCloro = RANGO_CLORO;
   readonly rangoPh = RANGO_PH;
+  readonly coloresCloro = COLORES_CLORO;
+  readonly coloresPh = COLORES_PH;
   readonly fueraDeRango = fueraDeRango;
   readonly fechaHora = fechaHora;
   readonly decimal = decimal;
@@ -69,14 +72,12 @@ export class ControlAguaPagina implements OnInit, OnDestroy {
     aguaDepurada: [null as number | null, [Validators.required, Validators.min(0), Validators.max(1000000)]],
   });
   readonly valores = toSignal(this.form.valueChanges, { initialValue: this.form.value });
-  private readonly enviado = signal(false);
 
-  readonly avisoCloro = computed(() => this.aviso(this.valores().cloro, RANGO_CLORO, 'Elige el nivel de cloro'));
-  readonly avisoPh = computed(() => this.aviso(this.valores().ph, RANGO_PH, 'Elige el nivel de pH'));
+  readonly avisoCloro = computed(() => this.aviso(this.valores().cloro, RANGO_CLORO));
+  readonly avisoPh = computed(() => this.aviso(this.valores().ph, RANGO_PH));
 
-  private aviso(valor: number | null | undefined, rango: { min: number; max: number }, falta: string) {
-    if (valor == null) return this.enviado() ? falta : '';
-    return fueraDeRango(valor, rango) ? 'Fuera del rango recomendado' : '';
+  private aviso(valor: number | null | undefined, rango: { min: number; max: number }) {
+    return valor != null && fueraDeRango(valor, rango) ? 'Fuera del rango recomendado' : '';
   }
 
   async ngOnInit() {
@@ -113,7 +114,6 @@ export class ControlAguaPagina implements OnInit, OnDestroy {
 
   async guardar() {
     this.error.set('');
-    this.enviado.set(true);
     this.form.markAllAsTouched();
     const comunidad = this.comunidades().find((c) => c.id === this.form.value.comunidadId);
     if (this.form.invalid || !comunidad) {
@@ -173,7 +173,6 @@ export class ControlAguaPagina implements OnInit, OnDestroy {
     // Se mantiene la comunidad: lo normal es registrar varios controles seguidos.
     const comunidadId = this.form.value.comunidadId ?? '';
     this.form.reset({ comunidadId });
-    this.enviado.set(false);
     this.foto = null;
     this.quitarVistaPrevia();
   }

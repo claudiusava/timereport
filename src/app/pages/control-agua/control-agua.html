@@ -33,25 +33,48 @@
         }
       </mat-form-field>
 
-      <section class="grupo">
-        <span class="etiqueta-campo">Cloro libre <small>mg/l · recomendado {{ decimal(rangoCloro.min) }}–{{ decimal(rangoCloro.max) }}</small></span>
-        <mat-chip-listbox formControlName="cloro" aria-label="Cloro libre" class="niveles" hideSingleSelectionIndicator>
-          @for (n of nivelesCloro; track n) {
-            <mat-chip-option [value]="n" [class.fuera-rango]="fueraDeRango(n, rangoCloro)">{{ decimal(n) }}</mat-chip-option>
+      <div class="fila-campos">
+        <mat-form-field class="campo-nivel" [class.con-color]="valores().cloro != null"
+                        [style.--color-nivel]="valores().cloro != null ? coloresCloro[valores().cloro!] : null">
+          <mat-label>Cloro libre (mg/l)</mat-label>
+          <mat-select formControlName="cloro" panelClass="panel-niveles">
+            @for (n of nivelesCloro; track n) {
+              <mat-option [value]="n" [style.--color-nivel]="coloresCloro[n]">
+                {{ decimal(n) }}
+                @if (fueraDeRango(n, rangoCloro)) {
+                  <span class="fuera-rango">fuera de rango</span>
+                }
+              </mat-option>
+            }
+          </mat-select>
+          @if (avisoCloro() && valores().cloro != null) {
+            <mat-hint class="error-texto">{{ avisoCloro() }}</mat-hint>
+          } @else {
+            <mat-hint>Recomendado {{ decimal(rangoCloro.min) }}–{{ decimal(rangoCloro.max) }}</mat-hint>
           }
-        </mat-chip-listbox>
-        <span class="ayuda" [class.error-texto]="avisoCloro()">{{ avisoCloro() || ' ' }}</span>
-      </section>
-
-      <section class="grupo">
-        <span class="etiqueta-campo">pH <small>recomendado {{ decimal(rangoPh.min) }}–{{ decimal(rangoPh.max) }}</small></span>
-        <mat-chip-listbox formControlName="ph" aria-label="pH" class="niveles" hideSingleSelectionIndicator>
-          @for (n of nivelesPh; track n) {
-            <mat-chip-option [value]="n" [class.fuera-rango]="fueraDeRango(n, rangoPh)">{{ decimal(n) }}</mat-chip-option>
+          <mat-error>Elige un valor</mat-error>
+        </mat-form-field>
+        <mat-form-field class="campo-nivel" [class.con-color]="valores().ph != null"
+                        [style.--color-nivel]="valores().ph != null ? coloresPh[valores().ph!] : null">
+          <mat-label>pH</mat-label>
+          <mat-select formControlName="ph" panelClass="panel-niveles">
+            @for (n of nivelesPh; track n) {
+              <mat-option [value]="n" [style.--color-nivel]="coloresPh[n]">
+                {{ decimal(n) }}
+                @if (fueraDeRango(n, rangoPh)) {
+                  <span class="fuera-rango">fuera de rango</span>
+                }
+              </mat-option>
+            }
+          </mat-select>
+          @if (avisoPh() && valores().ph != null) {
+            <mat-hint class="error-texto">{{ avisoPh() }}</mat-hint>
+          } @else {
+            <mat-hint>Recomendado {{ decimal(rangoPh.min) }}–{{ decimal(rangoPh.max) }}</mat-hint>
           }
-        </mat-chip-listbox>
-        <span class="ayuda" [class.error-texto]="avisoPh()">{{ avisoPh() || ' ' }}</span>
-      </section>
+          <mat-error>Elige un valor</mat-error>
+        </mat-form-field>
+      </div>
 
       <div class="fila-campos">
         <mat-form-field>

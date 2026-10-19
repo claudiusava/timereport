@@ -4,36 +4,24 @@
   margin: 0 auto;
 }
 
-.niveles {
-  --mat-chip-container-height: 40px;
-  --mat-chip-label-text-size: 1rem;
+// El campo toma el color del valor elegido, como la escala del medidor.
+.campo-nivel.con-color {
+  --mat-form-field-outlined-input-text-color: #1d1b20;
+  --mat-select-enabled-trigger-text-color: #1d1b20;
+  --mat-select-enabled-arrow-color: #1d1b20;
 
-  mat-chip-option {
-    min-width: 56px;
-    justify-content: center;
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background: var(--color-nivel);
+    border-radius: var(--mat-sys-corner-extra-small);
   }
 
-  // Los valores fuera de rango se distinguen tambien antes de elegirlos.
-  .fuera-rango:not(.mat-mdc-chip-selected) {
-    --mat-chip-label-text-color: var(--mat-sys-error);
-  }
-
-  .fuera-rango.mat-mdc-chip-selected {
-    --mat-chip-elevated-selected-container-color: var(--mat-sys-error-container);
-    --mat-chip-selected-label-text-color: var(--mat-sys-on-error-container);
-    --mat-chip-with-icon-selected-icon-color: var(--mat-sys-on-error-container);
-  }
-}
-
-.ayuda {
-  display: block;
-  min-height: 16px;
-  margin-top: 4px;
-  font: var(--mat-sys-body-small);
-  color: var(--mat-sys-on-surface-variant);
-
-  &.error-texto {
-    color: var(--mat-sys-error);
+  // La etiqueta flota sobre el borde: con el mismo fondo se lee en claro y en oscuro.
+  ::ng-deep .mdc-floating-label--float-above {
+    padding: 0 6px;
+    margin-left: -6px;
+    border-radius: 6px;
+    background: var(--color-nivel);
+    color: #1d1b20 !important;
   }
 }
 
