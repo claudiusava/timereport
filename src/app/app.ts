@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
+import { ActualizacionesService } from './core/actualizaciones';
 import { EmpresaService } from './core/empresa.service';
 
 @Component({
@@ -11,4 +12,8 @@ import { EmpresaService } from './core/empresa.service';
 export class App {
   // Se instancia al arrancar para aplicar la marca recordada cuanto antes.
   protected readonly empresa = inject(EmpresaService);
+
+  constructor() {
+    inject(ActualizacionesService).iniciar();
+  }
 }
