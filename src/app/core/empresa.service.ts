@@ -18,7 +18,7 @@ export class EmpresaService {
   readonly logoUrl = signal(LOGO_POR_DEFECTO);
   readonly modo = signal<ModoTema>((leer('tema') as ModoTema) ?? 'sistema');
 
-  readonly nombreApp = computed(() => this.empresa()?.branding.nombreApp || 'TimeReport');
+  readonly nombreApp = computed(() => this.empresa()?.branding.nombreApp || 'PoolData');
   readonly esDemo = computed(() => this.empresa()?.demo === true);
   readonly config = computed(() => ({
     radioFichajeM: 1000,
@@ -73,7 +73,7 @@ export class EmpresaService {
     this.logoUrl.set(LOGO_POR_DEFECTO);
     guardar('empresa', null);
     aplicarTema(COLOR_POR_DEFECTO);
-    document.title = 'TimeReport';
+    document.title = 'PoolData';
   }
 
   cambiarModo(modo: ModoTema) {

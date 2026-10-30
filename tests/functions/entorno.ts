@@ -68,7 +68,7 @@ export async function crearEmpresa(id: string, extra: Record<string, unknown> = 
   await adminDb().doc(`clientes/${id}`).set({
     nombre: `Empresa ${id}`,
     activo: true,
-    branding: { nombreApp: 'TimeReport', logoPath: '', colorPrimario: '#00658f' },
+    branding: { nombreApp: 'PoolData', logoPath: '', colorPrimario: '#00658f' },
     config: { radioFichajeM: 1000, maxFichajesDia: 2, zonaHoraria: 'Europe/Madrid' },
     ...extra,
   });

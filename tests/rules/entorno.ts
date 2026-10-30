@@ -60,7 +60,7 @@ export async function sembrar(env: RulesTestEnvironment) {
       await setDoc(doc(db, 'clientes', c), {
         nombre: `Cliente ${c}`,
         activo: c !== 'c',
-        branding: { nombreApp: 'TimeReport', logoPath: '', colorPrimario: '#00658f' },
+        branding: { nombreApp: 'PoolData', logoPath: '', colorPrimario: '#00658f' },
         config: { radioFichajeM: 1000, maxFichajesDia: 2 },
       });
     }

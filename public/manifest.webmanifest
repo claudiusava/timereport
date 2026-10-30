@@ -1,6 +1,6 @@
 {
-  "name": "TimeReport",
-  "short_name": "TimeReport",
+  "name": "PoolData",
+  "short_name": "PoolData",
   "description": "Registro de jornada y control de calidad del agua",
   "lang": "es",
   "start_url": "./#/app",

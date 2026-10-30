@@ -1,4 +1,4 @@
-# TimeReport
+# PoolData
 
 Registro de jornada y control de calidad del agua para empresas de
 mantenimiento de piscinas y comunidades. Es multiempresa: cada empresa cliente

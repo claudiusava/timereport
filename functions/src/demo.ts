@@ -114,7 +114,7 @@ export async function sembrarDemo(restablecerPasswords = true): Promise<{ fichaj
     nombre: "Piscinas Demo",
     activo: true,
     demo: true,
-    branding: { nombreApp: "TimeReport", logoPath: "", colorPrimario: "#00658f" },
+    branding: { nombreApp: "PoolData", logoPath: "", colorPrimario: "#00658f" },
     config: { radioFichajeM: 1000, maxFichajesDia: 2, zonaHoraria: ZONA, maxUsuarios: 25 },
   });
 

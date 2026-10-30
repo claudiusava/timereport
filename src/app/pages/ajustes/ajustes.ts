@@ -37,7 +37,7 @@ export class Ajustes implements OnInit {
 
   private readonly e = this.empresa.empresa();
   readonly form = inject(FormBuilder).nonNullable.group({
-    nombreApp: [this.e?.branding.nombreApp ?? 'TimeReport', [Validators.required, Validators.maxLength(40)]],
+    nombreApp: [this.e?.branding.nombreApp ?? 'PoolData', [Validators.required, Validators.maxLength(40)]],
     colorPrimario: [this.e?.branding.colorPrimario ?? '#00658f', [Validators.required, Validators.pattern(/^#[0-9a-fA-F]{6}$/)]],
     radioFichajeM: [this.e?.config.radioFichajeM ?? 1000, [Validators.required, Validators.min(50), Validators.max(5000)]],
     maxFichajesDia: [this.e?.config.maxFichajesDia ?? 2, [Validators.required, Validators.min(1), Validators.max(10)]],
@@ -80,7 +80,7 @@ export class Ajustes implements OnInit {
     try {
       await this.admin.guardar({ logoPath: '' });
       await this.empresa.recargar();
-      this.avisos.ok('Logo eliminado: se usa el de TimeReport');
+      this.avisos.ok('Logo eliminado: se usa el de PoolData');
     } catch (e) {
       this.avisos.errorDe(e);
     }

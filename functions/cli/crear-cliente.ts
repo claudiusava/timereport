@@ -53,7 +53,7 @@ async function main() {
     batch.set(ref, {
       nombre,
       activo: true,
-      branding: { nombreApp: "TimeReport", logoPath: "", colorPrimario: color.toLowerCase() },
+      branding: { nombreApp: "PoolData", logoPath: "", colorPrimario: color.toLowerCase() },
       config: { radioFichajeM: 1000, maxFichajesDia: 2, zonaHoraria: ZONA_POR_DEFECTO },
       createdAt: FieldValue.serverTimestamp(),
     });
