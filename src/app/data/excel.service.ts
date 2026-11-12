@@ -27,7 +27,10 @@ export class ExcelService {
   /** Genera el .xlsx en el navegador y lo descarga. */
   async exportar(nombreArchivo: string, hojas: Hoja[]): Promise<void> {
     // exceljs pesa ~1 MB: se carga solo cuando alguien exporta.
-    const { Workbook } = await import('exceljs');
+    // exceljs es CommonJS: segun el empaquetador, sus clases llegan como
+    // exportaciones con nombre o dentro de `default`.
+    const modulo = await import('exceljs');
+    const { Workbook } = (modulo as unknown as { default?: typeof modulo }).default ?? modulo;
     const libro = new Workbook();
     libro.creator = this.empresa.nombreApp();
     libro.created = new Date();
