@@ -7,7 +7,7 @@ import { guardar, leer } from './almacen';
 import { db, storage } from './firebase';
 import { COLOR_POR_DEFECTO, ModoTema, aplicarModo, aplicarTema } from './tema';
 
-const LOGO_POR_DEFECTO = 'logo-timereport.svg';
+const LOGO_POR_DEFECTO = 'logo-pooldata.svg';
 
 /** Empresa activa: marca (logo, nombre, colores) y configuracion de fichaje. */
 @Injectable({ providedIn: 'root' })
