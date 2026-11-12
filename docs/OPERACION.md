@@ -69,8 +69,29 @@ npx tsx functions/cli/configurar-proyecto.ts --proyecto timereport-app
 
 Recomendaciones en la consola de Google Cloud:
 - Restringir la API key del navegador a los referentes `https://claudiusava.github.io/*` y `http://localhost:4200/*`, y a las APIs de Identity Toolkit, Token Service, Firestore, Storage y Cloud Functions.
-- Activar la recuperación a un momento anterior (PITR) y las copias programadas de Firestore.
 - Mantener la alerta de presupuesto.
+
+## Copias de seguridad
+
+Activadas el 12/11/2026 en la base de datos `(default)`:
+- Copia diaria, se guarda 7 días.
+- Copia semanal (domingo), se guarda 14 semanas.
+- Recuperación a un momento anterior (PITR): cualquier minuto de los últimos 7 días.
+- Protección contra el borrado de la base de datos.
+
+Las copias son de Firestore (fichajes, controles, usuarios, ajustes). Las fotos
+de Storage no entran; las reglas no permiten borrarlas desde la app.
+
+```bash
+# Ver las copias disponibles
+npx firebase firestore:backups:list --project timereport-app
+# Restaurar una copia en una base de datos NUEVA (nunca encima de la actual)
+npx firebase firestore:databases:restore -d restaurada -b projects/timereport-app/locations/europe-southwest1/backups/<ID> --project timereport-app
+```
+
+Restaurar crea otra base de datos: se revisa ahí y se copian a mano los
+documentos que hagan falta. Al terminar, borrar la base `restaurada` (cuesta
+almacenamiento mientras exista).
 
 ## Pendiente / ideas
 
