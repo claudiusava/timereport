@@ -3,7 +3,7 @@
     <h1>Usuarios</h1>
     <p>Quién puede entrar en la app, con qué rol y en qué comunidades.</p>
   </div>
-  <button mat-flat-button (click)="abrir(null)"><mat-icon svgIcon="person_add" />Nuevo usuario</button>
+  <button mat-flat-button (click)="abrir(null)" [disabled]="cargando() || !!error()"><mat-icon svgIcon="person_add" />Nuevo usuario</button>
 </div>
 
 <div class="barra-filtros">

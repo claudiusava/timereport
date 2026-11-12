@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { connectAuthEmulator, getAuth } from 'firebase/auth';
+import { browserLocalPersistence, connectAuthEmulator, indexedDBLocalPersistence, initializeAuth } from 'firebase/auth';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
 import { connectStorageEmulator, getStorage } from 'firebase/storage';
@@ -11,7 +11,10 @@ import { environment } from '../../environments/environment';
 // signals.
 
 export const app = initializeApp(environment.firebase);
-export const auth = getAuth(app);
+// initializeAuth en vez de getAuth: sin el resolver de popup/redireccion, que
+// carga un script de apis.google.com (bloqueado por la CSP y que no usamos:
+// se entra con usuario y contraseña).
+export const auth = initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence] });
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const functions = getFunctions(app, environment.functionsRegion);
