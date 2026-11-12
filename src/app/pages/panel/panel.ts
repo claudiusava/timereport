@@ -109,8 +109,8 @@ export class Panel implements OnInit {
         this.controlesSrv.registros({ desde: hoy, hasta: manana }),
       ]);
       this.usuarios.set(usuarios);
-      this.fichajes.set(fichajes.datos);
-      this.controles.set(controles.datos);
+      this.fichajes.set(fichajes);
+      this.controles.set(controles);
     } catch (e) {
       this.error.set(mensajeDeError(e, 'No se pudo cargar el panel.'));
     } finally {

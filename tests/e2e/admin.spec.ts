@@ -25,6 +25,8 @@ test.describe('Administración', () => {
   });
 
   test('fichaje manual y anulación quedan registrados con su motivo', async ({ page }) => {
+    // Textos unicos para poder repetir la prueba sobre los mismos datos.
+    const marca = Date.now();
     await ir(page, 'Registros');
 
     await page.getByRole('button', { name: 'Fichaje manual' }).click();
@@ -33,12 +35,12 @@ test.describe('Administración', () => {
     await elegir(page, 'Comunidad', COMUNIDADES.robles.nombre, dialogo);
     await dialogo.getByRole('radio', { name: 'Entrada' }).click();
     await dialogo.getByLabel('Hora').fill('07:30');
-    await dialogo.getByLabel('Motivo').fill('Olvidó fichar al llegar; prueba e2e.');
+    await dialogo.getByLabel('Motivo').fill(`Olvidó fichar al llegar; prueba e2e ${marca}.`);
     await dialogo.getByRole('button', { name: 'Registrar' }).click();
     await expect(dialogo).toBeHidden();
 
     await elegir(page, 'Trabajador', veterano.nombre);
-    const manual = page.locator('tr.mat-mdc-row', { hasText: 'Olvidó fichar al llegar' });
+    const manual = page.locator('tr.mat-mdc-row', { hasText: `prueba e2e ${marca}` });
     await expect(manual).toContainText('Manual');
     await expect(manual).toContainText(USUARIOS.admin.nombre);
 
@@ -47,10 +49,10 @@ test.describe('Administración', () => {
     const motivo = page.getByRole('dialog');
     await motivo.getByRole('button', { name: 'Anular' }).click();
     await expect(motivo.getByText('Explica el motivo')).toBeVisible();
-    await motivo.getByLabel('Motivo').fill('Era una prueba automática.');
+    await motivo.getByLabel('Motivo').fill(`Era una prueba automática ${marca}.`);
     await motivo.getByRole('button', { name: 'Anular' }).click();
     await aviso(page, 'Fichaje anulado');
-    const anulado = page.locator('tr.mat-mdc-row', { hasText: 'Era una prueba automática.' });
+    const anulado = page.locator('tr.mat-mdc-row', { hasText: `prueba automática ${marca}` });
     await expect(anulado).toContainText('Anulado');
     await expect(anulado).toContainText('07:30');
     await expect(anulado.getByRole('button', { name: /Anular/ })).toHaveCount(0);

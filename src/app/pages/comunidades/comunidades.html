@@ -5,7 +5,7 @@
   </div>
   <div class="acciones">
     <button mat-stroked-button (click)="exportar()" [disabled]="!filtradas().length"><mat-icon svgIcon="download" />Excel</button>
-    <button mat-flat-button (click)="abrir(null)"><mat-icon svgIcon="add" />Nueva comunidad</button>
+    <button mat-flat-button (click)="abrir(null)" [disabled]="cargando() || !!error()"><mat-icon svgIcon="add" />Nueva comunidad</button>
   </div>
 </div>
 

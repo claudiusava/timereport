@@ -4,7 +4,7 @@
     <p>Fichajes, horas y controles de agua de todo el equipo.</p>
   </div>
   <div class="acciones">
-    <button mat-stroked-button (click)="fichajeManual()"><mat-icon svgIcon="edit_note" />Fichaje manual</button>
+    <button mat-stroked-button (click)="fichajeManual()" [disabled]="!listasCargadas()"><mat-icon svgIcon="edit_note" />Fichaje manual</button>
     <button mat-flat-button (click)="exportar()" [disabled]="exportando() || cargando()">
       <mat-icon svgIcon="download" />{{ exportando() ? 'Generando…' : 'Exportar a Excel' }}
     </button>
@@ -49,9 +49,6 @@
 </div>
 @if (error()) {
   <div class="error-formulario" role="alert"><mat-icon svgIcon="error" />{{ error() }}</div>
-}
-@if (truncado()) {
-  <div class="aviso-suave"><mat-icon svgIcon="warning" />Se muestran los {{ max }} registros más recientes. Acota el periodo para verlos todos.</div>
 }
 
 <mat-tab-group [selectedIndex]="pestana()" (selectedIndexChange)="pestana.set($event)" animationDuration="150ms" [mat-stretch-tabs]="movil()" mat-align-tabs="start">

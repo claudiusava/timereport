@@ -25,7 +25,7 @@ import { pantallaMovil } from '../../core/pantalla';
 import { ComunidadesService } from '../../data/comunidades.service';
 import { ControlesAguaService } from '../../data/controles-agua.service';
 import { ExcelService, FORMATO_FECHA, FORMATO_FECHA_HORA, Hoja } from '../../data/excel.service';
-import { FichajesService, MAX_REGISTROS } from '../../data/fichajes.service';
+import { FichajesService } from '../../data/fichajes.service';
 import { Comunidad, ControlAgua, Fichaje, RANGO_CLORO, RANGO_PH, Usuario, fueraDeRango } from '../../data/modelos';
 import { UsuariosService } from '../../data/usuarios.service';
 import { duracion, fechaHora, horasDecimal, inicioDelMes, isoDia, sumarDias } from '../../shared/fechas';
@@ -83,14 +83,14 @@ export class Registros implements OnInit {
   readonly fueraDeRango = fueraDeRango;
   readonly rangoCloro = RANGO_CLORO;
   readonly rangoPh = RANGO_PH;
-  readonly max = MAX_REGISTROS;
 
   readonly cargando = signal(false);
   readonly exportando = signal(false);
   readonly error = signal('');
-  readonly truncado = signal(false);
   readonly usuarios = signal<Usuario[]>([]);
   readonly comunidades = signal<Comunidad[]>([]);
+  /** Usuarios y comunidades cargados: el fichaje manual los necesita. */
+  readonly listasCargadas = signal(false);
   readonly fichajes = signal<Fichaje[]>([]);
   readonly controles = signal<ControlAgua[]>([]);
   readonly pestana = signal(0);
@@ -174,6 +174,7 @@ export class Registros implements OnInit {
       const [usuarios, comunidades] = await Promise.all([this.usuariosSrv.listar(), this.comunidadesSrv.listar()]);
       this.usuarios.set(usuarios);
       this.comunidades.set(comunidades);
+      this.listasCargadas.set(true);
     } catch (e) {
       this.avisos.errorDe(e, 'No se pudieron cargar los usuarios.');
     }
@@ -194,9 +195,8 @@ export class Registros implements OnInit {
     try {
       const filtro = { desde, hasta: sumarDias(hasta, 1), uid: this.aplicados.uid || undefined };
       const [f, c] = await Promise.all([this.fichajesSrv.registros(filtro), this.controlesSrv.registros(filtro)]);
-      this.fichajes.set(f.datos);
-      this.controles.set(c.datos);
-      this.truncado.set(f.truncado || c.truncado);
+      this.fichajes.set(f);
+      this.controles.set(c);
     } catch (e) {
       this.error.set(mensajeDeError(e, 'No se pudieron cargar los registros.'));
     } finally {

@@ -4,8 +4,6 @@ import {
   Timestamp,
   collection,
   doc,
-  getDocs,
-  limit,
   orderBy,
   query,
   serverTimestamp,
@@ -17,7 +15,8 @@ import { getBlob, ref, uploadBytes } from 'firebase/storage';
 import { AuthService } from '../core/auth.service';
 import { db, llamar, storage } from '../core/firebase';
 import { comprimirImagen } from '../shared/imagen';
-import { FiltroFechas, MAX_REGISTROS } from './fichajes.service';
+import { FiltroFechas } from './fichajes.service';
+import { leerTodo } from './paginar';
 import { Comunidad, ControlAgua } from './modelos';
 
 export interface DatosControlAgua {
@@ -47,18 +46,16 @@ export class ControlesAguaService {
 
   mios(desde: Date): Promise<ControlAgua[]> {
     const { uid } = this.auth.requerirSesion();
-    return this.consultar([where('uid', '==', uid), where('fecha', '>=', Timestamp.fromDate(desde)), orderBy('fecha', 'desc'), limit(500)]);
+    return this.consultar([where('uid', '==', uid), where('fecha', '>=', Timestamp.fromDate(desde)), orderBy('fecha', 'desc')]);
   }
 
-  async registros(filtro: FiltroFechas): Promise<{ datos: ControlAgua[]; truncado: boolean }> {
-    const datos = await this.consultar([
+  registros(filtro: FiltroFechas): Promise<ControlAgua[]> {
+    return this.consultar([
       ...(filtro.uid ? [where('uid', '==', filtro.uid)] : []),
       where('fecha', '>=', Timestamp.fromDate(filtro.desde)),
       where('fecha', '<', Timestamp.fromDate(filtro.hasta)),
       orderBy('fecha', 'desc'),
-      limit(MAX_REGISTROS),
     ]);
-    return { datos, truncado: datos.length >= MAX_REGISTROS };
   }
 
   /**
@@ -115,7 +112,7 @@ export class ControlesAguaService {
   }
 
   private async consultar(condiciones: QueryConstraint[]): Promise<ControlAgua[]> {
-    const snap = await getDocs(query(this.coleccion(), ...condiciones));
-    return snap.docs.map((d) => ({ id: d.id, anulado: null, ...d.data() }) as ControlAgua);
+    const docs = await leerTodo(query(this.coleccion(), ...condiciones));
+    return docs.map((d) => ({ id: d.id, anulado: null, ...d.data() }) as ControlAgua);
   }
 }
