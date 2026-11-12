@@ -41,7 +41,8 @@ jobs:
 
   # Pruebas de extremo a extremo: un navegador usa la app contra los emuladores.
   e2e:
-    runs-on: ubuntu-latest
+    # Playwright aun no tiene navegadores para Ubuntu 26.04 (ubuntu-latest).
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
